@@ -1,0 +1,65 @@
+/* Estilos para centrar el modal verticalmente (sin cambios) */
+.modal-dialog {
+  display: flex;
+  align-items: center;
+  min-height: calc(100% - 1rem);
+}
+
+@media (min-width: 576px) {
+  .modal-dialog {
+    max-width: 500px;
+    margin: 1.75rem auto;
+  }
+}
+
+.modal-content {
+  border-radius: 0.5rem;
+}
+
+.modal-header {
+  background-color: #e9ecef;
+  border-bottom: 1px solid #dee2e6;
+  border-top-left-radius: 0.5rem;
+  border-top-right-radius: 0.5rem;
+}
+
+.modal-title {
+  font-size: 1.25rem;
+  font-weight: 500;
+}
+
+.modal-body {
+  padding: 1.5rem;
+}
+
+.form-label {
+  font-weight: bold;
+  margin-top: 0.5rem;
+}
+
+.form-control {
+  margin-bottom: 1rem;
+}
+
+.btn-primary,
+.btn-success {
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.25rem;
+}
+
+.mt-3 {
+  margin-top: 1.5rem !important;
+}
+
+.text-center {
+  text-align: center !important;
+}
+
+a {
+  color: #007bff;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
