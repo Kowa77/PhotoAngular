@@ -1,10 +1,11 @@
 import { Component } from '@angular/core';
-import { NavbarComponent } from '../../navbar/navbar.component'; // Importa NavbarComponent
+//import { NavbarComponent } from '../../navbar/navbar.component'; // Importa NavbarComponent
 import { CommonModule } from '@angular/common'; // Importa CommonModule si lo necesitas
 
 @Component({
   selector: 'app-extras',
-  imports: [NavbarComponent, CommonModule], // Agrega NavbarComponent aquí
+  // imports: [NavbarComponent, CommonModule], // Agrega NavbarComponent aquí
+  imports: [CommonModule], // Agrega NavbarComponent aquí
   templateUrl: './extras.component.html',
   styleUrl: './extras.component.css'
 })
