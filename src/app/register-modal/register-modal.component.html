@@ -6,14 +6,11 @@
         <button type="button" class="btn-close" (click)="closeModal()" aria-label="Close"></button>
       </div>
       <div class="modal-body">
+        <div *ngIf="errorMessage" class="alert alert-danger">{{ errorMessage }}</div>
         <form (ngSubmit)="register()">
           <div class="mb-3">
             <label for="email" class="form-label">Email</label>
             <input type="email" class="form-control" id="email" name="email" [(ngModel)]="registrationData.email" required>
-          </div>
-          <div class="mb-3">
-            <label for="username" class="form-label">Usuario</label>
-            <input type="text" class="form-control" id="username" name="username" [(ngModel)]="registrationData.username" required>
           </div>
           <div class="mb-3">
             <label for="password" class="form-label">Contraseña</label>

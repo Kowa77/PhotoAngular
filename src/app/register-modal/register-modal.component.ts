@@ -1,6 +1,7 @@
 import { Component, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { AuthService } from '../auth/auth.service'; // Importa el AuthService
 
 @Component({
   selector: 'app-register-modal',
@@ -11,12 +12,16 @@ import { FormsModule } from '@angular/forms';
 })
 export class RegisterModalComponent {
   isVisible: boolean = false;
-  registrationData = { email: '', username: '', password: '' };
+  registrationData = { email: '', password: '' }; // Solo necesitamos email y password para el registro básico
+  errorMessage: string = '';
   @Output() registerSuccess = new EventEmitter<any>();
   @Output() closeModalEvent = new EventEmitter<void>();
 
+  constructor(private authService: AuthService) { } // Inyecta el AuthService
+
   openModal() {
     this.isVisible = true;
+    this.errorMessage = '';
   }
 
   closeModal() {
@@ -24,11 +29,15 @@ export class RegisterModalComponent {
     this.closeModalEvent.emit();
   }
 
-  register() {
-    // Aquí llama a tu servicio de autenticación para registrar al usuario
-    console.log('Intentando registrar con:', this.registrationData);
-    // Si el registro es exitoso, emite el evento
-    this.registerSuccess.emit({ username: this.registrationData.username });
-    this.closeModal();
+  async register() {
+    try {
+      const user = await this.authService.registerUser(this.registrationData.email, this.registrationData.password);
+      console.log('Registro exitoso:', user);
+      this.registerSuccess.emit(user);
+      this.closeModal();
+    } catch (error: any) {
+      console.error('Error al registrar:', error);
+      this.errorMessage = this.authService.getErrorMessage(error.code); // Usa el método del servicio
+    }
   }
 }

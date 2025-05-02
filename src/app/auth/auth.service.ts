@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Auth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, user, User } from '@angular/fire/auth';
+import { Auth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, user, User, setPersistence, browserLocalPersistence } from '@angular/fire/auth';
 import { Observable } from 'rxjs';
 
 @Injectable({
@@ -7,30 +7,31 @@ import { Observable } from 'rxjs';
 })
 export class AuthService {
   public user$: Observable<User | null>;
-  private auth: Auth; // Declara 'auth' aquí
+  private auth: Auth;
 
   constructor(auth: Auth) {
-    this.auth = auth; // Asigna el valor inyectado a la propiedad de la clase
-    this.user$ = user(this.auth); // Inicializa user$ después de que 'auth' tenga un valor
+    this.auth = auth;
+    this.user$ = user(this.auth);
   }
 
-  async registerUser(email: string, password: string): Promise<User> { // Especifica el tipo de retorno en caso de éxito
+  async registerUser(email: string, password: string): Promise<User> {
     try {
       const userCredential = await createUserWithEmailAndPassword(this.auth, email, password);
       return userCredential.user;
     } catch (error: any) {
       console.error('Error al registrar usuario:', error);
-      return Promise.reject(error); // Propaga el error rechazando la promesa
+      return Promise.reject(error);
     }
   }
 
-  async loginUser(email: string, password: string): Promise<User> { // Especifica el tipo de retorno en caso de éxito
+  async loginUser(email: string, password: string): Promise<User> {
     try {
+      await setPersistence(this.auth, browserLocalPersistence); // Configura la persistencia local
       const userCredential = await signInWithEmailAndPassword(this.auth, email, password);
       return userCredential.user;
     } catch (error: any) {
       console.error('Error al iniciar sesión:', error);
-      return Promise.reject(error); // Propaga el error rechazando la promesa
+      return Promise.reject(error);
     }
   }
 

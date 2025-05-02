@@ -1,47 +1,44 @@
-<nav class="navbar">
-  <div class="navbar-container">
-    <a routerLink="/" class="navbar-logo">
-      <img src="../../assets/img/logo_blanco.png" alt="Logo Tu Evento">
-    </a>
-    <div class="navbar-toggle" (click)="toggleMenu()">
-      <div class="bar"></div>
-      <div class="bar"></div>
-      <div class="bar"></div>
-    </div>
-    <div class="navbar-menu" [ngClass]="{ 'active': isMenuOpen }">
-      <ul class="navbar-nav">
-        <li class="nav-item">
-          <a routerLink="/" class="nav-link" (click)="closeMenu()">Inicio</a>
-        </li>
-        <li class="nav-item">
-          <a routerLink="/cumpleanos" class="nav-link" (click)="closeMenu()">Cumpleaños</a>
-        </li>
-        <li class="nav-item">
-          <a routerLink="/casamientos" class="nav-link" (click)="closeMenu()">Casamientos</a>
-        </li>
-        <li class="nav-item">
-          <a routerLink="/extras" class="nav-link" (click)="closeMenu()">Extras</a>
-        </li>
-        <li class="nav-item">
-          <a routerLink="/contacto" class="nav-link" (click)="closeMenu()">Contacto</a>
-        </li>
-        <li class="nav-item">
-          <a routerLink="/nosotros" class="nav-link" (click)="closeMenu()">Nosotros</a>
-        </li>
-      </ul>
-      <div class="navbar-auth">
-        <ng-container *ngIf="!isLoggedIn">
-          <button class="auth-button login-button" (click)="loginModal.openModal()">Iniciar Sesión</button>
-          <button class="auth-button register-button" (click)="registerModal.openModal()">Registrarse</button>
-        </ng-container>
-        <ng-container *ngIf="isLoggedIn && loggedInUser">
-          <span class="me-2">Bienvenido, {{ loggedInUser.email || loggedInUser.username }}</span>
-          <button class="auth-button logout-button" (click)="logout()">Cerrar Sesión</button>
-        </ng-container>
-      </div>
-    </div>
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <a class="navbar-brand" routerLink="/">
+    <img src="assets/img/logo_blanco.png" width="200" class="logo" alt="Logo de Mi Aplicación">
+  </a>
+  <button class="navbar-toggler" type="button" (click)="toggleMenu()" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+  <div class="collapse navbar-collapse" id="navbarNav" [ngClass]="{'show': isMenuOpen}">
+    <ul class="navbar-nav">
+      <li class="nav-item active">
+        <a class="nav-link" routerLink="/" (click)="closeMenu()">Inicio</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" routerLink="/cumpleanos" (click)="closeMenu()">Cumpleaños</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" routerLink="/casamientos" (click)="closeMenu()">Casamientos</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" routerLink="/extras" (click)="closeMenu()">Extras</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" routerLink="/contacto" (click)="closeMenu()">Contacto</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" routerLink="/nosotros" (click)="closeMenu()">Nosotros</a>
+      </li>
+      <li class="nav-item" *ngIf="loggedInUserEmail">
+        <span class="navbar-text mobile-welcome">Bienvenido: {{ loggedInUserEmail }}</span>
+      </li>
+      <li class="nav-item" *ngIf="loggedInUserEmail">
+        <button class="btn btn-outline-danger my-2 my-sm-0 auth-button logout-button" (click)="logout()">Cerrar Sesión</button>
+      </li>
+      <li class="nav-item" *ngIf="!loggedInUserEmail">
+        <button class="btn btn-outline-success my-2 my-sm-0 auth-button" (click)="openLoginModal()">Iniciar Sesión</button>
+      </li>
+      <li class="nav-item" *ngIf="!loggedInUserEmail">
+        <button class="btn btn-outline-primary my-2 my-sm-0 ml-2 auth-button" (click)="openRegisterModal()">Registrarse</button>
+      </li>
+    </ul>
   </div>
+  <app-login-modal #loginModal (loginSuccess)="handleLoginSuccess($event)" (closeModalEvent)="closeLoginModal()"></app-login-modal>
+  <app-register-modal #registerModal (registerSuccess)="handleRegisterSuccess($event)" (closeModalEvent)="closeRegisterModal()"></app-register-modal>
 </nav>
-
-<app-login-modal #loginModal (closeModalEvent)="closeLoginModal()" (loginSuccess)="handleLoginSuccess($event)"></app-login-modal>
-<app-register-modal #registerModal (closeModalEvent)="closeRegisterModal()" (registerSuccess)="handleRegisterSuccess($event)"></app-register-modal>
