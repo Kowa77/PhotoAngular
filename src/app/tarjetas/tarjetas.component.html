@@ -15,7 +15,12 @@
 
   <div class="tarjeta">
     <a [routerLink]="['/casamientos']" class="tarjeta-enlace">
-      <div class="tarjeta-fondo" style="background-image: url('assets/img/casamiento.jpg');"></div>
+      <div class="tarjeta-fondo">
+        <picture class="tarjeta-fondo-picture">
+          <source srcset="../../assets/img/casamiento.jpg" type="image/png">
+          <img src="../../assets/img/casamiento.png" alt="Imagen temática de casamiento" class="imagen-casamientos ">
+        </picture>
+      </div>
       <div class="tarjeta-footer">
         <p class="descripcion">Todo lo que necesitas para un casamiento inolvidable.</p>
       </div>
@@ -27,7 +32,7 @@
       <div class="tarjeta-fondo">
         <picture class="tarjeta-fondo-picture">
           <source srcset="assets/img/extras2.avif" type="image/avif">
-          <img src="assets/img/extras2.jpg" alt="Imagen temática de extras" class="imagen-cumpleaños">
+          <img src="assets/img/extras2.jpg" alt="Imagen temática de extras" class="imagen-extras">
         </picture>
       </div>
       <div class="tarjeta-footer">

@@ -131,11 +131,28 @@
     margin-left: 0; /* Elimina el margen izquierdo en móvil */
     padding: 20px 0;
     border-top: 1px solid #ddd;
+    align-items: center; /* Centra los elementos de autenticación en móvil */
   }
 
-  .auth-button {
+  .mobile-welcome {
+    display: block; /* Asegura que ocupe una línea */
+    width: 100%;
+    text-align: center;
+    margin-bottom: 10px;
+  }
+
+  .me-2{
+    color: blue;
+    font-style: italic;
+  }
+
+.auth-button {
     margin: 10px 20px;
     width: calc(100% - 40px);
+  }
+
+  .logout-button {
+    /* Puedes añadir estilos específicos para el botón de cerrar sesión en móvil */
   }
 }
 

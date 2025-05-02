@@ -35,7 +35,7 @@
           <button class="auth-button register-button" (click)="registerModal.openModal()">Registrarse</button>
         </ng-container>
         <ng-container *ngIf="isLoggedIn && loggedInUser">
-          <span class="me-2">Bienvenido, {{ loggedInUser.username }}</span>
+          <span class="me-2">Bienvenido, {{ loggedInUser.email || loggedInUser.username }}</span>
           <button class="auth-button logout-button" (click)="logout()">Cerrar Sesión</button>
         </ng-container>
       </div>
