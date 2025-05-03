@@ -38,6 +38,17 @@ export class AuthModalComponent implements AfterViewInit, OnDestroy {
     }
   }
 
+  // async login() {
+  //   this.loginError = null;
+  //   try {
+  //     await this.authService.loginUser(this.loginEmail, this.loginPassword);
+  //     console.log('Inicio de sesión exitoso');
+  //     this.cdr.detectChanges(); // Forzar detección de cambios ANTES de cerrar
+  //     this.closeModal();
+  //   } catch (error: any) {
+  //     this.loginError = this.authService.getErrorMessage(error.code);
+  //   }
+  // }
   async login() {
     this.loginError = null;
     try {
@@ -45,6 +56,8 @@ export class AuthModalComponent implements AfterViewInit, OnDestroy {
       console.log('Inicio de sesión exitoso');
       this.cdr.detectChanges(); // Forzar detección de cambios ANTES de cerrar
       this.closeModal();
+      // No necesitamos hacer nada especial aquí sobre la expiración,
+      // el AuthService se encargará de verificarlo.
     } catch (error: any) {
       this.loginError = this.authService.getErrorMessage(error.code);
     }
