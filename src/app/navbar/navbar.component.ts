@@ -19,7 +19,7 @@ export class NavbarComponent implements AfterViewInit, OnInit, OnDestroy {
   @ViewChild('loginModal') loginModal!: LoginModalComponent;
   @ViewChild('registerModal') registerModal!: RegisterModalComponent;
   isLoggedIn: boolean = false;
-  loggedInUserEmail: string | null = null; // Cambiado a solo el email para mostrar
+  loggedIn: string | null = null; // Cambiado a solo el email para mostrar
   private authSubscription: Subscription | undefined; // Para la suscripción al estado de auth
 
   constructor(private router: Router, private authService: AuthService) { } // Inyecta el AuthService
@@ -28,12 +28,12 @@ export class NavbarComponent implements AfterViewInit, OnInit, OnDestroy {
     this.authSubscription = this.authService.getAuthState().subscribe(user => {
       if (user) {
         this.isLoggedIn = true;
-        this.loggedInUserEmail = user.email;
-        console.log('Estado de autenticación en Navbar:', this.isLoggedIn, this.loggedInUserEmail);
+        this.loggedIn = user.email;
+        console.log('Estado de autenticación en Navbar:', this.isLoggedIn, this.loggedIn);
         // Aquí podrías cargar más información del usuario si es necesario
       } else {
         this.isLoggedIn = false;
-        this.loggedInUserEmail = null;
+        this.loggedIn = null;
         console.log('Usuario no autenticado en Navbar');
       }
     });
