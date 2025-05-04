@@ -21,7 +21,7 @@ export class AppComponent implements OnInit {
   ngOnInit(): void {
     this.authService.getAuthState().subscribe(user => {
       this.isLoggedIn = !!user; // Si hay un usuario, está logueado (true), sino null (false)
-      console.log('Estado de autenticación en AppComponent:', this.isLoggedIn, user);
+      //console.log('Estado de autenticación en AppComponent:', this.isLoggedIn, user);
       // Aquí puedes realizar otras acciones basadas en el estado de login,
       // como mostrar/ocultar elementos de la UI.
     });

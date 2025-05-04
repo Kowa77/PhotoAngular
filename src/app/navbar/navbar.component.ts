@@ -29,20 +29,20 @@ export class NavbarComponent implements AfterViewInit, OnInit, OnDestroy {
       if (user) {
         this.isLoggedIn = true;
         this.loggedIn = user.email;
-        console.log('Estado de autenticación en Navbar:', this.isLoggedIn, this.loggedIn);
+        //console.log('Estado de autenticación en Navbar:', this.isLoggedIn, this.loggedIn);
         // Aquí podrías cargar más información del usuario si es necesario
       } else {
         this.isLoggedIn = false;
         this.loggedIn = null;
-        console.log('Usuario no autenticado en Navbar');
+        //console.log('Usuario no autenticado en Navbar');
       }
     });
   }
 
   ngAfterViewInit(): void {
     // Ahora loginModal y registerModal deberían estar definidos y accesibles
-    console.log('Login Modal Component:', this.loginModal);
-    console.log('Register Modal Component:', this.registerModal);
+    //console.log('Login Modal Component:', this.loginModal);
+    //console.log('Register Modal Component:', this.registerModal);
   }
 
   ngOnDestroy(): void {
@@ -77,7 +77,7 @@ export class NavbarComponent implements AfterViewInit, OnInit, OnDestroy {
       this.registerModal.openModal();
       this.isMenuOpen = false;
     } else {
-      console.error('Error: Register Modal Component no está definido.');
+      //console.error('Error: Register Modal Component no está definido.');
     }
   }
 
@@ -89,19 +89,19 @@ export class NavbarComponent implements AfterViewInit, OnInit, OnDestroy {
     // El observable getAuthState ya está manejando la actualización del estado
     // Puedes realizar acciones adicionales aquí si es necesario,
     // pero isLoggedIn y loggedInUserEmail ya deberían estar actualizados.
-    console.log('Inicio de sesión exitoso en Navbar (evento):', user);
+    //console.log('Inicio de sesión exitoso en Navbar (evento):', user);
   }
 
   handleRegisterSuccess(user: any): void {
     // El observable getAuthState ya está manejando la actualización del estado
     // Puedes realizar acciones adicionales aquí si es necesario.
-    console.log('Registro exitoso en Navbar (evento):', user);
+    //console.log('Registro exitoso en Navbar (evento):', user);
   }
 
   logout(): void {
     this.authService.logoutUser();
     // El observable getAuthState se encargará de actualizar isLoggedIn y loggedInUserEmail a null
-    console.log('Usuario cerró sesión desde Navbar');
+    //console.log('Usuario cerró sesión desde Navbar');
     this.router.navigate(['/']);
     // Lógica adicional para limpiar tokens, etc. si es necesario
   }

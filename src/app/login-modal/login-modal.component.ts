@@ -32,11 +32,11 @@ export class LoginModalComponent {
   async login() {
     try {
       const user = await this.authService.loginUser(this.credentials.email, this.credentials.password);
-      console.log('Inicio de sesión exitoso:', user);
+      //console.log('Inicio de sesión exitoso:', user);
       this.loginSuccess.emit(user);
       this.closeModal();
     } catch (error: any) {
-      console.error('Error al iniciar sesión:', error);
+      //console.error('Error al iniciar sesión:', error);
       this.errorMessage = this.authService.getErrorMessage(error.code); // Usa el método del servicio
     }
   }

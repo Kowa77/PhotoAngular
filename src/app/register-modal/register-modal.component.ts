@@ -32,11 +32,11 @@ export class RegisterModalComponent {
   async register() {
     try {
       const user = await this.authService.registerUser(this.registrationData.email, this.registrationData.password);
-      console.log('Registro exitoso:', user);
+      //console.log('Registro exitoso:', user);
       this.registerSuccess.emit(user);
       this.closeModal();
     } catch (error: any) {
-      console.error('Error al registrar:', error);
+      //console.error('Error al registrar:', error);
       this.errorMessage = this.authService.getErrorMessage(error.code); // Usa el método del servicio
     }
   }
