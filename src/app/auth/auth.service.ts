@@ -28,21 +28,10 @@ export class AuthService {
     }
   }
 
-  // async loginUser(email: string, password: string): Promise<User> {
-  //   try {
-  //     await setPersistence(this.auth, browserLocalPersistence); // Configura la persistencia local
-  //     const userCredential = await signInWithEmailAndPassword(this.auth, email, password);
-  //     return userCredential.user;
-  //   } catch (error: any) {
-  //     console.error('Error al iniciar sesión:', error);
-  //     return Promise.reject(error);
-  //   }
-  // }
-
   async loginUser(email: string, password: string): Promise<User> {
     try {
-      await setPersistence(this.auth, browserLocalPersistence);
       const userCredential = await signInWithEmailAndPassword(this.auth, email, password);
+      await setPersistence(this.auth, browserLocalPersistence);
       localStorage.setItem(this.SESSION_EXPIRATION_KEY, (Date.now() + this.SESSION_DURATION_MS).toString()); // Guardar hora de expiración
       return userCredential.user;
     } catch (error: any) {

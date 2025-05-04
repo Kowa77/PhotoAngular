@@ -1,14 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { NavbarComponent } from './navbar/navbar.component';
-import { AuthModalComponent } from './auth-modal/auth-modal.component';
 import { AuthService } from './auth/auth.service'; // Importa el AuthService
 import { CommonModule } from '@angular/common'; // Importa CommonModule si lo vas a usar en el template
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, NavbarComponent, AuthModalComponent], // Asegúrate de tener CommonModule aquí
+  imports: [CommonModule, RouterOutlet, NavbarComponent], // AuthModalComponent eliminado
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
