@@ -1,4 +1,4 @@
-import { Component, ViewChild, AfterViewInit, OnInit, OnDestroy } from '@angular/core';
+import { Component, ViewChild, AfterViewInit, OnInit, OnDestroy, ChangeDetectorRef  } from '@angular/core';
 import { RouterLink, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { LoginModalComponent } from '../login-modal/login-modal.component';
@@ -22,7 +22,10 @@ export class NavbarComponent implements AfterViewInit, OnInit, OnDestroy {
   loggedIn: string | null = null; // Cambiado a solo el email para mostrar
   private authSubscription: Subscription | undefined; // Para la suscripción al estado de auth
 
-  constructor(private router: Router, private authService: AuthService) { } // Inyecta el AuthService
+  constructor(private router: Router,
+              private authService: AuthService,
+              private changeDetectorRef: ChangeDetectorRef // Inyecta ChangeDetectorRef
+  ) { } // Inyecta el AuthService
 
   ngOnInit(): void {
     this.authSubscription = this.authService.getAuthState().subscribe(user => {
@@ -40,9 +43,10 @@ export class NavbarComponent implements AfterViewInit, OnInit, OnDestroy {
   }
 
   ngAfterViewInit(): void {
-    // Aquí puedes realizar acciones adicionales después de que la vista se haya inicializado
-    // Por ejemplo, podrías abrir el modal de login si es necesario
-    this.loginModal.openModal(); // Descomentar si deseas abrir el modal al iniciar
+    setTimeout(() => {
+      this.loginModal.openModal();
+      this.changeDetectorRef.detectChanges(); // Forzar la detección de cambios
+    }, 0);
   }
 
   ngOnDestroy(): void {

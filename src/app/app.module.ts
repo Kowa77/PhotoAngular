@@ -1,27 +1,25 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 
-import { AppComponent } from './app.component'; // Import AppComponent
+import { AppComponent } from './app.component';
 import { NavbarComponent } from './navbar/navbar.component';
 import { TarjetasComponent } from './tarjetas/tarjetas.component';
-//import { AuthModalComponent } from './auth-modal/auth-modal.component';
 import { LoginModalComponent } from './login-modal/login-modal.component';
 import { RegisterModalComponent } from './register-modal/register-modal.component';
+import { AngularFireModule } from '@angular/fire/compat'; // Importa AngularFireModule
+import { environment } from '../environments/environment'; // Asegúrate de que la ruta sea correcta
 
 @NgModule({
-  declarations: [
-    // AuthModalComponent (if it's NOT standalone)
-  ],
+  declarations: [],
   imports: [
     BrowserModule,
-    AppComponent, // Import AppComponent here
+    AppComponent,
     NavbarComponent,
     TarjetasComponent,
     LoginModalComponent,
     RegisterModalComponent,
-    // AuthModalComponent (if it IS standalone, import it here)
+    AngularFireModule.initializeApp(environment.firebase), // Inicializa AngularFireModule
   ],
-  providers: [] // Add any services you want to provide globally
-
+  providers: [],
 })
-export class AppModule { }
+export class AppModule {}
