@@ -5,6 +5,7 @@ import { ExtrasComponent } from './paginas/extras/extras.component'; // Actualiz
 import { TarjetasComponent } from './tarjetas/tarjetas.component';
 import { ContactoComponent } from './paginas/contacto/contacto.component';
 import { NosotrosComponent } from './paginas/nosotros/nosotros.component';
+import { ServiciosComponent } from './servicios/servicios.component';
 
 export const routes: Routes = [
   { path: '*', component: TarjetasComponent },
@@ -13,6 +14,7 @@ export const routes: Routes = [
   { path: 'casamientos', component: CasamientosComponent },
   { path: 'extras', component: ExtrasComponent },
   { path: 'contacto', component: ContactoComponent },
-  { path: 'nosotros', component: NosotrosComponent }
+  { path: 'nosotros', component: NosotrosComponent },
+  { path: 'servicios', component: ServiciosComponent }
   // ... otras rutas
 ];

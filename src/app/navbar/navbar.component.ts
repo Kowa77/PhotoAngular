@@ -40,9 +40,9 @@ export class NavbarComponent implements AfterViewInit, OnInit, OnDestroy {
   }
 
   ngAfterViewInit(): void {
-    // Ahora loginModal y registerModal deberían estar definidos y accesibles
-    //console.log('Login Modal Component:', this.loginModal);
-    //console.log('Register Modal Component:', this.registerModal);
+    // Aquí puedes realizar acciones adicionales después de que la vista se haya inicializado
+    // Por ejemplo, podrías abrir el modal de login si es necesario
+    this.loginModal.openModal(); // Descomentar si deseas abrir el modal al iniciar
   }
 
   ngOnDestroy(): void {
