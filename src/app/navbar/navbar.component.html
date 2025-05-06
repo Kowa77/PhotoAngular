@@ -24,6 +24,10 @@
         <li  *ngIf="loggedIn" class="botones">
           <button class=" auth-button logout-button" (click)="logout()">Cerrar Sesión</button>
         </li>
+        <li *ngIf="loggedIn">
+          <a routerLink="/carrito" (click)="closeMenu()">
+            <i class="fas fa-shopping-cart"></i>Carrito</a>
+        </li>
         <li  *ngIf="!loggedIn" class="botones">
           <button class="auth-button" (click)="openLoginModal()">Iniciar Sesión</button>
         </li>
@@ -34,6 +38,16 @@
 
     </ul>
   </div>
-  <app-login-modal #loginModal (loginSuccess)="handleLoginSuccess($event)" (closeModalEvent)="closeLoginModal()"></app-login-modal>
-  <app-register-modal #registerModal (registerSuccess)="handleRegisterSuccess($event)" (closeModalEvent)="closeRegisterModal()"></app-register-modal>
+  <app-login-modal
+  #loginModal
+  (loginSuccess)="handleLoginSuccess($event)"
+  (closeModalEvent)="closeLoginModal()"
+  (openRegisterModalEvent)="openRegisterModal()">
+  </app-login-modal>
+
+  <app-register-modal
+    #registerModal
+    (registerSuccess)="handleRegisterSuccess($event)"
+    (closeModalEvent)="closeRegisterModal()">
+  </app-register-modal>
 </nav>

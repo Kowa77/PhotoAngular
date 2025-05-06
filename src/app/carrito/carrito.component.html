@@ -1,0 +1,26 @@
+<div class="container m-5">
+  <h3>Carrito de Compras</h3>
+  <ul class="list-group" *ngIf="carritoItems.length > 0; else carritoVacio">
+    <li class="list-group-item d-flex justify-content-between align-items-center" *ngFor="let item of carritoItems">
+      <div class="d-flex align-items-center">
+        <img [src]="'assets/'+item.imagen" [alt]="item.nombre" width="50" height="50" class="me-3">
+        <div>
+          <strong>{{ item.nombre }}</strong>
+          <p class="mb-0">${{ item.precio | number:'1.0-0' }}</p>
+        </div>
+      </div>
+      <button class="btn btn-danger btn-sm" (click)="eliminarDelCarrito(item)">Eliminar</button>
+    </li>
+  </ul>
+  <ng-template #carritoVacio>
+    <p>El carrito está vacío.</p>
+  </ng-template>
+
+  <div *ngIf="carritoItems.length > 0" class="mt-4">
+    <p>Subtotal (sin IVA): ${{ (total / 1.22) | number:'1.0-0' }}</p>
+    <p>IVA (22%): ${{ iva | number:'1.0-0' }}</p>
+    <p *ngIf="descuentoAplicado" class="text-success"><strong>Descuento (10%): Aplicado</strong></p>
+    <p><strong>Total (con IVA): ${{ total | number:'1.0-0' }}</strong></p>
+    <button class="btn btn-success mt-3" routerLink="/pago">Pagar</button>
+    </div>
+</div>

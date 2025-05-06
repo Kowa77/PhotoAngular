@@ -8,14 +8,14 @@ import { Observable } from 'rxjs';
 })
 export class AuthService {
   public user$: Observable<User | null>;
-  private auth: Auth = inject(Auth); // Inyecta el servicio Auth
+  private auth: Auth = inject(Auth); // Inyectamos el servicio Auth a nivel de la clase
 
   private readonly SESSION_EXPIRATION_KEY = 'sessionExpirationTime';
   private readonly SESSION_DURATION_MS = 60 * 60 * 1000; // 1 hora en milisegundos
 
   constructor() {
     this.user$ = user(this.auth);
-    this.checkSessionExpiration(); // Verificar al inicio del servicio
+    this.checkSessionExpiration();
   }
 
   async registerUser(email: string, password: string): Promise<User> {
@@ -31,8 +31,8 @@ export class AuthService {
   async loginUser(email: string, password: string): Promise<User> {
     try {
       const userCredential = await signInWithEmailAndPassword(this.auth, email, password);
-      await setPersistence(this.auth, browserLocalPersistence);
-      localStorage.setItem(this.SESSION_EXPIRATION_KEY, (Date.now() + this.SESSION_DURATION_MS).toString()); // Guardar hora de expiración
+      await setPersistence(this.auth, browserLocalPersistence); // Usamos la instancia inyectada en el constructor
+      localStorage.setItem(this.SESSION_EXPIRATION_KEY, (Date.now() + this.SESSION_DURATION_MS).toString());
       return userCredential.user;
     } catch (error: any) {
       console.error('Error al iniciar sesión:', error);
@@ -42,8 +42,8 @@ export class AuthService {
 
   async logoutUser(): Promise<void> {
     try {
-      localStorage.removeItem(this.SESSION_EXPIRATION_KEY); // Limpiar la hora de expiración al cerrar sesión
       await signOut(this.auth);
+      localStorage.removeItem(this.SESSION_EXPIRATION_KEY);
     } catch (error) {
       console.error('Error al cerrar sesión:', error);
       throw error;
@@ -62,9 +62,8 @@ export class AuthService {
           const expiration = parseInt(expirationTime, 10);
           if (Date.now() > expiration) {
             console.log('Sesión expirada automáticamente.');
-            this.logoutUser(); // Cierra la sesión si ha expirado
+            this.logoutUser();
           } else {
-            // Opcional: Puedes programar una verificación futura para la expiración
             const timeLeft = expiration - Date.now();
             setTimeout(() => this.logoutUser(), timeLeft);
           }

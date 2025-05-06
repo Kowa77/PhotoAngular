@@ -5,39 +5,32 @@ import { Observable, of } from 'rxjs';
 import { Servicio } from './../models/servicio.model';
 import { Auth, user } from '@angular/fire/auth';
 import { take } from 'rxjs/operators';
-import { AngularFireModule } from '@angular/fire/compat'; // Importa AngularFireModule
-import { environment } from '../../environments/environment'; // Asegúrate de la ruta correcta
 
 @Component({
   selector: 'app-servicios',
   standalone: true,
   imports: [CommonModule],
   templateUrl: './servicios.component.html',
-  styleUrls: ['./servicios.component.css'],
-  providers: [
-    {
-      provide: 'angularfire2.app.options',
-      useValue: environment.firebase
-    },
-    // AngularFireModule // No importes el módulo aquí, solo la configuración
-  ]
+  styleUrls: ['./servicios.component.css']
 })
 export class ServiciosComponent implements OnInit {
   servicios$: Observable<Servicio[]> = of([]);
   totalPrecio: number = 0;
   serviciosSeleccionados: Servicio[] = [];
-  user$: Observable<any>; // Declaración sin inicializar
+  user$: Observable<any>;
+  descuentoAplicado: boolean = false;
+  private readonly todosLosServicios = ['Civil', 'Exteriores', 'Fiesta', 'Getting Ready', 'Iglesia', 'Video de novios'];
 
   constructor(
     private firebaseService: FirebaseService,
     private auth: Auth
   ) {
-    this.user$ = user(this.auth); // Inicialización en el constructor
+    this.user$ = user(this.auth);
   }
 
   ngOnInit(): void {
     this.servicios$ = this.firebaseService.getServicios();
-    this.cargarCarritoGuardado(); // Cargar el carrito guardado al inicio
+    this.cargarCarritoGuardado();
   }
 
   async cargarCarritoGuardado(): Promise<void> {
@@ -47,24 +40,65 @@ export class ServiciosComponent implements OnInit {
         this.firebaseService.obtenerCarritoUsuario(uid).pipe(take(1)).subscribe(carritoGuardado => {
           if (carritoGuardado && carritoGuardado.servicios) {
             this.serviciosSeleccionados = carritoGuardado.servicios;
-            this.totalPrecio = this.serviciosSeleccionados.reduce((sum, servicio) => sum + servicio.precio, 0);
-            // Aquí podrías marcar los checkboxes correspondientes en la UI si es necesario
+            this.recalcularTotalYDescuento();
+          } else {
+            this.serviciosSeleccionados = [];
+            this.recalcularTotalYDescuento();
           }
         });
+      } else {
+        this.serviciosSeleccionados = [];
+        this.recalcularTotalYDescuento();
       }
     });
   }
 
-  async onCheckboxChange(servicio: Servicio, target: EventTarget | null): Promise<void> {
+  onCheckboxChange(servicio: Servicio, target: EventTarget | null): void {
     if (target instanceof HTMLInputElement) {
       if (target.checked) {
-        this.totalPrecio += servicio.precio;
         this.serviciosSeleccionados = [...this.serviciosSeleccionados, servicio];
       } else {
-        this.totalPrecio -= servicio.precio;
         this.serviciosSeleccionados = this.serviciosSeleccionados.filter(s => s.nombre !== servicio.nombre);
       }
-      await this.guardarCarritoEnFirebase(); // Guardar el carrito después de cada cambio
+      this.recalcularTotalYDescuento();
+    }
+  }
+
+  aplicarDescuentoManual(): void {
+    if (this.estanTodosLosServiciosSeleccionados()) {
+      this.aplicarDescuento();
+    } else {
+      this.removerDescuento();
+    }
+  }
+
+  private estanTodosLosServiciosSeleccionados(): boolean {
+    const nombresSeleccionados = this.serviciosSeleccionados.map(s => s.nombre);
+    return this.todosLosServicios.every(servicio => nombresSeleccionados.includes(servicio));
+  }
+
+  private recalcularTotalYDescuento(): void {
+    this.totalPrecio = this.serviciosSeleccionados.reduce((sum, servicio) => sum + servicio.precio, 0);
+    if (this.estanTodosLosServiciosSeleccionados()) {
+      this.aplicarDescuento();
+    } else {
+      this.removerDescuento();
+    }
+  }
+
+  private aplicarDescuento(): void {
+    if (!this.descuentoAplicado) {
+      this.totalPrecio *= 0.9;
+      this.descuentoAplicado = true;
+      console.log('¡Descuento del 10% aplicado!');
+    }
+  }
+
+  private removerDescuento(): void {
+    if (this.descuentoAplicado) {
+      this.totalPrecio = this.serviciosSeleccionados.reduce((sum, servicio) => sum + servicio.precio, 0);
+      this.descuentoAplicado = false;
+      console.log('Descuento removido.');
     }
   }
 

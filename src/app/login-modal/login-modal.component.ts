@@ -1,7 +1,7 @@
 import { Component, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { AuthService } from '../auth/auth.service'; // Importa el AuthService
+import { AuthService } from '../auth/auth.service';
 
 @Component({
   selector: 'app-login-modal',
@@ -12,12 +12,13 @@ import { AuthService } from '../auth/auth.service'; // Importa el AuthService
 })
 export class LoginModalComponent {
   isVisible: boolean = false;
-  credentials = { email: '', password: '' }; // Usa 'email' en lugar de 'username'
+  credentials = { email: '', password: '' };
   errorMessage: string = '';
   @Output() loginSuccess = new EventEmitter<any>();
   @Output() closeModalEvent = new EventEmitter<void>();
+  @Output() openRegisterModalEvent = new EventEmitter<void>(); // Nuevo evento
 
-  constructor(private authService: AuthService) { } // Inyecta el AuthService
+  constructor(private authService: AuthService) { }
 
   openModal() {
     this.isVisible = true;
@@ -29,15 +30,18 @@ export class LoginModalComponent {
     this.closeModalEvent.emit();
   }
 
+  emitOpenRegisterModal() {
+    this.closeModal(); // Cierra el modal de login
+    this.openRegisterModalEvent.emit(); // Emite el evento para abrir el modal de registro
+  }
+
   async login() {
     try {
       const user = await this.authService.loginUser(this.credentials.email, this.credentials.password);
-      //console.log('Inicio de sesión exitoso:', user);
       this.loginSuccess.emit(user);
       this.closeModal();
     } catch (error: any) {
-      //console.error('Error al iniciar sesión:', error);
-      this.errorMessage = this.authService.getErrorMessage(error.code); // Usa el método del servicio
+      this.errorMessage = this.authService.getErrorMessage(error.code);
     }
   }
 }

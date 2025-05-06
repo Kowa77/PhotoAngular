@@ -1,11 +1,11 @@
-import { Component, ViewChild, AfterViewInit, OnInit, OnDestroy, ChangeDetectorRef  } from '@angular/core';
+import { Component, ViewChild, AfterViewInit, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { RouterLink, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { LoginModalComponent } from '../login-modal/login-modal.component';
 import { RegisterModalComponent } from '../register-modal/register-modal.component';
-import { AuthService } from '../auth/auth.service'; // Importa el AuthService
-import { User } from '@angular/fire/auth'; // Importa la interfaz User
-import { Subscription } from 'rxjs'; // Importa Subscription para manejar el observable
+import { AuthService } from '../auth/auth.service';
+import { User } from '@angular/fire/auth';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-navbar',
@@ -14,44 +14,35 @@ import { Subscription } from 'rxjs'; // Importa Subscription para manejar el obs
   templateUrl: './navbar.component.html',
   styleUrl: './navbar.component.css'
 })
-export class NavbarComponent implements AfterViewInit, OnInit, OnDestroy {
+export class NavbarComponent implements OnInit, OnDestroy {
   isMenuOpen: boolean = false;
   @ViewChild('loginModal') loginModal!: LoginModalComponent;
   @ViewChild('registerModal') registerModal!: RegisterModalComponent;
   isLoggedIn: boolean = false;
-  loggedIn: string | null = null; // Cambiado a solo el email para mostrar
-  private authSubscription: Subscription | undefined; // Para la suscripción al estado de auth
+  loggedIn: string | null = null;
+  private authSubscription: Subscription | undefined;
 
-  constructor(private router: Router,
-              private authService: AuthService,
-              private changeDetectorRef: ChangeDetectorRef // Inyecta ChangeDetectorRef
-  ) { } // Inyecta el AuthService
+  constructor(private router: Router, private authService: AuthService, private changeDetectorRef: ChangeDetectorRef) { }
 
   ngOnInit(): void {
     this.authSubscription = this.authService.getAuthState().subscribe(user => {
-      if (user) {
-        this.isLoggedIn = true;
-        this.loggedIn = user.email;
-        //console.log('Estado de autenticación en Navbar:', this.isLoggedIn, this.loggedIn);
-        // Aquí podrías cargar más información del usuario si es necesario
-      } else {
-        this.isLoggedIn = false;
-        this.loggedIn = null;
-        //console.log('Usuario no autenticado en Navbar');
+      this.isLoggedIn = !!user;
+      this.loggedIn = user?.email || null;
+
+      // Abre el modal de login solo en la inicialización si no hay usuario
+      if (!this.isLoggedIn && this.loginModal && !this.hasOpenedLoginModal) {
+        setTimeout(() => {
+          this.loginModal.openModal();
+          this.changeDetectorRef.detectChanges();
+          this.hasOpenedLoginModal = true; // Evita que se abra de nuevo innecesariamente
+        }, 0);
       }
     });
   }
 
-  ngAfterViewInit(): void {
-    setTimeout(() => {
-      this.loginModal.openModal();
-      this.changeDetectorRef.detectChanges(); // Forzar la detección de cambios
-    }, 0);
-  }
-
   ngOnDestroy(): void {
     if (this.authSubscription) {
-      this.authSubscription.unsubscribe(); // Desuscribe para evitar fugas de memoria
+      this.authSubscription.unsubscribe();
     }
   }
 
@@ -81,7 +72,7 @@ export class NavbarComponent implements AfterViewInit, OnInit, OnDestroy {
       this.registerModal.openModal();
       this.isMenuOpen = false;
     } else {
-      //console.error('Error: Register Modal Component no está definido.');
+      console.error('Error: Register Modal Component no está definido.');
     }
   }
 
@@ -91,22 +82,20 @@ export class NavbarComponent implements AfterViewInit, OnInit, OnDestroy {
 
   handleLoginSuccess(user: any): void {
     // El observable getAuthState ya está manejando la actualización del estado
-    // Puedes realizar acciones adicionales aquí si es necesario,
-    // pero isLoggedIn y loggedInUserEmail ya deberían estar actualizados.
-    //console.log('Inicio de sesión exitoso en Navbar (evento):', user);
   }
 
   handleRegisterSuccess(user: any): void {
     // El observable getAuthState ya está manejando la actualización del estado
-    // Puedes realizar acciones adicionales aquí si es necesario.
-    //console.log('Registro exitoso en Navbar (evento):', user);
   }
 
   logout(): void {
-    this.authService.logoutUser();
-    // El observable getAuthState se encargará de actualizar isLoggedIn y loggedInUserEmail a null
-    //console.log('Usuario cerró sesión desde Navbar');
-    this.router.navigate(['/']);
-    // Lógica adicional para limpiar tokens, etc. si es necesario
+    this.authService.logoutUser().then(() => {
+      this.router.navigate(['/']); // Redirige a la página de inicio ('/') después de cerrar sesión
+    }).catch(error => {
+      console.error('Error al cerrar sesión:', error);
+      // Opcional: Puedes mostrar un mensaje de error al usuario aquí
+    });
   }
+
+  private hasOpenedLoginModal: boolean = false; // Bandera para controlar la apertura inicial del modal
 }
