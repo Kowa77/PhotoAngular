@@ -7,10 +7,9 @@ import { provideAuth, getAuth } from '@angular/fire/auth';
 import { provideDatabase, getDatabase } from '@angular/fire/database';
 import { environment } from './environments/environment';
 import { importProvidersFrom } from '@angular/core';
-import { AngularFireModule } from '@angular/fire/compat';
-
-// Inicializa AngularFireModule ANTES de bootstrapApplication
-const angularFireProviders = importProvidersFrom(AngularFireModule.initializeApp(environment.firebase));
+// Eliminamos las importaciones de AngularFireCompat para la base de datos
+// import { AngularFireModule } from '@angular/fire/compat';
+// import { AngularFireDatabaseModule } from '@angular/fire/compat/database';
 
 bootstrapApplication(AppComponent, {
   providers: [
@@ -18,6 +17,8 @@ bootstrapApplication(AppComponent, {
     provideFirebaseApp(() => initializeApp(environment.firebase)),
     provideAuth(() => getAuth()),
     provideDatabase(() => getDatabase()),
-    angularFireProviders, // Agrega los providers de AngularFireModule
+    // Eliminamos las importaciones de AngularFireCompat
+    // importProvidersFrom(AngularFireModule),
+    // importProvidersFrom(AngularFireDatabaseModule),
   ],
 }).catch((err) => console.error(err));

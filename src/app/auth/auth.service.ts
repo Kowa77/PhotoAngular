@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Auth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
          signOut, user, User, setPersistence, browserLocalPersistence } from '@angular/fire/auth';
 import { Observable } from 'rxjs';
@@ -8,12 +8,12 @@ import { Observable } from 'rxjs';
 })
 export class AuthService {
   public user$: Observable<User | null>;
-  private auth: Auth;
+  private auth: Auth = inject(Auth); // Inyecta el servicio Auth
+
   private readonly SESSION_EXPIRATION_KEY = 'sessionExpirationTime';
   private readonly SESSION_DURATION_MS = 60 * 60 * 1000; // 1 hora en milisegundos
 
-  constructor(auth: Auth) {
-    this.auth = auth;
+  constructor() {
     this.user$ = user(this.auth);
     this.checkSessionExpiration(); // Verificar al inicio del servicio
   }

@@ -1,19 +1,18 @@
-import { Injectable } from '@angular/core';
-import { AngularFireDatabase } from '@angular/fire/compat/database';
-import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { Injectable, inject } from '@angular/core';
 import { environment } from '../../environments/environment';
 import { initializeApp } from 'firebase/app';
-import { getDatabase, ref, onValue, push, set } from 'firebase/database';
+import { getDatabase, ref, onValue, set, DataSnapshot, Database } from 'firebase/database';
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { Servicio } from './../models/servicio.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class FirebaseService {
-  private database: any;
+  private database: Database;
 
-  constructor(private db: AngularFireDatabase) {
+  constructor() {
     const app = initializeApp(environment.firebase);
     this.database = getDatabase(app);
   }
@@ -26,7 +25,7 @@ export class FirebaseService {
         if (data) {
           const serviciosArray: Servicio[] = Object.keys(data).map(key => ({
             key: key,
-            ...data[key]
+            ...data[key] as Servicio
           }));
           observer.next(serviciosArray);
         } else {
@@ -45,6 +44,14 @@ export class FirebaseService {
   }
 
   obtenerCarritoUsuario(uid: string): Observable<{ servicios: Servicio[] } | null> {
-    return this.db.object<{ servicios: Servicio[] }>(`users/${uid}/carrito`).valueChanges();
+    const carritoRef = ref(this.database, `users/${uid}/carrito`);
+    return new Observable((observer) => {
+      onValue(carritoRef, (snapshot) => {
+        observer.next(snapshot.val() as { servicios: Servicio[] } | null);
+        observer.complete();
+      }, (error) => {
+        observer.error(error);
+      });
+    });
   }
 }
