@@ -68,7 +68,7 @@ export class PagoComponent implements OnInit, OnDestroy {
     document.body.appendChild(script);
 
     script.onload = () => {
-      (window as any).MercadoPago.sdk.setPublicKey('TU_CLAVE_PUBLICA_DE_PRODUCCION_URUGUAY'); // ¡Importante!
+      (window as any).MercadoPago.sdk.setPublicKey('APP_USR-06229710-166c-446a-8c99-71a433a926f0'); // ¡Importante!
 
       const checkout = (window as any).MercadoPago.sdk.checkout({
         preference: {
