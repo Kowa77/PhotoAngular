@@ -62,13 +62,10 @@ export class PagoComponent implements OnInit, OnDestroy {
     }
   }
 
-  renderMercadoPagoButton(): void {
-    const script = document.createElement('script');
-    script.src = 'https://sdk.mercadopago.com/js/v2';
-    document.body.appendChild(script);
-
-    script.onload = () => {
-      (window as any).MercadoPago.sdk.setPublicKey('APP_USR-06229710-166c-446a-8c99-71a433a926f0'); // ¡Importante!
+  initMercadoPago(): void {
+    if ((window as any).MercadoPago && (window as any).MercadoPago.sdk) {
+      console.log('MercadoPago SDK disponible (inicialización directa).');
+      (window as any).MercadoPago.sdk.setPublicKey('TU_CLAVE_PUBLICA');
 
       const checkout = (window as any).MercadoPago.sdk.checkout({
         preference: {
@@ -77,13 +74,22 @@ export class PagoComponent implements OnInit, OnDestroy {
             quantity: 1,
             unit_price: this.totalAPagar
           })),
-          // Aquí podrías añadir propiedades como "back_urls", "notification_url", etc.
         },
         render: {
           container: '.cho-container',
           label: 'Pagar con Mercado Pago',
         }
       });
-    };
+    } else {
+      console.warn('MercadoPago SDK aún no está disponible, intentando de nuevo en 500ms...');
+      setTimeout(() => this.initMercadoPago(), 500);
+    }
   }
+
+  renderMercadoPagoButton(): void {
+    // Esta función ya no necesita crear el script, solo llama a initMercadoPago
+    this.initMercadoPago();
+  }
+
+
 }
