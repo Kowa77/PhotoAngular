@@ -78,8 +78,11 @@ li { margin-left: 20px; }
   a {
     display: block;
     padding: 10px 0;
-    color: #333; /* O el color de tus enlaces */
+    color: #ecf0b8; /* O el color de tus enlaces */
     text-decoration: none;
+  }
+  a:hover {
+    color: #6a6b61; /* O el color de tus enlaces */
   }
   .welcome {
     display: block;

@@ -5,12 +5,12 @@ import { Servicio } from '../models/servicio.model';
 import { take } from 'rxjs/operators';
 import { Subscription } from 'rxjs';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-pago',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterLink],
   templateUrl: './pago.component.html',
   styleUrls: ['./pago.component.css']
 })
@@ -32,7 +32,7 @@ export class PagoComponent implements OnInit, OnDestroy {
         this.userId = user.uid;
         this.loadCarritoItems();
       } else {
-        this.router.navigate(['/']); // Redirigir si no hay usuario logueado
+        this.router.navigate(['/']);
       }
     });
   }
@@ -60,7 +60,6 @@ export class PagoComponent implements OnInit, OnDestroy {
     if (descuentoAplicado) {
       this.totalAPagar *= 0.9;
     }
-    // El total ya incluye el IVA en nuestra lógica anterior
   }
 
   renderMercadoPagoButton(): void {
@@ -69,20 +68,20 @@ export class PagoComponent implements OnInit, OnDestroy {
     document.body.appendChild(script);
 
     script.onload = () => {
-      (window as any).MercadoPago.sdk.setPublicKey('YOUR_MERCADOPAGO_PUBLIC_KEY'); // Reemplaza con tu clave pública
+      (window as any).MercadoPago.sdk.setPublicKey('TU_CLAVE_PUBLICA_DE_PRODUCCION_URUGUAY'); // ¡Importante!
 
       const checkout = (window as any).MercadoPago.sdk.checkout({
         preference: {
           items: this.carritoItems.map(item => ({
             title: item.nombre,
             quantity: 1,
-            unit_price: this.totalAPagar // Usamos el total calculado con descuento e IVA
+            unit_price: this.totalAPagar
           })),
-          // Puedes agregar más detalles como el comprador, redirecciones, etc.
+          // Aquí podrías añadir propiedades como "back_urls", "notification_url", etc.
         },
         render: {
-          container: '.cho-container', // Clase donde se renderizará el botón
-          label: 'Pagar con Mercado Pago', // Texto del botón
+          container: '.cho-container',
+          label: 'Pagar con Mercado Pago',
         }
       });
     };

@@ -5,11 +5,12 @@ import { Servicio } from '../models/servicio.model';
 import { Observable, Subscription } from 'rxjs';
 import { take } from 'rxjs/operators';
 import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router'; // Importa RouterLink
 
 @Component({
   selector: 'app-carrito',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterLink],
   templateUrl: './carrito.component.html',
   styleUrls: ['./carrito.component.css']
 })
