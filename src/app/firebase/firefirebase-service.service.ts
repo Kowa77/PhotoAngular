@@ -13,7 +13,7 @@ export class FirebaseService {
   private database: Database;
 
   constructor() {
-    const app = initializeApp(environment.firebase);
+    const app = initializeApp(environment.firebaseConfig);
     this.database = getDatabase(app);
   }
 
