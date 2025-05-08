@@ -7,12 +7,6 @@ import { Subscription } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 
-// Declaración para evitar errores de tipo
-declare global {
-  interface Window {
-    MercadoPago?: any;
-  }
-}
 
 @Component({
   selector: 'app-pago',
@@ -45,14 +39,7 @@ export class PagoComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    this.loadMercadoPagoSDK().then(() => {
-      // Esperamos un breve momento adicional después de la carga
-      setTimeout(() => {
-        this.renderMercadoPagoButton();
-      }, 100);
-    }).catch(error => {
-      console.error('Error al cargar el SDK de Mercado Pago:', error);
-    });
+
   }
 
   ngOnDestroy(): void {
@@ -78,51 +65,4 @@ export class PagoComponent implements OnInit, OnDestroy, AfterViewInit {
       this.totalAPagar *= 0.9;
     }
   }
-
-  private loadMercadoPagoSDK(): Promise<void> {
-    return new Promise((resolve, reject) => {
-      if (window['MercadoPago'] && window['MercadoPago'].sdk) {
-        resolve();
-        return;
-      }
-
-      const script = document.createElement('script');
-      script.src = 'https://sdk.mercadopago.com/js/v2';
-      script.async = true;
-      script.onload = () => {
-        // Esperamos un segundo adicional después de la carga
-        setTimeout(() => {
-          if (window['MercadoPago'] && window['MercadoPago'].sdk) {
-            resolve();
-          } else {
-            reject('MercadoPago SDK no se inicializó correctamente después de la carga.');
-          }
-        }, 1000); // Espera 1000 milisegundos (1 segundo)
-      };
-      script.onerror = (error) => {
-        reject(error);
-      };
-
-      document.head.appendChild(script);
-    });
-  }
-
-  renderMercadoPagoButton(): void {
-    const checkMP = () => {
-      const mp = window['MercadoPago'];
-      if (mp && mp.sdk) {
-        mp.sdk.setPublicKey('APP_USR-06229710-166c-446a-8c99-71a433a926f0');
-        const payment = mp.sdk.payment({
-          amount: this.totalAPagar,
-          // Puedes incluir más opciones aquí
-        });
-        payment.render('.cho-container');
-      } else {
-        console.warn('MercadoPago SDK aún no está completamente inicializado, intentando de nuevo en 100ms...');
-        setTimeout(checkMP, 100); // Reintenta si no está listo
-      }
-    };
-    checkMP(); // Inicia la verificación
-  }
-
 }
