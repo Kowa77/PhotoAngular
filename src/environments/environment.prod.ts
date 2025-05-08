@@ -4,7 +4,7 @@ export const environment = {
   firebaseConfig: {
     apiKey: "AIzaSyAzcdECH5fK13xqZ_vwjKT1b7kg7TFbuVk",
     authDomain: "prueba-b4e16.firebaseapp.com",
-    databaseURL: "https://prueba-b4e16-default-rtdb.firebaseio.com/",
+    databaseURL: "https://prueba-b4e16-default-rtdb.firebaseio.com",
     projectId: "prueba-b4e16",
     storageBucket: "prueba-b4e16.firebasestorage.app",
     messagingSenderId: "570563896774",
