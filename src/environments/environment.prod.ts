@@ -1,11 +1,10 @@
-// src/environments/environment.ts
-// Configuración de Firebase (Reemplaza con tus propias credenciales)
+// Y posiblemente también en src/environments/environment.prod.ts si tienes una configuración diferente para producción
 export const environment = {
-  production: false,
-  firebase: {
+  production: true,
+  firebaseConfig: {
     apiKey: "AIzaSyAzcdECH5fK13xqZ_vwjKT1b7kg7TFbuVk",
     authDomain: "prueba-b4e16.firebaseapp.com",
-    databaseURL: "https://prueba-b4e16-default-rtdb.firebaseio.com/", // ¡Aquí actualiza la URL!https://prueba-b4e16-default-rtdb.firebaseio.com/
+    databaseURL: "https://prueba-b4e16-default-rtdb.firebaseio.com/",
     projectId: "prueba-b4e16",
     storageBucket: "prueba-b4e16.firebasestorage.app",
     messagingSenderId: "570563896774",
@@ -13,7 +12,3 @@ export const environment = {
     measurementId: "G-Z895770MGT"
   }
 };
-
-
-
-
