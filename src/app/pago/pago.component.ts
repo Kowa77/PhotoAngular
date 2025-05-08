@@ -90,7 +90,14 @@ export class PagoComponent implements OnInit, OnDestroy, AfterViewInit {
       script.src = 'https://sdk.mercadopago.com/js/v2';
       script.async = true;
       script.onload = () => {
-        resolve();
+        // Esperamos un segundo adicional después de la carga
+        setTimeout(() => {
+          if (window['MercadoPago'] && window['MercadoPago'].sdk) {
+            resolve();
+          } else {
+            reject('MercadoPago SDK no se inicializó correctamente después de la carga.');
+          }
+        }, 1000); // Espera 1000 milisegundos (1 segundo)
       };
       script.onerror = (error) => {
         reject(error);
@@ -101,16 +108,21 @@ export class PagoComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   renderMercadoPagoButton(): void {
-    const mp = window['MercadoPago'];
-    if (mp && mp.sdk) {
-      mp.sdk.setPublicKey('APP_USR-06229710-166c-446a-8c99-71a433a926f0');
-      const payment = mp.sdk.payment({
-        amount: this.totalAPagar,
-        // Puedes incluir más opciones aquí
-      });
-      payment.render('.cho-container');
-    } else {
-      console.error('MercadoPago SDK no se cargó correctamente.');
-    }
+    const checkMP = () => {
+      const mp = window['MercadoPago'];
+      if (mp && mp.sdk) {
+        mp.sdk.setPublicKey('APP_USR-06229710-166c-446a-8c99-71a433a926f0');
+        const payment = mp.sdk.payment({
+          amount: this.totalAPagar,
+          // Puedes incluir más opciones aquí
+        });
+        payment.render('.cho-container');
+      } else {
+        console.warn('MercadoPago SDK aún no está completamente inicializado, intentando de nuevo en 100ms...');
+        setTimeout(checkMP, 100); // Reintenta si no está listo
+      }
+    };
+    checkMP(); // Inicia la verificación
   }
+
 }

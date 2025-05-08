@@ -1,7 +1,7 @@
 // src/environments/environment.ts
 // Configuración de Firebase (Reemplaza con tus propias credenciales)
 export const environment = {
-  production: false,
+  production: true,
   firebase: {
     apiKey: "AIzaSyAzcdECH5fK13xqZ_vwjKT1b7kg7TFbuVk",
     authDomain: "prueba-b4e16.firebaseapp.com",
