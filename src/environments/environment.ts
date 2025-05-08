@@ -1,5 +1,3 @@
-// src/environments/environment.ts
-// Configuración de Firebase (Reemplaza con tus propias credenciales)
 export const environment = {
   production: true,
   firebaseConfig: { // Cambia firebase a firebaseConfig
