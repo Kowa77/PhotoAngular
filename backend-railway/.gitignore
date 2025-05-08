@@ -1,5 +1,5 @@
 node_modules
+src
 .env
-dist
 npm-debug.log*
 yarn-error.log*
