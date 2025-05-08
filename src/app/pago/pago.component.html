@@ -1,4 +1,4 @@
-<button class="btn btn-secondary m-3" routerLink="/carrito"><i class="fa fa-arrow-left"></i></button>
+<!-- <button class="btn btn-secondary m-3" routerLink="/carrito"><i class="fa fa-arrow-left"></i></button>
 <div class="container m-5">
   <h3>Pago</h3>
   <p *ngIf="carritoItems.length === 0">No hay items en el carrito para pagar.</p>
@@ -6,4 +6,23 @@
     <p>Total a pagar: ${{ totalAPagar | number:'1.0-0' }}</p>
 
   </div>
-</div>
+</div> -->
+
+<h2>Tu Carrito de Servicios</h2>
+<ul *ngIf="carritoItems.length > 0; else noItems">
+  <li *ngFor="let item of carritoItems">
+    {{ item.nombre }} - ${{ item.precio }}
+  </li>
+</ul>
+<ng-template #noItems>
+  <p>Tu carrito está vacío.</p>
+</ng-template>
+
+<p>Total a pagar: ${{ totalAPagar.toFixed(2) }}</p>
+
+<app-vexor-pay
+  [items]="paymentItemsForVexor"
+  [amountToPay]="totalAPagar"
+></app-vexor-pay>
+
+<button routerLink="/catalogo">Volver al Catálogo</button>

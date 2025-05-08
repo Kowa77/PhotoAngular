@@ -3,32 +3,38 @@
     "civil": {
       "imagen": "img/007-wedding-contract.png",
       "nombre": "Civil",
-      "precio": 4500
+      "precio": 4500,
+      "descripcion": "Servicio de fotografía para ceremonia civil"
     },
     "exteriores": {
       "imagen": "img/022-photo.png",
       "nombre": "Exteriores",
-      "precio": 4500
+      "precio": 4500,
+      "descripcion": "Servicio de fotografía en exteriores"
     },
     "fiesta": {
       "imagen": "img/012-hindu-wedding.png",
       "nombre": "Fiesta",
-      "precio": 12000
+      "precio": 12000,
+      "descripcion": "Servicio de fotografía para fiesta de casamiento"
     },
     "getting": {
       "imagen": "img/009-wedding-dress.png",
       "nombre": "Getting Ready",
-      "precio": 4500
+      "precio": 4500,
+      "descripcion": "Servicio de fotografía para preparación de los novios"
     },
     "iglesia": {
       "imagen": "img/002-church.png",
       "nombre": "Iglesia",
-      "precio": 4500
+      "precio": 4500,
+      "descripcion": "Servicio de fotografía para ceremonia religiosa"
     },
     "video": {
       "imagen": "img/019-video.png",
       "nombre": "Video de novios",
-      "precio": 2500
+      "precio": 2500,
+      "descripcion": "Servicio de video para casamiento"
     }
   },
   "users": {

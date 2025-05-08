@@ -1,0 +1,7 @@
+<button (click)="initiatePayment()" [disabled]="isPaymentLoading">
+  {{ isPaymentLoading ? 'Procesando pago...' : 'Pagar con VexorPay' }}
+</button>
+
+<div *ngIf="paymentError" class="error-message">
+  {{ paymentError }}
+</div>
