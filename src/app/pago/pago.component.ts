@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterViewInit } from '@angular/core';
 import { AuthService } from '../auth/auth.service';
 import { FirebaseService } from '../firebase/firefirebase-service.service';
 import { Servicio } from '../models/servicio.model';
@@ -14,7 +14,7 @@ import { Router, RouterLink } from '@angular/router';
   templateUrl: './pago.component.html',
   styleUrls: ['./pago.component.css']
 })
-export class PagoComponent implements OnInit, OnDestroy {
+export class PagoComponent implements OnInit, OnDestroy, AfterViewInit {
   carritoItems: Servicio[] = [];
   totalAPagar: number = 0;
   private userSubscription: Subscription | undefined;
@@ -37,6 +37,10 @@ export class PagoComponent implements OnInit, OnDestroy {
     });
   }
 
+  ngAfterViewInit(): void {
+    this.renderMercadoPagoButton();
+  }
+
   ngOnDestroy(): void {
     if (this.userSubscription) {
       this.userSubscription.unsubscribe();
@@ -48,7 +52,6 @@ export class PagoComponent implements OnInit, OnDestroy {
       this.firebaseService.obtenerCarritoUsuario(this.userId).pipe(take(1)).subscribe(carrito => {
         this.carritoItems = carrito?.servicios || [];
         this.calcularTotalAPagar();
-        this.renderMercadoPagoButton();
       });
     }
   }
@@ -62,34 +65,19 @@ export class PagoComponent implements OnInit, OnDestroy {
     }
   }
 
-  initMercadoPago(): void {
+  renderMercadoPagoButton(): void {
     if ((window as any).MercadoPago && (window as any).MercadoPago.sdk) {
-      console.log('MercadoPago SDK disponible (inicialización directa).');
-      (window as any).MercadoPago.sdk.setPublicKey('TU_CLAVE_PUBLICA');
+      (window as any).MercadoPago.sdk.setPublicKey('APP_USR-06229710-166c-446a-8c99-71a433a926f0');
 
-      const checkout = (window as any).MercadoPago.sdk.checkout({
-        preference: {
-          items: this.carritoItems.map(item => ({
-            title: item.nombre,
-            quantity: 1,
-            unit_price: this.totalAPagar
-          })),
-        },
-        render: {
-          container: '.cho-container',
-          label: 'Pagar con Mercado Pago',
-        }
+      const payment = (window as any).MercadoPago.sdk.payment({
+        amount: this.totalAPagar,
+        // Puedes incluir más opciones aquí, como el ID de la preferencia si la tienes
+        // notification_url: 'TU_URL_DE_NOTIFICACION',
+        // external_reference: 'TU_REFERENCIA_EXTERNA',
       });
+      payment.render('.cho-container');
     } else {
-      console.warn('MercadoPago SDK aún no está disponible, intentando de nuevo en 500ms...');
-      setTimeout(() => this.initMercadoPago(), 500);
+      console.warn('MercadoPago SDK aún no está disponible.');
     }
   }
-
-  renderMercadoPagoButton(): void {
-    // Esta función ya no necesita crear el script, solo llama a initMercadoPago
-    this.initMercadoPago();
-  }
-
-
 }
