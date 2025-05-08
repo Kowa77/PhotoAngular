@@ -7,6 +7,13 @@ import { Subscription } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 
+// Declaración para evitar errores de tipo
+declare global {
+  interface Window {
+    MercadoPago?: any;
+  }
+}
+
 @Component({
   selector: 'app-pago',
   standalone: true,
@@ -38,7 +45,14 @@ export class PagoComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    this.renderMercadoPagoButton();
+    this.loadMercadoPagoSDK().then(() => {
+      // Esperamos un breve momento adicional después de la carga
+      setTimeout(() => {
+        this.renderMercadoPagoButton();
+      }, 100);
+    }).catch(error => {
+      console.error('Error al cargar el SDK de Mercado Pago:', error);
+    });
   }
 
   ngOnDestroy(): void {
@@ -65,19 +79,38 @@ export class PagoComponent implements OnInit, OnDestroy, AfterViewInit {
     }
   }
 
-  renderMercadoPagoButton(): void {
-    if ((window as any).MercadoPago && (window as any).MercadoPago.sdk) {
-      (window as any).MercadoPago.sdk.setPublicKey('APP_USR-06229710-166c-446a-8c99-71a433a926f0');
+  private loadMercadoPagoSDK(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      if (window['MercadoPago'] && window['MercadoPago'].sdk) {
+        resolve();
+        return;
+      }
 
-      const payment = (window as any).MercadoPago.sdk.payment({
+      const script = document.createElement('script');
+      script.src = 'https://sdk.mercadopago.com/js/v2';
+      script.async = true;
+      script.onload = () => {
+        resolve();
+      };
+      script.onerror = (error) => {
+        reject(error);
+      };
+
+      document.head.appendChild(script);
+    });
+  }
+
+  renderMercadoPagoButton(): void {
+    const mp = window['MercadoPago'];
+    if (mp && mp.sdk) {
+      mp.sdk.setPublicKey('APP_USR-06229710-166c-446a-8c99-71a433a926f0');
+      const payment = mp.sdk.payment({
         amount: this.totalAPagar,
-        // Puedes incluir más opciones aquí, como el ID de la preferencia si la tienes
-        // notification_url: 'TU_URL_DE_NOTIFICACION',
-        // external_reference: 'TU_REFERENCIA_EXTERNA',
+        // Puedes incluir más opciones aquí
       });
       payment.render('.cho-container');
     } else {
-      console.warn('MercadoPago SDK aún no está disponible.');
+      console.error('MercadoPago SDK no se cargó correctamente.');
     }
   }
 }
