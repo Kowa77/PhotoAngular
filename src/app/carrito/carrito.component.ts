@@ -2,17 +2,46 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { FirebaseService } from '../firebase/firefirebase-service.service';
 import { AuthService } from '../auth/auth.service';
 import { Servicio } from '../models/servicio.model';
-import { CarritoData } from '../models/carrito-data.model'; // Importa CarritoData desde la ubicación correcta
+import { CarritoData } from '../models/carrito-data.model';
 import { Subscription } from 'rxjs';
 import { take } from 'rxjs/operators';
 import { CommonModule } from '@angular/common';
-//import { RouterLink } from '@angular/router';
+//import { RouterLink } from '@angular/router'; // No lo estás usando, lo dejo comentado
 
 declare global {
   interface Window {
     MercadoPago: any;
     checkoutButton: any;
   }
+}
+
+interface HandyCart {
+  Currency: number;
+  TotalAmount: number;
+  TaxedAmount: number;
+  Products: HandyProduct[];
+  InvoiceNumber: number;
+  LinkImageUrl: string;
+  TransactionExternalId: string;
+}
+
+interface HandyProduct {
+  Name: string;
+  Quantity: number;
+  Amount: number;
+  TaxedAmount: number;
+}
+
+interface HandyClient {
+  CommerceName: string;
+  SiteUrl: string;
+}
+
+interface HandyPaymentRequest {
+  Cart: HandyCart;
+  Client: HandyClient;
+  CallbackURL: string;
+  ResponseType: 'Json' | 'HttpRedirect';
 }
 
 @Component({
@@ -33,6 +62,8 @@ export class CarritoComponent implements OnInit, OnDestroy {
   private userId: string | null = null;
   private readonly todosLosServicios = ['Civil', 'Exteriores', 'Fiesta', 'Getting Ready', 'Iglesia', 'Video de novios'];
   private mp: any;
+  handyMerchantSecret: string = 'cb1668e9-cb22-41ad-99d2-1c0e6e5deb8c';
+  handyApiUrl: string = 'https://api.payments.arriba.uy/api/payments';
 
   constructor(private firebaseService: FirebaseService, private authService: AuthService) { }
 
@@ -48,7 +79,6 @@ export class CarritoComponent implements OnInit, OnDestroy {
       }
     });
 
-    // Inicializa Mercado Pago al cargar el componente
     this.mp = new window.MercadoPago("APP_USR-31042028-7376-4288-94b4-edd6a94f77c1", {
       locale: "es-UY"
     });
@@ -98,13 +128,73 @@ export class CarritoComponent implements OnInit, OnDestroy {
     return this.todosLosServicios.every(servicio => nombresEnCarrito.includes(servicio));
   }
 
+  async iniciarCheckoutHandy(): Promise<void> {
+    if (!this.userId) {
+      alert('Debes estar logueado para iniciar el pago.');
+      return;
+    }
+
+    const handyCart: HandyCart = {
+      Currency: 858,
+      TotalAmount: this.total,
+      TaxedAmount: this.total / 1.22,
+      Products: this.carritoItems.map(item => ({
+        Name: item.nombre,
+        Quantity: 1,
+        Amount: item.precio,
+        TaxedAmount: item.precio / 1.22
+      })),
+      InvoiceNumber: 123456,
+      LinkImageUrl: 'https://www.example.com/imagen-carrito.jpg',
+      TransactionExternalId: this.userId + '-' + Date.now().toString()
+    };
+
+    const handyClient: HandyClient = {
+      CommerceName: 'Tu Comercio',
+      SiteUrl: 'https://www.tudominio.com'
+    };
+
+    const handyPaymentRequest: HandyPaymentRequest = {
+      Cart: handyCart,
+      Client: handyClient,
+      CallbackURL: 'https://tu-servidor.com/callback-handy',
+      ResponseType: 'HttpRedirect'
+    };
+
+    try {
+      const response = await fetch(this.handyApiUrl, {
+        method: 'POST',
+        headers: {
+          'merchant-secret-key': this.handyMerchantSecret,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(handyPaymentRequest)
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error al iniciar el pago: ${response.status} ${response.statusText}`);
+      }
+
+      if (handyPaymentRequest.ResponseType === 'Json') {
+        const data = await response.json();
+        if (data.url) {
+          window.location.href = data.url;
+        } else {
+          throw new Error('No se recibió la URL de pago de Handy.');
+        }
+      }
+    } catch (error: any) {
+      alert(`Error al iniciar el pago con Handy: ${error.message}`);
+      console.error('Error al iniciar el pago con Handy:', error);
+    }
+  }
+
   async iniciarCheckout(): Promise<void> {
     try {
-      // Adaptar orderData para que refleje el carrito actual
       const orderData = {
-        title: "Servicios Contratados", // Puedes hacerlo más descriptivo
-        quantity: 1, // Considera cómo manejar múltiples items
-        price: this.total // Usar el total calculado
+        title: "Servicios Contratados",
+        quantity: 1,
+        price: this.total
       };
 
       const response = await fetch("https://servidor-js-mp-production.up.railway.app/create_preference", {
@@ -162,3 +252,4 @@ export class CarritoComponent implements OnInit, OnDestroy {
     renderComponent();
   }
 }
+
