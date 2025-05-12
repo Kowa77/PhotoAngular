@@ -18,7 +18,7 @@ import { environment } from '../environments/environment'; // Asegúrate de que 
     TarjetasComponent,
     LoginModalComponent,
     RegisterModalComponent,
-    AngularFireModule.initializeApp(environment.firebase), // Inicializa AngularFireModule
+    AngularFireModule.initializeApp(environment.firebaseConfig), // Inicializa AngularFireModule
   ],
   providers: [],
 })

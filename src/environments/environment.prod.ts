@@ -25,5 +25,5 @@ export const environment = {
     appId: window['FIREBASE_APP_ID'] || "1:570563896774:web:8273007c65b27e22697ec7",
     measurementId: window['FIREBASE_MEASUREMENT_ID'] || "G-Z895770MGT"
   },
-  vexorPayPublicKey: window['VEXOR_PAY_PUBLIC_KEY'] || 'vx_prod_pk_4395518abbbccb0ccb76653091c4f985_c8a81ae5_5fd5_493f_a417_41804b0807cf_b18'
+  //vexorPayPublicKey: window['VEXOR_PAY_PUBLIC_KEY'] || 'vx_prod_pk_4395518abbbccb0ccb76653091c4f985_c8a81ae5_5fd5_493f_a417_41804b0807cf_b18'
 };

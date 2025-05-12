@@ -2,7 +2,7 @@ import { Component, OnInit, QueryList, ViewChildren } from '@angular/core';
 import { FirebaseService } from '../firebase/firefirebase-service.service';
 import { CommonModule } from '@angular/common';
 import { Observable, of } from 'rxjs';
-import { Servicio } from './../models/servicio.model';
+import { Servicio } from '../models/servicio.model';
 import { Auth, user } from '@angular/fire/auth';
 import { take } from 'rxjs/operators';
 import { Router } from '@angular/router'; // Importa el Router
