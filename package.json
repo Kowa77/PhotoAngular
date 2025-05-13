@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
-    "start": "node_modules/.bin/serve dist/servicephoto-angular -p $PORT",
+    "start": "npx serve dist/servicephoto-angular/browser -p $PORT",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
