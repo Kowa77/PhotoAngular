@@ -2,9 +2,8 @@
   "name": "servicephoto-angular",
   "version": "0.0.0",
   "scripts": {
-    "build:prod": "ng build --configuration production",
     "ng": "ng",
-    "start": "ng serve",
+    "start": "serve dist/servicephoto-angular",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
@@ -23,6 +22,7 @@
     "bootstrap": "^5.3.2",
     "bootstrap-icons": "^1.11.3",
     "firebase": "^11.6.1",
+    "http-server": "^14.1.1",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
     "vexor": "^0.2.1",

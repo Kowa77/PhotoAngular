@@ -21,6 +21,7 @@
     <p *ngIf="descuentoAplicado" class="text-success"><strong>Descuento (10%): Aplicado</strong></p>
     <p><strong>Total (con IVA): ${{ total | number:'1.0-0' }}</strong></p>
     <button class="btn btn-success mt-3" (click)="iniciarCheckout()" id="checkout-btn">Pagar</button>
+
     <div id="wallet_container"></div>
   </div>
 </div>
