@@ -79,7 +79,7 @@ export class CarritoComponent implements OnInit, OnDestroy {
       }
     });
 
-    this.mp = new window.MercadoPago("APP_USR-31042028-7376-4288-94b4-edd6a94f77c1", {
+    this.mp = new window.MercadoPago("APP_USR-631ae831-3bfa-4245-a0fa-68d77daba0e2", {
       locale: "es-UY"
     });
   }
