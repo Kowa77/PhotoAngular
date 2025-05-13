@@ -8,7 +8,8 @@ declare global {
     FIREBASE_MESSAGING_SENDER_ID?: string;
     FIREBASE_APP_ID?: string;
     FIREBASE_MEASUREMENT_ID?: string;
-    VEXOR_PAY_PUBLIC_KEY?: string;
+    //MERCADOPAGO_PUBLIC_KEY?: string;
+
     // Agrega aquí cualquier otra variable de entorno que uses
   }
 }
@@ -25,5 +26,8 @@ export const environment = {
     appId: window['FIREBASE_APP_ID'] || "1:570563896774:web:8273007c65b27e22697ec7",
     measurementId: window['FIREBASE_MEASUREMENT_ID'] || "G-Z895770MGT"
   },
-  //vexorPayPublicKey: window['VEXOR_PAY_PUBLIC_KEY'] || 'vx_prod_pk_4395518abbbccb0ccb76653091c4f985_c8a81ae5_5fd5_493f_a417_41804b0807cf_b18'
+  // mercadopago: {
+  //   publicKey: window['MERCADOPAGO_PUBLIC_KEY'] || "TEST-3f0b1c2d-4a5e-4f8b-9a7c-6d3e0f8b2c1d"
+  // }
+
 };

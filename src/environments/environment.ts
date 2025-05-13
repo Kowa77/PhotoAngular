@@ -10,5 +10,7 @@ export const environment = {
     appId: "1:570563896774:web:8273007c65b27e22697ec7",
     measurementId: "G-Z895770MGT"
   },
-  vexorPayPublicKey: 'vx_prod_pk_4395518abbbccb0ccb76653091c4f985_c8a81ae5_5fd5_493f_a417_41804b0807cf_b18'
+  // mercadopago: {
+  //   publicKey: "TEST-3f0b1c2d-4a5e-4f8b-9a7c-6d3e0f8b2c1d"
+  // }
 }
