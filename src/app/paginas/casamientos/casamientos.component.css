@@ -1,0 +1,52 @@
+/* Estilos para la tarjeta en general */
+.card {
+overflow: hidden;
+position: relative;
+}
+
+/* Estilos para la imagen */
+.card-img-top {
+transition: transform 0.3s ease-in-out;
+}
+
+/* Efecto de zoom al hacer hover en la tarjeta */
+.card:hover .card-img-top {
+transform: scale(1.1);
+}
+
+/* Capa de fondo para el cuerpo de la tarjeta */
+.card-overlay {
+position: absolute;
+top: 0;
+left: 0;
+width: 100%;
+height: 100%;
+background-color: rgba(0, 0, 0, 0);
+color: white;
+display: flex;
+flex-direction: column;
+justify-content: center;
+align-items: center;
+opacity: 0;
+transition: opacity 0.3s ease-in-out, background-color 0.3s ease-in-out;
+text-align: center;
+padding: 15px;
+box-sizing: border-box;
+}
+
+/* Mostrar la capa y cambiar el fondo al hacer hover en la tarjeta */
+.card:hover .card-overlay {
+opacity: 0.8;
+background-color: rgba(0, 0, 0, 0.7);
+}
+
+/* Ocultar el contenido original del body al hacer hover */
+.card:hover .card-body {
+opacity: 0;
+transition: opacity 0.3s ease-in-out;
+}
+
+/* Asegurarse de que el texto de la superposición sea visible */
+.card-overlay h5, .card-overlay p {
+opacity: 1;
+}
