@@ -105,7 +105,7 @@ export class CarritoComponent implements OnInit, OnDestroy {
         price: this.total
       };
       // Aquí puedes agregar más información al pedido, como el ID del usuario, etc.
-      const response = await fetch("https://servidor-js-mp-production.up.railway.app/create_preference", {
+      const response = await fetch("https://photoangular-production-1664.up.railway.app/create_preference", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
