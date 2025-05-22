@@ -2,6 +2,8 @@ import { Injectable, inject } from '@angular/core';
 import { Auth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
          signOut, user, User, setPersistence, browserLocalPersistence } from '@angular/fire/auth';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators'; // <--- ¡Asegúrate de importar 'map' aquí!
+
 
 @Injectable({
   providedIn: 'root'
@@ -52,6 +54,13 @@ export class AuthService {
 
   getAuthState(): Observable<User | null> {
     return this.user$;
+  }
+
+
+  getCurrentUserEmail(): Observable<string | null> {
+    return this.user$.pipe(
+      map(user => user ? user.email : null)
+    );
   }
 
   private checkSessionExpiration(): void {

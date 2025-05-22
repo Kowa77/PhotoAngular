@@ -80,13 +80,13 @@ export class NavbarComponent implements OnInit, OnDestroy {
     // Lógica adicional al cerrar el modal de registro si es necesario
   }
 
-  handleLoginSuccess(user: any): void {
-    // El observable getAuthState ya está manejando la actualización del estado
-  }
+  // handleLoginSuccess(user: any): void {
+  //   // El observable getAuthState ya está manejando la actualización del estado
+  // }
 
-  handleRegisterSuccess(user: any): void {
-    // El observable getAuthState ya está manejando la actualización del estado
-  }
+  // handleRegisterSuccess(user: any): void {
+  //   // El observable getAuthState ya está manejando la actualización del estado
+  // }
 
   logout(): void {
     this.authService.logoutUser().then(() => {

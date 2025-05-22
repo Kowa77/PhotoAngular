@@ -6,10 +6,7 @@ import { initializeApp, provideFirebaseApp } from '@angular/fire/app';
 import { provideAuth, getAuth } from '@angular/fire/auth';
 import { provideDatabase, getDatabase } from '@angular/fire/database';
 import { environment } from './environments/environment';
-import { importProvidersFrom } from '@angular/core';
-// Eliminamos las importaciones de AngularFireCompat para la base de datos
-// import { AngularFireModule } from '@angular/fire/compat';
-// import { AngularFireDatabaseModule } from '@angular/fire/compat/database';
+import { provideHttpClient } from '@angular/common/http'; // Importa provideHttpClient
 
 bootstrapApplication(AppComponent, {
   providers: [
@@ -17,8 +14,8 @@ bootstrapApplication(AppComponent, {
     provideFirebaseApp(() => initializeApp(environment.firebaseConfig)),
     provideAuth(() => getAuth()),
     provideDatabase(() => getDatabase()),
-    // Eliminamos las importaciones de AngularFireCompat
-    // importProvidersFrom(AngularFireModule),
-    // importProvidersFrom(AngularFireDatabaseModule),
+    provideHttpClient(), // Utiliza provideHttpClient en lugar de importProvidersFrom(HttpClientModule)
+    // Si tienes interceptores, puedes configurarlos aquí también
+    // importProvidersFrom(OtherModuleWithInterceptors),
   ],
 }).catch((err) => console.error(err));
