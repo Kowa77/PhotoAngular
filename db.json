@@ -1,0 +1,140 @@
+{
+  "servicios": {
+    "fotos": {
+      "civil_f": {
+        "descripcion_f": "Servicio de fotografía para ceremonia civil",
+        "nombre_f": "Cobertura Civil (Foto)",
+        "imagen_f": "img/007-wedding-contract.png",
+        "precio_f": 1
+      },
+      "exteriores_f": {
+        "descripcion_f": "Servicio de fotografía en locaciones al aire libre",
+        "nombre_f": "Sesión de Exteriores (Foto)",
+        "imagen_f": "img/022-photo.png",
+        "precio_f": 1
+      },
+      "fiesta_f": {
+        "descripcion_f": "Servicio de fotografía durante toda la celebración de la fiesta",
+        "nombre_f": "Cobertura de Fiesta (Foto)",
+        "imagen_f": "img/016-wedding-day.png",
+        "precio_f": 1
+      },
+      "getting_f": {
+        "descripcion_f": "Servicio de fotografía de los momentos previos al evento",
+        "nombre_f": "Preparativos (Getting Ready - Foto)",
+        "imagen_f": "img/009-wedding-dress.png",
+        "precio_f": 1
+      },
+      "iglesia_f": {
+        "descripcion_f": "Servicio de fotografía de la ceremonia religiosa",
+        "nombre_f": "Cobertura de Iglesia (Foto)",
+        "imagen_f": "img/002-church.png",
+        "precio_f": 1
+      }
+    },
+    "videos": {
+      "civil_v": {
+        "descripcion_v": "Video completo del evento civil.",
+        "nombre_v": "Video Civil (Video)",
+        "imagen_v": "img/007-wedding-contract.png",
+        "precio_v": 1
+      },
+      "exteriores_v": {
+        "descripcion_v": "Grabación de video en locaciones al aire libre.",
+        "nombre_v": "Video Exteriores (Video)",
+        "imagen_v": "img/022-photo.png",
+        "precio_v": 1
+      },
+      "fiesta_v": {
+        "descripcion_v": "Grabación de video durante toda la celebración de la fiesta.",
+        "nombre_v": "Video Fiesta (Video)",
+        "imagen_v": "img/018-video-camera.png",
+        "precio_v": 1
+      },
+      "getting_v": {
+        "descripcion_v": "Grabación de video de los momentos previos al evento.",
+        "nombre_v": "Preparativos (Getting Ready - Video)",
+        "imagen_v": "img/009-wedding-dress.png",
+        "precio_v": 1
+      },
+      "iglesia_v": {
+        "descripcion_v": "Grabación de video de la ceremonia religiosa.",
+        "nombre_v": "Video Iglesia (Video)",
+        "imagen_v": "img/002-church.png",
+        "precio_v": 0
+      },
+      "video_novios_v": {
+        "descripcion_v": "Video especial con la historia o momentos de la pareja.",
+        "nombre_v": "Video de Novios (Video)",
+        "imagen_v": "img/010-wedding-couple.png",
+        "precio_v": 0
+      }
+    },
+    "extras": {
+      "360_vip_e": {
+        "descripcion_e": "Experiencia interactiva de video 360° para invitados (2 horas).",
+        "duracion_e": "2 horas",
+        "nombre_e": "Plataforma 360° VIP (Extra)",
+        "imagen_e": "img/016-wedding-day.png",
+        "precio_e": 12590
+      },
+      "banners_e": {
+        "descripcion_e": "Diseño e impresión de banners para decorar tu evento.",
+        "nombre_e": "Banners Personalizados (Extra)",
+        "imagen_e": "img/016-wedding-day.png",
+        "precio_e": 0
+      },
+      "candy_bar_e": {
+        "descripcion_e": "Delicioso algodón de azúcar recién hecho.",
+        "nombre_e": "Candy Bar (Algodón de Azúcar - Extra)",
+        "imagen_e": "img/016-wedding-day.png",
+        "precio_e": 6500
+      },
+      "castillo_inflable_e": {
+        "descripcion_e": "Diversión garantizada para los más pequeños (y no tan pequeños).",
+        "nombre_e": "Castillo Inflable (Extra)",
+        "imagen_e": "img/016-wedding-day.png",
+        "precio_e": 0
+      },
+      "cuadro_firmas_e": {
+        "descripcion_e": "Un recuerdo único con las firmas y mensajes de tus invitados.",
+        "nombre_e": "Cuadro de Firmas (Extra)",
+        "imagen_e": "img/016-wedding-day.png",
+        "precio_e": 0
+      },
+      "dron_e": {
+        "descripcion_e": "Tomas aéreas espectaculares de tu evento.",
+        "nombre_e": "Drone Ilimitado (Extra)",
+        "imagen_e": "img/016-wedding-day.png",
+        "precio_e": 8500
+      },
+      "fotolibros_e": {
+        "descripcion_e": "Álbum de fotos profesional impreso de alta calidad.",
+        "nombre_e": "Fotolibros (Extra)",
+        "imagen_e": "img/016-wedding-day.png",
+        "precio_e": 0
+      },
+      "pendrive_laser_e": {
+        "descripcion_e": "Tus recuerdos digitales en un pendrive personalizado.",
+        "nombre_e": "Pendrive Grabado Láser (Extra)",
+        "imagen_e": "img/016-wedding-day.png",
+        "precio_e": 0
+      },
+      "promo_toro_360_e": {
+        "descripcion_e": "Combina ambos servicios por un precio especial (2 horas de ambos).",
+        "duracion_e": "2 horas",
+        "nombre_e": "PROMOCIÓN: Toro Mecánico + Plataforma 360° VIP (Extra)",
+        "imagen_e": "img/016-wedding-day.png",
+        "precio_e": 16590
+      },
+      "toro_mecanico_e": {
+        "descripcion_e": "Entretenimiento interactivo y divertido (2 horas).",
+        "duracion_e": "2 horas",
+        "nombre_e": "Toro Mecánico (Extra)",
+        "imagen_e": "img/016-wedding-day.png",
+        "precio_e": 8590
+      }
+    }
+  },
+  "users": {}
+}

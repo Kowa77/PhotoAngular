@@ -1,0 +1,152 @@
+/* src/app/servicios/servicios.component.css */
+
+/* Estilos básicos del contenedor y secciones */
+.servicios-container {
+  padding: 15px; /* Ligeramente menos padding general */
+  max-width: 1000px; /* Reducir el ancho máximo del contenedor */
+  margin: 0 auto;
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 25px; /* Menos margen inferior */
+  color: #333;
+}
+
+.category-section {
+  margin-bottom: 30px; /* Menos margen inferior entre categorías */
+}
+
+.category-section h2 {
+  text-align: center;
+  margin-bottom: 15px; /* Menos margen inferior */
+  color: #555;
+  border-bottom: 1px solid #eee; /* Borde más delgado */
+  padding-bottom: 8px; /* Menos padding */
+  font-size: 1.8em; /* Ajustar tamaño de título de categoría */
+}
+
+.services-grid {
+  display: grid;
+  /* Ajusta el tamaño mínimo de las columnas para hacer las tarjetas más pequeñas.
+     Min-width reducido a 220px, y puedes poner más si quieres 4 columnas pequeñas en filas. */
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 15px; /* REDUCIDO: Espacio entre las tarjetas */
+  justify-content: center;
+}
+
+/* Estilos de la tarjeta de servicio */
+.servicio-card {
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1); /* Sombra más sutil */
+  padding: 15px; /* REDUCIDO: Relleno interno de la tarjeta */
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: transform 0.2s ease-in-out, border-color 0.2s ease-in-out, background-color 0.2s ease-in-out;
+}
+
+.servicio-card:hover {
+  transform: translateY(-3px); /* Menos elevación al pasar el mouse */
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.15);
+}
+
+.servicio-card img {
+  max-width: 100%;
+  height: 150px; /* REDUCIDO: Altura fija para las imágenes */
+  object-fit: cover;
+  border-radius: 4px;
+  margin-bottom: 12px; /* Menos margen inferior */
+}
+
+.servicio-card h3 {
+  font-size: 1.3em; /* REDUCIDO: Tamaño del título del servicio */
+  margin-bottom: 8px; /* Menos margen inferior */
+  color: #333;
+}
+
+.servicio-card p {
+  font-size: 0.85em; /* REDUCIDO: Tamaño del texto de descripción/precio */
+  color: #666;
+  margin-bottom: 8px; /* Menos margen inferior */
+  line-height: 1.3; /* Ligeramente menos altura de línea */
+}
+
+/* Estilos generales para el botón */
+.servicio-card button {
+  color: white;
+  border: none;
+  padding: 8px 15px; /* REDUCIDO: Relleno del botón */
+  border-radius: 4px; /* Borde ligeramente menos redondeado */
+  cursor: pointer;
+  font-size: 0.9em; /* REDUCIDO: Tamaño del texto del botón */
+  margin-top: 12px; /* Menos margen superior */
+  transition: background-color 0.2s ease-in-out;
+  width: 90%; /* Ajustado el ancho para dejar un poco de espacio en los lados */
+  max-width: 200px; /* Ancho máximo para el botón */
+}
+
+/* --- ESTILOS ESPECÍFICOS DEL BOTÓN SEGÚN SI ESTÁ EN EL CARRITO --- */
+
+/* Estilos para el botón cuando el servicio NO está en el carrito (Añadir al carrito) */
+.servicio-card button.btn-success {
+  background-color: #28a745; /* Verde */
+}
+
+.servicio-card button.btn-success:hover {
+  background-color: #218838;
+}
+
+/* Estilos para el botón cuando el servicio SÍ está en el carrito (Quitar del carrito) */
+.servicio-card button.btn-danger {
+  background-color: #dc3545; /* Rojo */
+}
+
+.servicio-card button.btn-danger:hover {
+  background-color: #c82333;
+}
+
+/* --- ESTILOS PARA LA TARJETA COMPLETA CUANDO ESTÁ EN EL CARRITO --- */
+.servicio-card.in-cart {
+  border-color: #28a745;
+  background-color: #e6ffe6;
+  box-shadow: 0 3px 9px rgba(40, 167, 69, 0.25); /* Sombra ligeramente más pronunciada cuando está en carrito */
+}
+
+/* Resumen del Carrito (flotante, si lo usas) */
+.cart-summary {
+  position: fixed;
+  bottom: 15px; /* Ligeramente más cerca del borde inferior */
+  right: 15px; /* Ligeramente más cerca del borde derecho */
+  background-color: #333;
+  color: white;
+  padding: 12px 20px; /* Relleno reducido */
+  border-radius: 8px; /* Borde ligeramente menos redondeado */
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  gap: 15px; /* Menos espacio entre elementos */
+}
+
+.cart-summary h3 {
+  margin: 0;
+  font-size: 1.2em; /* Tamaño de fuente ligeramente más pequeño */
+}
+
+.cart-summary button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 8px 12px; /* Relleno del botón reducido */
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.8em; /* Tamaño de fuente del botón reducido */
+  transition: background-color 0.2s ease-in-out;
+}
+
+.cart-summary button:hover {
+  background-color: #0056b3;
+}

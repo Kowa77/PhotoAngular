@@ -1,8 +1,8 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, NgZone } from '@angular/core'; // <-- Importa NgZone
 import { Auth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
          signOut, user, User, setPersistence, browserLocalPersistence } from '@angular/fire/auth';
 import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators'; // <--- ¡Asegúrate de importar 'map' aquí!
+import { map } from 'rxjs/operators';
 
 
 @Injectable({
@@ -10,13 +10,15 @@ import { map } from 'rxjs/operators'; // <--- ¡Asegúrate de importar 'map' aqu
 })
 export class AuthService {
   public user$: Observable<User | null>;
-  private auth: Auth = inject(Auth); // Inyectamos el servicio Auth a nivel de la clase
+  private auth: Auth = inject(Auth);
+  private ngZone: NgZone = inject(NgZone); // <-- Inyecta NgZone
 
   private readonly SESSION_EXPIRATION_KEY = 'sessionExpirationTime';
   private readonly SESSION_DURATION_MS = 60 * 60 * 1000; // 1 hora en milisegundos
 
   constructor() {
-    this.user$ = user(this.auth);
+    // Envuelve la llamada a user() con ngZone.run()
+    this.user$ = this.ngZone.run(() => user(this.auth));
     this.checkSessionExpiration();
   }
 
@@ -31,9 +33,12 @@ export class AuthService {
   }
 
   async loginUser(email: string, password: string): Promise<User> {
+    // Las operaciones async/await como loginUser, registerUser y logoutUser
+    // suelen ser detectadas automáticamente por Zone.js si están dentro de un contexto de Angular
+    // No deberían necesitar NgZone.run() explícito a menos que surjan advertencias específicas.
     try {
       const userCredential = await signInWithEmailAndPassword(this.auth, email, password);
-      await setPersistence(this.auth, browserLocalPersistence); // Usamos la instancia inyectada en el constructor
+      await setPersistence(this.auth, browserLocalPersistence);
       localStorage.setItem(this.SESSION_EXPIRATION_KEY, (Date.now() + this.SESSION_DURATION_MS).toString());
       return userCredential.user;
     } catch (error: any) {
@@ -55,7 +60,6 @@ export class AuthService {
   getAuthState(): Observable<User | null> {
     return this.user$;
   }
-
 
   getCurrentUserEmail(): Observable<string | null> {
     return this.user$.pipe(
