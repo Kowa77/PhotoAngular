@@ -1,1 +1,24 @@
-<!-- <app-navbar></app-navbar> -->
+<div class="container mt-5">
+  <h2 class="mb-4 text-center">Nuestros Momentos Especiales</h2>
+  <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+    <div *ngFor="let foto of fotosCasamiento" class="col">
+      <div class="card h-100">
+        <img [src]="foto" class="card-img-top" alt="Foto de Casamiento">
+        <div class="card-body">
+          <h5 class="card-title">Un Recuerdo Inolvidable</h5>
+          <p class="card-text">Capturando la alegría y el amor en nuestro día especial.</p>
+        </div>
+        <div class="card-overlay">
+          <h5 class="card-title">Un Recuerdo Inolvidable</h5>
+          <p class="card-text">Capturando la alegría y el amor en nuestro día especial.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mt-5 text-center">
+    <h4>¿Te gustaría formar parte de nuestra celebración?</h4>
+    <p>¡Haz clic abajo para ver opciones de regalos o contribuciones!</p>
+    <button class="btn btn-primary btn-lg">Ver Opciones de Regalo</button>
+  </div>
+</div>

@@ -1,38 +1,80 @@
+<div class="servicios-container">
+  <h1>Servicios Disponibles</h1>
 
-<div class="container mt-5">
-  <h3>Nuestros Servicios</h3>
-  <ul class="list-group" id="lista-servicios">
-    <li *ngFor="let servicio of servicios$ | async" class="list-group-item">
+  <section class="category-section category-fotos">
+    <h2>Casamientos (Fotos)</h2>
+    @if (fotos.length === 0) {
+      <p>No hay servicios de casamientos disponibles.</p>
+    } @else {
+      <div class="services-grid">
+        @for (foto of fotos; track foto.id) {
+          <div class="servicio-card" [class.in-cart]="isInCart(foto.id)">
+            <img [src]="foto.imagen" alt="{{ foto.nombre }}">
+            <h3>{{ foto.nombre }}</h3>
+            <p>{{ foto.descripcion }}</p>
+            <p>Precio: ${{ foto.precio }}</p>
+            <button (click)="toggleCart(foto)"
+                    [class.btn-success]="!isInCart(foto.id)"
+                    [class.btn-danger]="isInCart(foto.id)"
+                    [disabled]="!currentUserUid"> {{ isInCart(foto.id) ? 'Quitar del carrito' : 'Añadir al carrito' }}
+            </button>
+          </div>
+        }
+      </div>
+    }
+  </section>
 
-      <input
-      type="checkbox"
-      [value]="servicio.key"
-      class="form-check-input me-2"
-      [id]="'servicio-' + servicio.key"
-      [attr.data-precio]="servicio.precio"
-      [checked]="(serviciosSeleccionados | json).includes((servicio.key | json))"
-      (change)="onCheckboxChange(servicio, $event.target)" #servicioCheckbox>
+  <section class="category-section category-videos">
+    <h2>Cumpleaños (Videos)</h2>
+    @if (videos.length === 0) {
+      <p>No hay servicios de videos disponibles.</p>
+    } @else {
+      <div class="services-grid">
+        @for (video of videos; track video.id) {
+          <div class="servicio-card" [class.in-cart]="isInCart(video.id)">
+            <img [src]="video.imagen" alt="{{ video.nombre }}">
+            <h3>{{ video.nombre }}</h3>
+            <p>{{ video.descripcion }}</p>
+            <p>Precio: ${{ video.precio }}</p>
+            <button (click)="toggleCart(video)"
+                    [class.btn-success]="!isInCart(video.id)"
+                    [class.btn-danger]="isInCart(video.id)"
+                    [disabled]="!currentUserUid"> {{ isInCart(video.id) ? 'Quitar del carrito' : 'Añadir al carrito' }}
+            </button>
+          </div>
+        }
+      </div>
+    }
+  </section>
 
+  <section class="category-section category-extras">
+    <h2>Extras</h2>
+    @if (extras.length === 0) {
+      <p>No hay extras disponibles.</p>
+    } @else {
+      <div class="services-grid">
+        @for (extra of extras; track extra.id) {
+          <div class="servicio-card" [class.in-cart]="isInCart(extra.id)">
+            <img [src]="extra.imagen" alt="{{ extra.nombre }}">
+            <h3>{{ extra.nombre }}</h3>
+            <p>{{ extra.descripcion }}</p>
+            @if (extra.duracion) {
+              <p>Duración: {{ extra.duracion }}</p>
+            }
+            <p>Precio: ${{ extra.precio }}</p>
+            <button (click)="toggleCart(extra)"
+                    [class.btn-success]="!isInCart(extra.id)"
+                    [class.btn-danger]="isInCart(extra.id)"
+                    [disabled]="!currentUserUid"> {{ isInCart(extra.id) ? 'Quitar del carrito' : 'Añadir al carrito' }}
+            </button>
+          </div>
+        }
+      </div>
+    }
+  </section>
 
-      <label class="form-check-label" [for]="'servicio-' + servicio.key">
-        <img [src]="'assets/'+servicio.imagen" [alt]="servicio.nombre" width="24" height="24" class="me-2">
-        {{ servicio.nombre }} - ${{ servicio.precio }}
-      </label>
-    </li>
-  </ul>
-
-  <div class="mt-3">
-    <strong>Total: $<span id="total-precio">{{ totalPrecio | number: '1.0-0' }}</span></strong>
-  </div>
-
-  <div class="mt-3">
-    <div class="d-flex justify-content-between row col-3">
-      <!-- <button (click)="aplicarDescuentoManual()" class="btn btn-outline-success mt-2 boton-descuento-intermitente">Todo por ➡️ (10% menos)</button> -->
-      <button (click)="aplicarDescuentoManual()" class="btn btn-outline-success mt-2 boton-descuento-intermitente" [disabled]="descuentoAplicadoBoton">Todo por ➡️ (10% menos)</button>
-      <p *ngIf="descuentoAplicado" class="text-success">¡Descuento del 10% aplicado!</p>
-      <button (click)="guardarCarritoEnFirebase()" class="btn btn-primary mt-3">Enviar a Carrito</button>
-      <!-- <button id="enviar-carrito" class="btn btn-primary mt-3">Agregar a Carrito</button>
-      <button id="agregar-todo-descuento" class="btn btn-outline-success mt-2 boton-descuento-intermitente">Todo con ➡️ (10% menos)</button> -->
-    </div>
+  <div class="cart-summary">
+    <h3>Total Carrito: ${{ totalCarrito | number:'1.2-2' }}</h3>
+    <button routerLink="/carrito" [disabled]="!currentUserUid">Ir al Carrito</button>
   </div>
 </div>

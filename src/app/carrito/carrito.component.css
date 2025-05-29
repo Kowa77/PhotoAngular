@@ -1,0 +1,210 @@
+/* src/app/carrito/carrito.component.css */
+
+.carrito-container {
+  padding: 20px;
+  max-width: 900px;
+  margin: 0 auto;
+  font-family: Arial, sans-serif;
+  color: #333;
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 30px;
+  color: #333;
+}
+
+.empty-cart-message {
+  text-align: center;
+  font-size: 1.2em;
+  color: #777;
+  margin-top: 50px;
+}
+
+.cart-items-grid {
+  display: grid;
+  /* Adaptado para 1 columna en móviles, 2 en pantallas medianas, etc. */
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.cart-item-card {
+  display: flex;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  overflow: hidden; /* Asegura que el contenido no desborde el radio */
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  padding: 15px; /* Padding interno para que el degradado se vea mejor */
+  align-items: center; /* Alinea los elementos verticalmente al centro */
+}
+
+.cart-item-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+}
+
+.cart-item-card img {
+  width: 100px; /* Tamaño fijo para la imagen del carrito */
+  height: 100px; /* Tamaño fijo para la imagen del carrito */
+  object-fit: cover;
+  border-radius: 8px;
+  margin-right: 15px;
+  flex-shrink: 0; /* Evita que la imagen se encoja */
+}
+
+.item-details {
+  flex-grow: 1; /* Permite que los detalles ocupen el espacio restante */
+}
+
+.item-details h3 {
+  font-size: 1.3em;
+  margin-top: 0;
+  margin-bottom: 8px;
+  color: #333;
+}
+
+.item-details p {
+  font-size: 0.9em;
+  color: #666;
+  margin-bottom: 6px;
+  line-height: 1.4;
+}
+
+.quantity-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.quantity-control button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 50%; /* Botones redondos */
+  width: 28px;
+  height: 28px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.1em;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.quantity-control button:hover {
+  background-color: #0056b3;
+}
+
+.quantity-control button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.quantity-control span {
+  font-weight: bold;
+  font-size: 1em;
+  min-width: 20px; /* Asegura un ancho mínimo para el número */
+  text-align: center;
+}
+
+.remove-button {
+  background-color: #dc3545; /* Rojo */
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.9em;
+  margin-top: 10px;
+  transition: background-color 0.2s ease-in-out;
+  width: auto; /* Ancho automático */
+}
+
+.remove-button:hover {
+  background-color: #c82333;
+}
+
+/* --- ESTILOS DE DEGRADADO POR CATEGORÍA PARA LAS TARJETAS DEL CARRITO --- */
+/* Estos degradados se aplican al background del cart-item-card */
+.cart-item-card.category-fotos {
+  background: linear-gradient(to right, #ffecd2 0%, #fcb69f 100%); /* Fotos: cálido */
+  border-color: #fcb69f; /* Ajusta el borde para que combine */
+}
+
+.cart-item-card.category-videos {
+  background: linear-gradient(to right, #e0c3fc 0%, #8ec5fc 100%); /* Videos: fresco */
+  border-color: #8ec5fc; /* Ajusta el borde para que combine */
+}
+
+.cart-item-card.category-extras {
+  background: linear-gradient(to right, #a1c4fd 0%, #c2e9fb 100%); /* Extras: azul suave */
+  border-color: #c2e9fb; /* Ajusta el borde para que combine */
+}
+
+/* Para que el texto sea legible sobre los degradados */
+.cart-item-card.category-fotos h3,
+.cart-item-card.category-videos h3,
+.cart-item-card.category-extras h3 {
+    color: #222; /* Un color de texto oscuro que contraste bien */
+}
+.cart-item-card.category-fotos p,
+.cart-item-card.category-videos p,
+.cart-item-card.category-extras p {
+    color: #444; /* Un color de texto un poco más claro para párrafos */
+}
+
+
+.cart-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #f8f8f8;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  padding: 20px;
+  margin-top: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.cart-summary h3 {
+  margin: 0;
+  font-size: 1.5em;
+  color: #333;
+}
+
+.checkout-button {
+  background-color: #28a745; /* Verde */
+  color: white;
+  border: none;
+  padding: 12px 25px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1.1em;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.checkout-button:hover {
+  background-color: #218838;
+}
+
+.back-to-services-button {
+  display: block;
+  width: fit-content;
+  margin: 30px auto 0 auto; /* Centrar y margen superior */
+  background-color: #6c757d; /* Gris */
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1em;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.back-to-services-button:hover {
+  background-color: #5a6268;
+}

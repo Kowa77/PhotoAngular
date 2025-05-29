@@ -1,148 +1,136 @@
-import { Component, OnInit, QueryList, ViewChildren } from '@angular/core';
-import { FirebaseService } from '../firebase/firefirebase-service.service';
+// src/app/servicios/servicios.component.ts
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Observable, of } from 'rxjs';
+import { RouterLink, Router } from '@angular/router'; // Importa Router
+import { Auth, User } from '@angular/fire/auth';
+import { Subscription, combineLatest } from 'rxjs';
+import { AuthService } from '../auth/auth.service';
+import { FirebaseService } from '../firebase/firefirebase-service.service';
 import { Servicio } from '../models/servicio.model';
-import { Auth, user } from '@angular/fire/auth';
-import { take } from 'rxjs/operators';
-import { Router } from '@angular/router'; // Importa el Router
 
 @Component({
   selector: 'app-servicios',
-  standalone: true,
-  imports: [CommonModule],
   templateUrl: './servicios.component.html',
-  styleUrls: ['./servicios.component.css']
+  styleUrls: ['./servicios.component.css'],
+  standalone: true,
+  imports: [CommonModule, RouterLink] // Añade RouterLink a imports
 })
-export class ServiciosComponent implements OnInit {
-  servicios$: Observable<Servicio[]> = of([]);
-  totalPrecio: number = 0;
-  serviciosSeleccionados: Servicio[] = [];
-  user$: Observable<any>;
-  descuentoAplicado: boolean = false;
-  descuentoAplicadoBoton: boolean = false;
-  private readonly todosLosServicios = ['Civil', 'Exteriores', 'Fiesta', 'Getting Ready', 'Iglesia', 'Video de novios']; // Asegúrate de que coincida
+export class ServiciosComponent implements OnInit, OnDestroy {
+  private authService: AuthService = inject(AuthService);
+  private firebaseService: FirebaseService = inject(FirebaseService);
+  private auth: Auth = inject(Auth);
+  private router: Router = inject(Router); // Inyecta Router para la navegación programática
 
-  @ViewChildren('servicioCheckbox') servicioCheckboxes!: QueryList<any>;
+  currentUserUid: string | null = null;
+  allAvailableServices: Servicio[] = [];
+  fotos: Servicio[] = [];
+  videos: Servicio[] = [];
+  extras: Servicio[] = [];
+  serviciosEnCarrito: Set<string> = new Set();
+  totalCarrito: number = 0;
 
-  constructor(
-    private firebaseService: FirebaseService,
-    private auth: Auth,
-    private router: Router // Inyecta el Router
-  ) {
-    this.user$ = user(this.auth);
+  private subscriptions: Subscription = new Subscription();
+
+  ngOnInit() {
+    this.subscriptions.add(
+      this.authService.user$.subscribe(user => {
+        this.currentUserUid = user ? user.uid : null;
+        console.log("ServiciosComponent: Usuario logueado:", this.currentUserUid);
+
+        if (this.currentUserUid) {
+          this.subscriptions.add(
+            this.firebaseService.obtenerCarritoUsuario(this.currentUserUid).subscribe(carrito => {
+              this.serviciosEnCarrito = new Set(Object.keys(carrito || {}));
+              this.calculateTotalCart();
+              console.log("ServiciosComponent: Carrito del usuario actualizado:", this.serviciosEnCarrito);
+            })
+          );
+        } else {
+          // Lógica para carrito local (localStorage) si no hay usuario logueado
+          // Esto ya lo maneja el CarritoComponent, aquí solo vaciamos el Set si no hay usuario.
+          this.serviciosEnCarrito = new Set();
+          this.calculateTotalCart();
+          console.log("ServiciosComponent: Usuario deslogueado, carrito local a considerar vacío para esta vista.");
+        }
+      })
+    );
+
+    this.fetchServices();
   }
 
-  ngOnInit(): void {
-    this.servicios$ = this.firebaseService.getServicios();
-    this.cargarCarritoGuardado();
+  ngOnDestroy() {
+    this.subscriptions.unsubscribe();
   }
 
-  async cargarCarritoGuardado(): Promise<void> {
-    this.user$.pipe(take(1)).subscribe(async (currentUser) => {
-      if (currentUser) {
-        const uid = currentUser.uid;
-        this.firebaseService.obtenerCarritoUsuario(uid).pipe(take(1)).subscribe(carritoGuardado => {
-          if (carritoGuardado && carritoGuardado.servicios) {
-            this.serviciosSeleccionados = carritoGuardado.servicios;
-            this.recalcularTotalYDescuento();
-            this.marcarCheckboxesGuardados();
-            this.descuentoAplicadoBoton = this.estanTodosLosServiciosSeleccionados(); // Actualizar estado del botón
-          } else {
-            this.serviciosSeleccionados = [];
-            this.recalcularTotalYDescuento();
-            this.descuentoAplicadoBoton = false; // Habilitar el botón
-          }
-        });
-      } else {
-        this.serviciosSeleccionados = [];
-        this.recalcularTotalYDescuento();
-        this.descuentoAplicadoBoton = false; // Habilitar el botón
-      }
-    });
+  private fetchServices() {
+    this.subscriptions.add(
+      combineLatest([
+        this.firebaseService.getFotos(),
+        this.firebaseService.getVideos(),
+        this.firebaseService.getExtras()
+      ]).subscribe(([fotos, videos, extras]) => {
+        this.fotos = fotos;
+        this.videos = videos;
+        this.extras = extras;
+        this.allAvailableServices = [...fotos, ...videos, ...extras];
+        console.log("ServiciosComponent: Servicios cargados y clasificados:", { fotos, videos, extras });
+      }, error => {
+        console.error("ServiciosComponent: Error al cargar los servicios:", error);
+      })
+    );
   }
 
-  marcarCheckboxesGuardados(): void {
-    this.servicios$.pipe(take(1)).subscribe(servicios => {
-      this.servicioCheckboxes.forEach(checkbox => {
-        const servicioAsociado = servicios.find(s => s.key === checkbox.nativeElement.value);
-        if (servicioAsociado && this.serviciosSeleccionados.some(s => s.key === servicioAsociado.key)) {
-          checkbox.nativeElement.checked = true;
+  // Nuevo método para verificar si un servicio está en el carrito
+  isInCart(serviceId: string): boolean {
+    return this.serviciosEnCarrito.has(serviceId);
+  }
+
+  // Nuevo método para alternar (añadir/quitar) un servicio del carrito
+  async toggleCart(servicio: Servicio): Promise<void> {
+    if (!this.currentUserUid) {
+      alert('Necesitas iniciar sesión para agregar ítems al carrito.');
+      return;
+    }
+
+    if (this.isInCart(servicio.id)) {
+      // Quitar del carrito
+      await this.firebaseService.quitarDelCarrito(this.currentUserUid, servicio.id);
+      console.log(`ServiciosComponent: Servicio ${servicio.nombre} quitado del carrito.`);
+    } else {
+      // Agregar al carrito
+      // ¡CORRECCIÓN AQUÍ! Llama a addToCart y pasa el objeto 'servicio' completo.
+      await this.firebaseService.addToCart(this.currentUserUid, servicio);
+      console.log(`ServiciosComponent: Servicio ${servicio.nombre} agregado al carrito.`);
+    }
+    // La actualización del Set 'serviciosEnCarrito' y el total se hará a través de la suscripción a 'obtenerCarritoUsuario'.
+  }
+
+  calculateTotalCart(): void {
+    let total = 0;
+    if (this.allAvailableServices.length > 0 && this.serviciosEnCarrito.size > 0) {
+      this.serviciosEnCarrito.forEach(serviceId => {
+        const servicio = this.allAvailableServices.find(s => s.id === serviceId);
+        if (servicio) {
+          total += servicio.precio;
         }
       });
-    });
-  }
-
-  onCheckboxChange(servicio: Servicio, target: EventTarget | null): void {
-    if (target instanceof HTMLInputElement) {
-      if (target.checked) {
-        this.serviciosSeleccionados = [...this.serviciosSeleccionados, servicio];
-      } else {
-        this.serviciosSeleccionados = this.serviciosSeleccionados.filter(s => s.key !== servicio.key);
-      }
-      this.recalcularTotalYDescuento();
-      this.descuentoAplicadoBoton = this.estanTodosLosServiciosSeleccionados(); // Actualizar estado del botón
     }
+    this.totalCarrito = total;
+    console.log("ServiciosComponent: Total Carrito Actualizado:", this.totalCarrito);
   }
 
-  aplicarDescuentoManual(): void {
-    if (!this.descuentoAplicadoBoton) {
-      this.servicios$.pipe(take(1)).subscribe(servicios => {
-        this.serviciosSeleccionados = [...servicios]; // Seleccionar todos los servicios
-        this.recalcularTotalYDescuento();
-        this.servicioCheckboxes.forEach(checkbox => {
-          checkbox.nativeElement.checked = true; // Marcar todos los checkboxes
-        });
-        this.descuentoAplicadoBoton = true; // Deshabilitar el botón
-      });
-    } else {
-      this.serviciosSeleccionados = []; // Deseleccionar todos los servicios
-      this.recalcularTotalYDescuento();
-      this.servicioCheckboxes.forEach(checkbox => {
-        checkbox.nativeElement.checked = false; // Desmarcar todos los checkboxes
-      });
-      this.descuentoAplicadoBoton = false; // Habilitar el botón
+  // Método 'pagar' ahora solo navegará al carrito
+  pagar(): void {
+    console.log("Navegando al carrito...");
+    this.router.navigate(['/carrito']);
+  }
+
+  async logout(): Promise<void> {
+    try {
+      await this.authService.logoutUser();
+      console.log('ServiciosComponent: Sesión cerrada.');
+    } catch (error) {
+      console.error('ServiciosComponent: Error al cerrar sesión:', error);
     }
-  }
-
-  private estanTodosLosServiciosSeleccionados(): boolean {
-    return this.todosLosServicios.length === this.serviciosSeleccionados.length;
-  }
-
-  private recalcularTotalYDescuento(): void {
-    this.totalPrecio = this.serviciosSeleccionados.reduce((sum, servicio) => sum + servicio.precio, 0);
-    if (this.estanTodosLosServiciosSeleccionados()) {
-      this.aplicarDescuento();
-    } else {
-      this.removerDescuento();
-    }
-  }
-
-  private aplicarDescuento(): void {
-    if (!this.descuentoAplicado) {
-      this.totalPrecio *= 0.9;
-      this.descuentoAplicado = true;
-      console.log('¡Descuento del 10% aplicado!');
-    }
-  }
-
-  private removerDescuento(): void {
-    if (this.descuentoAplicado) {
-      this.totalPrecio = this.serviciosSeleccionados.reduce((sum, servicio) => sum + servicio.precio, 0);
-      this.descuentoAplicado = false;
-      console.log('Descuento removido.');
-    }
-  }
-
-  async guardarCarritoEnFirebase(): Promise<void> {
-    this.user$.pipe(take(1)).subscribe(async (currentUser) => {
-      if (currentUser) {
-        const uid = currentUser.uid;
-        const carrito = { servicios: this.serviciosSeleccionados };
-        await this.firebaseService.guardarCarritoUsuario(uid, carrito);
-        console.log('Carrito guardado para el usuario:', uid);
-        this.router.navigate(['/carrito']); // Redirige a la página del carrito
-      }
-    });
   }
 }
