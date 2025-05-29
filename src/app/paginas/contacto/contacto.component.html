@@ -1,1 +1,87 @@
-<p>contacto works!</p>
+<div class="container py-5">
+  <br>
+  <h1 class="text-center mb-4">¡Contactanos!</h1>
+  <br>
+
+  <section class="contact-form-section bg-light p-4 rounded shadow-sm">
+    <h2 class="text-center mb-3">Envíanos un mensaje</h2>
+    <p class="text-center mb-4 text-muted">Usa este formulario para cualquier consulta. Te responderemos a la brevedad.</p>
+
+    <form (ngSubmit)="sendEmail()" class="contact-form">
+
+      <div class="mb-3">
+        <label for="from" class="form-label">Tu Email:</label>
+        <input
+          type="email"
+          id="from"
+          [(ngModel)]="emailData.from"
+          name="from"
+          readonly
+          required
+          class="form-control"
+          placeholder="ejemplo@correo.com"
+          [class.is-invalid]="!emailData.from && responseMessage"
+        >
+        <small class="form-text text-muted">Este es tu email con el que estás logueado.</small>
+        <div *ngIf="!emailData.from && responseMessage" class="invalid-feedback">
+          El email del remitente es requerido. Por favor, inicia sesión.
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label for="subject" class="form-label">Asunto:</label>
+        <input
+          type="text"
+          id="subject"
+          [(ngModel)]="emailData.subject"
+          name="subject"
+          required
+          class="form-control"
+          placeholder="Asunto de tu consulta"
+          [class.is-invalid]="!emailData.subject && responseMessage"
+        >
+        <div *ngIf="!emailData.subject && responseMessage" class="invalid-feedback">
+          El asunto es requerido.
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label for="message" class="form-label">Mensaje:</label>
+        <textarea
+          id="message"
+          [(ngModel)]="emailData.text"
+          name="message"
+          rows="5"
+          required
+          class="form-control"
+          placeholder="Escribe tu mensaje aquí..."
+          [class.is-invalid]="!emailData.text && responseMessage"
+        ></textarea>
+        <div *ngIf="!emailData.text && responseMessage" class="invalid-feedback">
+          El mensaje es requerido.
+        </div>
+      </div>
+
+      <div class="d-grid mt-4">
+        <button
+          type="submit"
+          class="btn btn-primary btn-lg"
+          [disabled]="!emailData.from || !emailData.subject || !emailData.text"
+        >
+          Enviar Mensaje
+        </button>
+      </div>
+    </form>
+
+    <div *ngIf="responseMessage" class="alert mt-3 text-center" [ngClass]="{'alert-success': emailStatus === 'success', 'alert-danger': emailStatus === 'error'}" role="alert">
+      <p>{{ responseMessage }}</p>
+      <p *ngIf="previewUrl">Previsualizar: <a [href]="previewUrl" target="_blank" class="alert-link">{{ previewUrl }}</a></p>
+    </div>
+
+  </section>
+
+  <footer class="text-center mt-4">
+    <p class="text-muted">¡Estamos para ayudarte!</p>
+  </footer>
+</div>
+

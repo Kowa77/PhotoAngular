@@ -1,0 +1,185 @@
+/* src/app/servicios/servicios.component.css */
+
+/* Estilos básicos del contenedor y secciones */
+.servicios-container {
+  padding: 15px; /* Ligeramente menos padding general */
+  max-width: 1000px; /* Reducir el ancho máximo del contenedor */
+  margin: 0 auto;
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 25px; /* Menos margen inferior */
+  color: #333;
+}
+
+.category-section {
+  margin-bottom: 30px; /* Menos margen inferior entre categorías */
+  padding: 20px; /* Añadir padding dentro de la sección para que el degradado se vea bien */
+  border-radius: 10px; /* Bordes redondeados para las secciones */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); /* Sombra suave para la sección */
+  transition: all 0.3s ease-in-out; /* Transición suave para futuros efectos */
+}
+
+.category-section h2 {
+  text-align: center;
+  margin-bottom: 15px; /* Menos margen inferior */
+  color: #555;
+  border-bottom: 1px solid #eee; /* Borde más delgado */
+  padding-bottom: 8px; /* Menos padding */
+  font-size: 1.8em; /* Ajustar tamaño de título de categoría */
+}
+
+/* --- ESTILOS DE DEGRADADO POR CATEGORÍA --- */
+
+.category-fotos {
+  /* Degradado cálido y acogedor */
+  background: linear-gradient(to right, #ffecd2 0%, #fcb69f 100%);
+  color: #4a4a4a; /* Color de texto para esta sección */
+}
+
+.category-videos {
+  /* Degradado fresco y vibrante */
+  background: linear-gradient(to right, #e0c3fc 0%, #8ec5fc 100%);
+  color: #4a4a4a; /* Color de texto para esta sección */
+}
+
+.category-extras {
+  /* Nuevo degradado: tonos grises/azules sutiles (no verde, para evitar confusión con el carrito) */
+  background: linear-gradient(to right, #a1c4fd 0%, #c2e9fb 100%); /* Azul suave a celeste pálido */
+  /* Si prefieres un gris más neutro y elegante, usa esta opción en su lugar: */
+  /* background: linear-gradient(to right, #ece9e6 0%, #ffffff 100%); */
+  color: #4a4a4a; /* Color de texto para esta sección */
+}
+
+/* Puedes ajustar el color de los h2 dentro de cada sección si el degradado lo requiere */
+.category-fotos h2,
+.category-videos h2,
+.category-extras h2 {
+    color: #333; /* O un color que contraste bien con el degradado */
+}
+
+/* Estilos de la tarjeta de servicio */
+.services-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 15px;
+  justify-content: center;
+}
+
+.servicio-card {
+  background-color: rgba(255, 255, 255, 0.85); /* Fondo blanco semitransparente para que se vea el degradado */
+  border: 1px solid rgba(221, 221, 221, 0.6); /* Borde más sutil */
+  border-radius: 8px;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+  padding: 15px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: transform 0.2s ease-in-out, border-color 0.2s ease-in-out, background-color 0.2s ease-in-out;
+}
+
+.servicio-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.15);
+  background-color: rgba(255, 255, 255, 0.95); /* Menos transparente al pasar el mouse */
+}
+
+.servicio-card img {
+  max-width: 100%;
+  height: 150px;
+  object-fit: cover;
+  border-radius: 4px;
+  margin-bottom: 12px;
+}
+
+.servicio-card h3 {
+  font-size: 1.3em;
+  margin-bottom: 8px;
+  color: #333;
+}
+
+.servicio-card p {
+  font-size: 0.85em;
+  color: #666;
+  margin-bottom: 8px;
+  line-height: 1.3;
+}
+
+/* Estilos generales para el botón */
+.servicio-card button {
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9em;
+  margin-top: 12px;
+  transition: background-color 0.2s ease-in-out;
+  width: 90%;
+  max-width: 200px;
+}
+
+/* --- ESTILOS ESPECÍFICOS DEL BOTÓN SEGÚN SI ESTÁ EN EL CARRITO --- */
+
+/* Estilos para el botón cuando el servicio NO está en el carrito (Añadir al carrito) */
+.servicio-card button.btn-success {
+  background-color: #28a745; /* Verde */
+}
+
+.servicio-card button.btn-success:hover {
+  background-color: #218838;
+}
+
+/* Estilos para el botón cuando el servicio SÍ está en el carrito (Quitar del carrito) */
+.servicio-card button.btn-danger {
+  background-color: #dc3545; /* Rojo */
+}
+
+.servicio-card button.btn-danger:hover {
+  background-color: #c82333;
+}
+
+/* --- ESTILOS PARA LA TARJETA COMPLETA CUANDO ESTÁ EN EL CARRITO --- */
+.servicio-card.in-cart {
+  border-color: #28a745;
+  background-color: rgba(230, 255, 230, 0.85); /* Fondo semitransparente que combine con el verde */
+  box-shadow: 0 3px 9px rgba(40, 167, 69, 0.25);
+}
+
+/* Resumen del Carrito (flotante, si lo usas) */
+.cart-summary {
+  position: fixed;
+  bottom: 15px;
+  right: 15px;
+  background-color: #333;
+  color: white;
+  padding: 12px 20px;
+  border-radius: 8px;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  z-index: 1000; /* Asegurar que esté por encima de otros elementos */
+}
+
+.cart-summary h3 {
+  margin: 0;
+  font-size: 1.2em;
+}
+
+.cart-summary button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.8em;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.cart-summary button:hover {
+  background-color: #0056b3;
+}

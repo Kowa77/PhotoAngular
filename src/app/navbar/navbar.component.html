@@ -40,14 +40,12 @@
   </div>
   <app-login-modal
   #loginModal
-  (loginSuccess)="handleLoginSuccess($event)"
   (closeModalEvent)="closeLoginModal()"
   (openRegisterModalEvent)="openRegisterModal()">
   </app-login-modal>
 
   <app-register-modal
     #registerModal
-    (registerSuccess)="handleRegisterSuccess($event)"
     (closeModalEvent)="closeRegisterModal()">
   </app-register-modal>
 </nav>
