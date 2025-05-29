@@ -5,6 +5,7 @@ import { FirebaseService, Servicio } from '../firebase/firefirebase-service.serv
 import { AuthService } from '../auth/auth.service'; // Ruta a tu AuthService
 import { Subscription, combineLatest, Observable, of } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
+import { RouterLink } from '@angular/router';
 
 // Importamos User de @angular/fire/auth para tipar correctamente
 import { User } from '@angular/fire/auth';
@@ -20,7 +21,7 @@ export interface CarritoItem extends Servicio {
   templateUrl: './carrito.component.html',
   styleUrls: ['./carrito.component.css'],
   standalone: true, // ¡IMPORTANTE! Marca el componente como standalone
-  imports: [CommonModule] // Importa CommonModule aquí para usar pipes como 'number' y directivas
+  imports: [CommonModule, RouterLink] // Importa CommonModule aquí para usar pipes como 'number' y directivas / tambien las Rutas
 })
 export class CarritoComponent implements OnInit, OnDestroy {
   cartItems: CarritoItem[] = [];
