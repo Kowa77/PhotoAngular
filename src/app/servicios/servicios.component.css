@@ -31,22 +31,21 @@
 
 /* Degradados específicos para cada categoría */
 .category-fotos {
-  background: linear-gradient(to right, #e0f7fa, #b2ebf2); /* Cian claro */
+  background: linear-gradient(to right, #c8eb87, #ddd126); /* Cian claro */
 }
 
 .category-videos {
-  background: linear-gradient(to right, #fce4ec, #f8bbd0); /* Rosa claro */
+  background: linear-gradient(to right, #98e7f1, #6d97be); /* Rosa claro */
 }
 
 .category-extras {
-  background: linear-gradient(to right, #e8f5e9, #c8e6c9); /* Verde claro */
+  background: linear-gradient(to right,#f09571, #f8bbd0); /* Verde claro */
 }
 
 /* Estilo del Grid de Servicios */
 .services-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); /* 220px de ancho mínimo por tarjeta */
-  gap: 25px; /* Espacio entre las tarjetas */
   justify-content: center; /* Centrar las tarjetas si no llenan la última fila */
 }
 
@@ -62,7 +61,7 @@
   border-radius: 8px;
   box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
   padding: 15px;
-
+  margin-bottom: 5px;
   transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
   height: auto; /* Permite que la altura se ajuste al contenido */
 }
