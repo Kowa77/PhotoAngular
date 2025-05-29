@@ -133,4 +133,12 @@ export class ServiciosComponent implements OnInit, OnDestroy {
       console.error('ServiciosComponent: Error al cerrar sesión:', error);
     }
   }
+
+  // Navega al carrito de compras
+  verCarrito(): void {
+    // Aquí puedes navegar a la ruta del carrito, por ejemplo:
+    this.router.navigate(['/carrito']);
+    // O mostrar un modal, según tu lógica de navegación
+
+  }
 }

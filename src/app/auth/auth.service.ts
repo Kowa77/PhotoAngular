@@ -1,9 +1,9 @@
-import { Injectable, inject, NgZone } from '@angular/core'; // <-- Importa NgZone
+// src/app/auth/auth.service.ts
+import { Injectable, inject, NgZone } from '@angular/core';
 import { Auth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
-         signOut, user, User, setPersistence, browserLocalPersistence } from '@angular/fire/auth';
+         signOut, user, User, setPersistence, browserLocalPersistence } from '@angular/fire/auth'; // ¡Auth y signOut desde @angular/fire/auth!
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-
 
 @Injectable({
   providedIn: 'root'
@@ -11,19 +11,24 @@ import { map } from 'rxjs/operators';
 export class AuthService {
   public user$: Observable<User | null>;
   private auth: Auth = inject(Auth);
-  private ngZone: NgZone = inject(NgZone); // <-- Inyecta NgZone
+  private ngZone: NgZone = inject(NgZone);
 
   private readonly SESSION_EXPIRATION_KEY = 'sessionExpirationTime';
   private readonly SESSION_DURATION_MS = 60 * 60 * 1000; // 1 hora en milisegundos
 
   constructor() {
-    // Envuelve la llamada a user() con ngZone.run()
+    // user(this.auth) es un observable que emite el estado del usuario.
+    // Lo envolvemos en ngZone.run para asegurar que las actualizaciones del estado del usuario
+    // disparen la detección de cambios de Angular.
     this.user$ = this.ngZone.run(() => user(this.auth));
     this.checkSessionExpiration();
   }
 
   async registerUser(email: string, password: string): Promise<User> {
     try {
+      // createUserWithEmailAndPassword y signInWithEmailAndPassword devuelven Promises.
+      // Angular maneja bien las Promises con Zone.js, por lo que no es necesario
+      // envolver estas llamadas en ngZone.run() explícitamente.
       const userCredential = await createUserWithEmailAndPassword(this.auth, email, password);
       return userCredential.user;
     } catch (error: any) {
@@ -33,11 +38,9 @@ export class AuthService {
   }
 
   async loginUser(email: string, password: string): Promise<User> {
-    // Las operaciones async/await como loginUser, registerUser y logoutUser
-    // suelen ser detectadas automáticamente por Zone.js si están dentro de un contexto de Angular
-    // No deberían necesitar NgZone.run() explícito a menos que surjan advertencias específicas.
     try {
       const userCredential = await signInWithEmailAndPassword(this.auth, email, password);
+      // setPersistence también devuelve una Promise.
       await setPersistence(this.auth, browserLocalPersistence);
       localStorage.setItem(this.SESSION_EXPIRATION_KEY, (Date.now() + this.SESSION_DURATION_MS).toString());
       return userCredential.user;
@@ -49,9 +52,10 @@ export class AuthService {
 
   async logoutUser(): Promise<void> {
     try {
+      // signOut también devuelve una Promise.
       await signOut(this.auth);
       localStorage.removeItem(this.SESSION_EXPIRATION_KEY);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error al cerrar sesión:', error);
       throw error;
     }
@@ -78,7 +82,7 @@ export class AuthService {
             this.logoutUser();
           } else {
             const timeLeft = expiration - Date.now();
-            setTimeout(() => this.logoutUser(), timeLeft);
+            setTimeout(() => this.logoutUser(), timeLeft); // setTimeout es manejado por Zone.js
           }
         }
       }

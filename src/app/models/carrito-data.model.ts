@@ -1,4 +1,5 @@
-// models/carrito-data.model.ts
+// src/app/models/carrito-data.model.ts
+
 import { Servicio } from './servicio.model';
 
 export interface CarritoData {

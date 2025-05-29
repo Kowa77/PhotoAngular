@@ -1,185 +1,220 @@
 /* src/app/servicios/servicios.component.css */
 
-/* Estilos básicos del contenedor y secciones */
+/* Contenedor principal de la página */
 .servicios-container {
-  padding: 15px; /* Ligeramente menos padding general */
-  max-width: 1000px; /* Reducir el ancho máximo del contenedor */
-  margin: 0 auto;
+  padding: 20px;
+  max-width: 1200px; /* Ancho máximo para el contenido */
+  margin: 0 auto; /* Centrar en la página */
 }
 
-h1 {
+.servicios-container h1 {
   text-align: center;
-  margin-bottom: 25px; /* Menos margen inferior */
+  margin-bottom: 40px;
   color: #333;
+  font-size: 2.5rem;
 }
 
+/* Estilos para las secciones de categoría (con degradados) */
 .category-section {
-  margin-bottom: 30px; /* Menos margen inferior entre categorías */
-  padding: 20px; /* Añadir padding dentro de la sección para que el degradado se vea bien */
-  border-radius: 10px; /* Bordes redondeados para las secciones */
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); /* Sombra suave para la sección */
-  transition: all 0.3s ease-in-out; /* Transición suave para futuros efectos */
+  padding: 30px;
+  margin-bottom: 40px; /* Espacio entre secciones */
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
 }
 
 .category-section h2 {
   text-align: center;
-  margin-bottom: 15px; /* Menos margen inferior */
-  color: #555;
-  border-bottom: 1px solid #eee; /* Borde más delgado */
-  padding-bottom: 8px; /* Menos padding */
-  font-size: 1.8em; /* Ajustar tamaño de título de categoría */
+  margin-bottom: 30px;
+  color: #2c3e50; /* Un color oscuro para los títulos */
+  font-size: 2rem;
 }
 
-/* --- ESTILOS DE DEGRADADO POR CATEGORÍA --- */
-
+/* Degradados específicos para cada categoría */
 .category-fotos {
-  /* Degradado cálido y acogedor */
-  background: linear-gradient(to right, #ffecd2 0%, #fcb69f 100%);
-  color: #4a4a4a; /* Color de texto para esta sección */
+  background: linear-gradient(to right, #e0f7fa, #b2ebf2); /* Cian claro */
 }
 
 .category-videos {
-  /* Degradado fresco y vibrante */
-  background: linear-gradient(to right, #e0c3fc 0%, #8ec5fc 100%);
-  color: #4a4a4a; /* Color de texto para esta sección */
+  background: linear-gradient(to right, #fce4ec, #f8bbd0); /* Rosa claro */
 }
 
 .category-extras {
-  /* Nuevo degradado: tonos grises/azules sutiles (no verde, para evitar confusión con el carrito) */
-  background: linear-gradient(to right, #a1c4fd 0%, #c2e9fb 100%); /* Azul suave a celeste pálido */
-  /* Si prefieres un gris más neutro y elegante, usa esta opción en su lugar: */
-  /* background: linear-gradient(to right, #ece9e6 0%, #ffffff 100%); */
-  color: #4a4a4a; /* Color de texto para esta sección */
+  background: linear-gradient(to right, #e8f5e9, #c8e6c9); /* Verde claro */
 }
 
-/* Puedes ajustar el color de los h2 dentro de cada sección si el degradado lo requiere */
-.category-fotos h2,
-.category-videos h2,
-.category-extras h2 {
-    color: #333; /* O un color que contraste bien con el degradado */
-}
-
-/* Estilos de la tarjeta de servicio */
+/* Estilo del Grid de Servicios */
 .services-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 15px;
-  justify-content: center;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); /* 220px de ancho mínimo por tarjeta */
+  gap: 25px; /* Espacio entre las tarjetas */
+  justify-content: center; /* Centrar las tarjetas si no llenan la última fila */
 }
 
+/* Estilos para cada tarjeta de servicio */
 .servicio-card {
-  background-color: rgba(255, 255, 255, 0.85); /* Fondo blanco semitransparente para que se vea el degradado */
-  border: 1px solid rgba(221, 221, 221, 0.6); /* Borde más sutil */
+  background-color: #ffffff;
   border-radius: 8px;
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
   padding: 15px;
   text-align: center;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  transition: transform 0.2s ease-in-out, border-color 0.2s ease-in-out, background-color 0.2s ease-in-out;
+  justify-content: space-between; /* Empuja el botón al final */
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  height: auto; /* Permite que la altura se ajuste al contenido */
 }
 
 .servicio-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.15);
-  background-color: rgba(255, 255, 255, 0.95); /* Menos transparente al pasar el mouse */
+  transform: translateY(-5px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
 }
 
 .servicio-card img {
   max-width: 100%;
-  height: 150px;
-  object-fit: cover;
+  height: 120px; /* Ajusta esta altura para que las imágenes sean más pequeñas */
+  object-fit: cover; /* Recorta la imagen para llenar el espacio */
   border-radius: 4px;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 
 .servicio-card h3 {
-  font-size: 1.3em;
+  font-size: 1.1rem; /* Título un poco más pequeño */
   margin-bottom: 8px;
   color: #333;
 }
 
 .servicio-card p {
-  font-size: 0.85em;
-  color: #666;
+  font-size: 0.85rem; /* Texto de descripción más pequeño */
+  color: #555;
   margin-bottom: 8px;
-  line-height: 1.3;
+  flex-grow: 1; /* Permite que la descripción crezca un poco */
 }
 
-/* Estilos generales para el botón */
+.servicio-card .precio-texto {
+    font-weight: bold;
+    color: #007bff; /* Un color distintivo para el precio */
+    font-size: 1rem;
+    margin-top: auto; /* Empuja el precio y el botón hacia abajo */
+    margin-bottom: 15px; /* Espacio antes del botón */
+}
+
+
+/* Estilo para el botón de "Añadir/Quitar" */
 .servicio-card button {
-  color: white;
+  width: 100%;
+  padding: 10px 15px;
   border: none;
-  padding: 8px 15px;
-  border-radius: 4px;
+  border-radius: 5px;
   cursor: pointer;
-  font-size: 0.9em;
-  margin-top: 12px;
-  transition: background-color 0.2s ease-in-out;
-  width: 90%;
-  max-width: 200px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
 }
 
-/* --- ESTILOS ESPECÍFICOS DEL BOTÓN SEGÚN SI ESTÁ EN EL CARRITO --- */
-
-/* Estilos para el botón cuando el servicio NO está en el carrito (Añadir al carrito) */
 .servicio-card button.btn-success {
-  background-color: #28a745; /* Verde */
-}
-
-.servicio-card button.btn-success:hover {
-  background-color: #218838;
-}
-
-/* Estilos para el botón cuando el servicio SÍ está en el carrito (Quitar del carrito) */
-.servicio-card button.btn-danger {
-  background-color: #dc3545; /* Rojo */
-}
-
-.servicio-card button.btn-danger:hover {
-  background-color: #c82333;
-}
-
-/* --- ESTILOS PARA LA TARJETA COMPLETA CUANDO ESTÁ EN EL CARRITO --- */
-.servicio-card.in-cart {
-  border-color: #28a745;
-  background-color: rgba(230, 255, 230, 0.85); /* Fondo semitransparente que combine con el verde */
-  box-shadow: 0 3px 9px rgba(40, 167, 69, 0.25);
-}
-
-/* Resumen del Carrito (flotante, si lo usas) */
-.cart-summary {
-  position: fixed;
-  bottom: 15px;
-  right: 15px;
-  background-color: #333;
+  background-color: #28a745; /* Verde para "Añadir" */
   color: white;
-  padding: 12px 20px;
+}
+
+.servicio-card button.btn-danger {
+  background-color: #dc3545; /* Rojo para "Quitar" */
+  color: white;
+}
+
+.servicio-card button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+/* Estilo para las tarjetas cuando están en el carrito */
+.servicio-card.in-cart {
+  border: 2px solid #007bff; /* Borde azul para indicar que está en el carrito */
+  box-shadow: 0 0 15px rgba(0, 123, 255, 0.3);
+}
+
+
+/* Resumen del carrito en la parte inferior */
+.cart-summary {
+  background-color: #343a40; /* Fondo oscuro */
+  color: white;
+  padding: 15px 25px;
   border-radius: 8px;
-  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.2);
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 15px;
-  z-index: 1000; /* Asegurar que esté por encima de otros elementos */
+  position: sticky; /* Sticky o fixed si quieres que siempre esté visible */
+  bottom: 20px; /* Distancia desde el fondo */
+  left: 0;
+  right: 0;
+  width: fit-content; /* Se ajusta al contenido */
+  margin: 40px auto 0 auto; /* Centrar y margen superior */
+  box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.2);
 }
 
 .cart-summary h3 {
   margin: 0;
-  font-size: 1.2em;
+  font-size: 1.2rem;
 }
 
 .cart-summary button {
-  background-color: #007bff;
+  background-color: #007bff; /* Azul de Bootstrap */
   color: white;
   border: none;
-  padding: 8px 12px;
-  border-radius: 4px;
+  padding: 10px 20px;
+  border-radius: 5px;
   cursor: pointer;
-  font-size: 0.8em;
+  font-size: 1rem;
   transition: background-color 0.2s ease-in-out;
 }
 
 .cart-summary button:hover {
   background-color: #0056b3;
+}
+
+.cart-summary button:disabled {
+  background-color: #6c757d; /* Gris para deshabilitado */
+  cursor: not-allowed;
+}
+
+/* Media queries para responsividad */
+@media (max-width: 768px) {
+  .services-grid {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); /* Más pequeñas en móviles */
+    gap: 15px;
+  }
+
+  .servicio-card img {
+      height: 100px; /* Imágenes más pequeñas en móviles */
+  }
+
+  .servicio-card h3 {
+      font-size: 1rem;
+  }
+
+  .servicio-card p {
+      font-size: 0.8rem;
+  }
+
+  .servicio-card button {
+      padding: 8px 12px;
+      font-size: 0.8rem;
+  }
+
+  .category-section {
+      padding: 20px;
+  }
+
+  .category-section h2 {
+      font-size: 1.5rem;
+  }
+
+  .cart-summary {
+      flex-direction: column;
+      align-items: center;
+      bottom: 10px;
+      padding: 15px;
+  }
+  .cart-summary h3 {
+      margin-bottom: 10px;
+  }
 }
