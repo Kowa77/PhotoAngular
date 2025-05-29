@@ -1,9 +1,12 @@
+// src/app/models/servicio.model.ts
+
 export interface Servicio {
-  id: string;
+  id: string; // ID del nodo en Firebase
   nombre: string;
   descripcion: string;
   precio: number;
-  imagen: string;
-  duracion?: string; // Para extras, opcional
-  categoria: 'foto' | 'video' | 'extra'; // Añadido para compatibilidad
+  imagen: string; // URL de la imagen
+  categoria: 'foto' | 'video' | 'extra'; // Tipo de categoría
+  duracion?: number; // Duración en número (ej. minutos), opcional
+  // Puedes añadir otras propiedades específicas si las necesitas
 }
