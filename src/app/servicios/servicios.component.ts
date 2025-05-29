@@ -1,7 +1,7 @@
 // src/app/servicios/servicios.component.ts
 import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink, Router } from '@angular/router'; // Importa Router
+import { Router } from '@angular/router'; // Importa Router
 import { Auth, User } from '@angular/fire/auth';
 import { Subscription, combineLatest } from 'rxjs';
 import { AuthService } from '../auth/auth.service';
@@ -13,7 +13,7 @@ import { Servicio } from '../models/servicio.model';
   templateUrl: './servicios.component.html',
   styleUrls: ['./servicios.component.css'],
   standalone: true,
-  imports: [CommonModule, RouterLink] // Añade RouterLink a imports
+  imports: [CommonModule] // Añade RouterLink a imports
 })
 export class ServiciosComponent implements OnInit, OnDestroy {
   private authService: AuthService = inject(AuthService);
