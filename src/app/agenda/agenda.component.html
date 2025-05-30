@@ -3,12 +3,12 @@
 
   <div class="my-reservations-section mt-4">
     <h2>Tus Reservas Pendientes</h2>
-    @if (myReservations.length === 0) {
+    @if (myReservaciones.length === 0) {
       <p class="text-muted">No tienes reservas pendientes.</p>
       <p>Puedes reservar servicios desde la página de <a routerLink="/servicios">Servicios</a>.</p>
     } @else {
       <div class="reservations-grid">
-        @for (reservation of myReservations; track reservation.id) {
+        @for (reservation of myReservaciones; track reservation.id) {
           @if (isReservationUpcoming(reservation)) {
             <div class="reservation-card" [class.highlighted]="isReservationHighlighted(reservation.details.date)">
               <h4>Reserva ID: {{ reservation.id }}</h4>
@@ -21,10 +21,14 @@
                   <li>{{ item.value.nombre }} (x{{ item.value.cantidad }}) - ${{ item.value.precio * item.value.cantidad | number:'1.2-2' }}</li>
                 }
               </ul>
-              <button class="btn btn-danger" (click)="cancelReservation(reservation)"
+              <!-- <button class="btn btn-danger" (click)="cancelReservation(reservation)"
                       [disabled]="!currentUserUid || currentUserUid !== reservation.details.userId">
                 Cancelar Reserva
-              </button>
+              </button> -->
+              <button class="btn btn-danger" (click)="cancelReservation(reservation)"
+                    [disabled]="currentUserUid !== reservation.details.userId">
+              Cancelar Reserva
+            </button>
             </div>
           }
         }
