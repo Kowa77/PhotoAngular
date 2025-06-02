@@ -1,9 +1,9 @@
 // src/app/auth/auth.service.ts
 import { Injectable, inject, NgZone } from '@angular/core';
 import { Auth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
-         signOut, user, User, setPersistence, browserLocalPersistence } from '@angular/fire/auth'; // ¡Auth y signOut desde @angular/fire/auth!
+         signOut, user, User, setPersistence, browserLocalPersistence } from '@angular/fire/auth';
 import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { map } from 'rxjs/operators'; // Asegúrate de que 'map' esté importado aquí
 
 @Injectable({
   providedIn: 'root'
@@ -68,6 +68,16 @@ export class AuthService {
   getCurrentUserEmail(): Observable<string | null> {
     return this.user$.pipe(
       map(user => user ? user.email : null)
+    );
+  }
+
+  /**
+   * Obtiene el UID del usuario actualmente autenticado como un Observable.
+   * Emite el UID o null si no hay usuario logueado.
+   */
+  getCurrentUserUid(): Observable<string | null> {
+    return this.user$.pipe(
+      map(user => user ? user.uid : null)
     );
   }
 
