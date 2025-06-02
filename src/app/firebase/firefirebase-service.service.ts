@@ -1,12 +1,13 @@
 // src/app/firebase/firefirebase-service.service.ts
 
 import { Injectable, inject } from '@angular/core';
-import { Database, ref, set, get, remove, onValue, push, child } from '@angular/fire/database';
+import { Database, ref, set, get, remove, onValue, push, runTransaction } from '@angular/fire/database';
 import { Observable, combineLatest, map, tap, from } from 'rxjs';
 import { Auth, user, User as FirebaseAuthUser } from '@angular/fire/auth';
 import { Servicio } from '../models/servicio.model';
-import { Reservation, ReservationItem, ReservationDetails, ReservationsByDateMap } from '../models/reservation.model';
-
+// ¡Importa DailyAvailabilityMap y DailyAvailabilityEntry! (Ya estaban correctos)
+import { Reservation, ReservationItem, ReservationDetails, ReservationsByDateMap, DailyAvailabilityMap, DailyAvailabilityEntry } from '../models/reservation.model';
+import { AuthService } from '../auth/auth.service';
 
 @Injectable({
   providedIn: 'root'
@@ -14,6 +15,7 @@ import { Reservation, ReservationItem, ReservationDetails, ReservationsByDateMap
 export class FirebaseService {
   private database: Database = inject(Database);
   private auth: Auth = inject(Auth);
+  private authService: AuthService = inject(AuthService);
 
   constructor() {
     console.log("FirebaseService: Firebase Database (modular) injected.");
@@ -32,7 +34,7 @@ export class FirebaseService {
           for (const key in data) {
             if (Object.prototype.hasOwnProperty.call(data, key)) {
               const rawItem = data[key];
-              let mappedItem: any = { id: key }; // Empieza con el ID del nodo
+              let mappedItem: any = { id: key };
 
               const category = path.split('/').pop();
 
@@ -48,7 +50,6 @@ export class FirebaseService {
                 mappedItem.precio = rawItem.precio_v;
                 mappedItem.imagen = rawItem.imagen_v;
                 mappedItem.categoria = 'video';
-                // Asegúrate de que rawItem.duracion_v sea un número o se pueda convertir
                 mappedItem.duracion = typeof rawItem.duracion_v === 'string' ? Number(rawItem.duracion_v) : rawItem.duracion_v;
               } else if (category === 'extras') {
                 mappedItem.nombre = rawItem.nombre_e;
@@ -56,10 +57,9 @@ export class FirebaseService {
                 mappedItem.precio = rawItem.precio_e;
                 mappedItem.imagen = rawItem.imagen_e;
                 mappedItem.categoria = 'extra';
-                // Asegúrate de que rawItem.duracion_e sea un número o se pueda convertir
                 mappedItem.duracion = typeof rawItem.duracion_e === 'string' ? Number(rawItem.duracion_e) : rawItem.duracion_e;
               }
-              console.log(`FirebaseService: Mapeando item de ${path}:`, mappedItem); // Log detallado
+              console.log(`FirebaseService: Mapeando item de ${path}:`, mappedItem);
               items.push(mappedItem as T);
             }
           }
@@ -102,7 +102,7 @@ export class FirebaseService {
     ]).pipe(
       map(([fotos, videos, extras]) => {
         const allServicios = [...fotos, ...videos, ...extras];
-        console.log("FirebaseService: getServicios - Total de servicios combinados desde Realtime Database:", allServicios.length, allServicios); // Agregado allServicios
+        console.log("FirebaseService: getServicios - Total de servicios combinados desde Realtime Database:", allServicios.length, allServicios);
         return allServicios;
       })
     );
@@ -157,148 +157,168 @@ export class FirebaseService {
   // --- Métodos para Reservas y Agenda ---
 
   async saveReservation(userId: string, reservationDate: string, cartItems: ReservationItem[], total: number): Promise<string> {
-    const reservationsRef = ref(this.database, `reservations/${reservationDate}`);
-    const newReservationRef = push(reservationsRef); // Genera un ID único para la reserva
+    const availabilityRef = ref(this.database, `availability/${reservationDate}`);
+    let reservationId: string | null = null;
 
-    const reservationId = newReservationRef.key;
+    try {
+      const transactionResult = await runTransaction(availabilityRef, (currentData) => {
+        console.log(`FirebaseService: runTransaction - currentData para ${reservationDate}:`, currentData);
 
-    if (!reservationId) {
-      throw new Error("No se pudo generar un ID para la reserva.");
+        // Si el día está nulo o disponible, se puede reservar
+        if (currentData === null || currentData.available === true) {
+          console.log(`FirebaseService: Día ${reservationDate} disponible. Marcando como no disponible.`);
+          return { available: false, maxBookings: 1, bookedBy: userId }; // Guardar bookedBy
+        } else {
+          console.warn(`FirebaseService: El día ${reservationDate} ya está ocupado, transacción abortada.`);
+          return undefined; // Abortar transacción
+        }
+      });
+
+      if (transactionResult.committed) {
+        console.log(`FirebaseService: Transacción de disponibilidad para ${reservationDate} exitosa.`);
+
+        const reservationsForDateRef = ref(this.database, `reservations/${reservationDate}`);
+        const newReservationRef = push(reservationsForDateRef);
+
+        reservationId = newReservationRef.key;
+
+        if (!reservationId) {
+          throw new Error("No se pudo generar un ID para la reserva.");
+        }
+
+        const reservationDetails: ReservationDetails = {
+          date: reservationDate,
+          userId: userId,
+          totalAmount: total,
+          timestamp: Date.now(),
+          status: 'pending'
+        };
+
+        const reservationToSave: Reservation = {
+          id: reservationId,
+          details: reservationDetails,
+          items: cartItems.reduce((acc, item) => {
+            acc[item.id] = item;
+            return acc;
+          }, {} as { [serviceId: string]: ReservationItem })
+        };
+
+        console.log(`FirebaseService: Guardando nueva reserva (ID: ${reservationId}) para ${userId} en ${reservationDate}:`, reservationToSave);
+        await set(newReservationRef, reservationToSave);
+        console.log(`FirebaseService: Reserva ${reservationId} guardada exitosamente.`);
+
+        return reservationId;
+
+      } else {
+        // La transacción no se comprometió (ej. el día ya estaba ocupado)
+        throw new Error(`El día ${reservationDate} ya ha sido reservado. Por favor, elige otra fecha.`);
+      }
+
+    } catch (error: any) {
+      console.error('FirebaseService: Error al procesar la reserva transaccional:', error);
+      throw error;
     }
-
-    const reservationDetails: ReservationDetails = {
-      date: reservationDate,
-      userId: userId,
-      totalAmount: total,
-      timestamp: Date.now(),
-      status: 'pending'
-    };
-
-    const reservationToSave: Reservation = {
-      id: reservationId,
-      details: reservationDetails,
-      items: cartItems.reduce((acc, item) => {
-        acc[item.id] = item;
-        return acc;
-      }, {} as { [serviceId: string]: ReservationItem })
-    };
-
-    console.log(`FirebaseService: Guardando nueva reserva (ID: ${reservationId}) para ${userId} en ${reservationDate}:`, reservationToSave);
-    await set(newReservationRef, reservationToSave);
-    console.log(`FirebaseService: Reserva ${reservationId} guardada exitosamente.`);
-
-    return reservationId;
-  }
-
-  hasReservationForDate(userId: string, date: string): Observable<boolean> {
-    const reservationsForDateRef = ref(this.database, `reservations/${date}`);
-    console.log(`FirebaseService: Verificando reservas para el usuario ${userId} en la fecha ${date}`);
-
-    return from(get(reservationsForDateRef)).pipe(
-      map(snapshot => {
-        const reservationsMap = snapshot.val();
-        if (!reservationsMap) {
-          console.log(`FirebaseService: No hay reservas registradas para la fecha ${date}.`);
-          return false;
-        }
-        const hasExisting = Object.values(reservationsMap).some(
-          (reservation: any) => reservation.details && reservation.details.userId === userId
-        );
-        console.log(`FirebaseService: ¿El usuario ${userId} tiene reserva para ${date}? ${hasExisting}`);
-        return hasExisting;
-      }),
-      tap(result => console.log('FirebaseService: Resultado final de hasReservationForDate:', result))
-    );
-  }
-
-  allReservations$(): Observable<ReservationsByDateMap> {
-    const allReservationsRef = ref(this.database, `reservations`);
-    console.log("FirebaseService: Suscribiéndose a todas las reservas en Realtime DB.");
-
-    return new Observable(observer => {
-      const unsubscribe = onValue(allReservationsRef, (snapshot) => {
-        const data = snapshot.val();
-        if (data) {
-          console.log("FirebaseService: Todas las reservas recibidas:", data);
-          observer.next(data as ReservationsByDateMap);
-        } else {
-          console.log("FirebaseService: No hay reservas en Realtime DB.");
-          observer.next({});
-        }
-      }, (error) => {
-        console.error("FirebaseService: Error al obtener todas las reservas:", error);
-        observer.error(error);
-      });
-
-      return { unsubscribe };
-    });
-  }
-
-  getReservationsForDate(date: string): Observable<{ [reservationId: string]: Reservation }> {
-    const dateReservationsRef = ref(this.database, `reservations/${date}`);
-    console.log(`FirebaseService: Obteniendo reservas para la fecha: ${date}`);
-
-    return new Observable(observer => {
-      const unsubscribe = onValue(dateReservationsRef, (snapshot) => {
-        const data = snapshot.val();
-        if (data) {
-          console.log(`FirebaseService: Reservas para ${date} recibidas:`, data);
-          observer.next(data as { [reservationId: string]: Reservation });
-        } else {
-          console.log(`FirebaseService: No hay reservas para la fecha ${date}.`);
-          observer.next({});
-        }
-      }, (error) => {
-        console.error(`FirebaseService: Error al obtener reservas para ${date}:`, error);
-        observer.error(error);
-      });
-
-      return { unsubscribe };
-    });
   }
 
   async cancelReservation(reservationDate: string, reservationId: string): Promise<void> {
     const reservationRef = ref(this.database, `reservations/${reservationDate}/${reservationId}`);
-    console.log(`FirebaseService: Intentando cancelar reserva ${reservationId} en ${reservationDate}.`);
-    await remove(reservationRef);
-    console.log(`FirebaseService: Reserva ${reservationId} cancelada exitosamente.`);
-  }
+    const availabilityRef = ref(this.database, `availability/${reservationDate}`);
 
-  // --- Métodos de disponibilidad (para el administrador) ---
+    try {
+      const snapshot = await get(reservationRef);
+      const reservationData = snapshot.val();
 
-  async setDayAvailability(date: string, isAvailable: boolean, maxBookings?: number): Promise<void> {
-    const availabilityRef = ref(this.database, `availability/${date}`);
-    console.log(`FirebaseService: Estableciendo disponibilidad para ${date}: ${isAvailable}, MaxBookings: ${maxBookings}`);
-    await set(availabilityRef, { available: isAvailable, maxBookings: maxBookings || null });
-    console.log(`FirebaseService: Disponibilidad para ${date} guardada.`);
-  }
+      // Usar el servicio de autenticación para obtener el UID actual
+      const currentUserUid = await from(this.authService.getCurrentUserUid()).toPromise(); // Convertir Observable a Promise
 
-  getDayAvailability(date: string): Observable<{ available: boolean; maxBookings: number | null } | null> {
-    const availabilityRef = ref(this.database, `availability/${date}`);
-    return new Observable(observer => {
-      const unsubscribe = onValue(availabilityRef, (snapshot) => {
-        const data = snapshot.val();
-        if (data) {
-          observer.next(data);
+      if (!currentUserUid || !reservationData || reservationData.details.userId !== currentUserUid) {
+        throw new Error('No tienes permiso para cancelar esta reserva o la reserva no existe.');
+      }
+
+      await remove(reservationRef);
+      console.log(`FirebaseService: Reserva ${reservationId} cancelada exitosamente.`);
+
+      // Contar las reservas restantes para ese día después de la cancelación
+      const remainingReservationsSnapshot = await get(ref(this.database, `reservations/${reservationDate}`));
+      const remainingReservations = remainingReservationsSnapshot.val();
+
+      await runTransaction(availabilityRef, (currentData) => {
+        console.log(`FirebaseService: runTransaction - Liberando ${reservationDate}. currentData:`, currentData);
+
+        if (!remainingReservations || Object.keys(remainingReservations).length === 0) {
+          // Si no quedan más reservas para ese día, marcar como disponible
+          console.log(`Día ${reservationDate} no tiene más reservas. Marcando como disponible.`);
+          return { available: true, maxBookings: 1, bookedBy: null }; // bookedBy a null
         } else {
-          observer.next(null);
+          // Si todavía quedan reservas, el día sigue no disponible
+          console.log(`Día ${reservationDate} aún tiene ${Object.keys(remainingReservations).length} reservas. Sigue no disponible.`);
+          // Puedes optar por mantener el 'bookedBy' del primer/último restante, o dejarlo como estaba si no es importante
+          // ¡CAMBIOS AQUÍ! Asegurarse de mantener el 'bookedBy' si aún hay reservas
+          return { ...currentData, available: false, bookedBy: currentData?.bookedBy || null };
         }
+      });
+      console.log(`FirebaseService: Disponibilidad de ${reservationDate} actualizada después de cancelación.`);
+
+    } catch (error) {
+      console.error('FirebaseService: Error al cancelar reserva:', error);
+      throw error;
+    }
+  }
+
+  // --- Métodos de lectura de Reservas y Disponibilidad (para el calendario/agenda) ---
+
+  allReservations$(): Observable<DailyAvailabilityMap> {
+    const allAvailabilityRef = ref(this.database, `availability`);
+    console.log("FirebaseService: Suscribiéndose a la disponibilidad de todos los días en Realtime DB.");
+
+    return new Observable(observer => {
+      const unsubscribe = onValue(allAvailabilityRef, (snapshot) => {
+        const data = snapshot.val();
+        const mappedData: DailyAvailabilityMap = {};
+        if (data) {
+          for (const dateKey in data) {
+            if (Object.prototype.hasOwnProperty.call(data, dateKey)) {
+              // Asegúrate de que 'available' sea un booleano explícito
+              mappedData[dateKey] = {
+                available: typeof data[dateKey].available === 'boolean' ? data[dateKey].available : true, // Por defecto a true si no es booleano (seguro)
+                maxBookings: data[dateKey].maxBookings || null,
+                bookedBy: data[dateKey].bookedBy || undefined
+              };
+            }
+          }
+        }
+        console.log(`FirebaseService: Disponibilidad de todos los días cargada:`, mappedData);
+        observer.next(mappedData);
       }, (error) => {
+        console.error(`FirebaseService: Error al obtener la disponibilidad de todos los días de Realtime DB:`, error);
         observer.error(error);
       });
+
       return { unsubscribe };
     });
   }
 
-  getAllAvailabilities(): Observable<{ [date: string]: { available: boolean; maxBookings: number | null } }> {
-    const allAvailabilityRef = ref(this.database, `availability`);
+  // ¡¡¡FALTA ESTE MÉTODO EN TU CÓDIGO ACTUAL!!!
+  // Agrega este método al final de tu clase FirebaseService
+  getReservationsForDate(date: string): Observable<ReservationsByDateMap[string]> {
+    const reservationsDateRef = ref(this.database, `reservations/${date}`);
+    console.log(`FirebaseService: Obteniendo reservas para la fecha: ${date}`);
+
     return new Observable(observer => {
-      const unsubscribe = onValue(allAvailabilityRef, (snapshot) => {
+      const unsubscribe = onValue(reservationsDateRef, (snapshot) => {
         const data = snapshot.val();
-        observer.next(data || {});
+        if (data) {
+          console.log(`FirebaseService: Reservas recibidas para ${date}:`, data);
+          observer.next(data as ReservationsByDateMap[string]);
+        } else {
+          console.log(`FirebaseService: No hay reservas para ${date}.`);
+          observer.next({}); // Devuelve un objeto vacío si no hay reservas
+        }
       }, (error) => {
+        console.error(`FirebaseService: Error al obtener reservas para la fecha ${date}:`, error);
         observer.error(error);
       });
+
       return { unsubscribe };
     });
   }

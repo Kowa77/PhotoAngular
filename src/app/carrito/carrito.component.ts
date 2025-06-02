@@ -2,23 +2,22 @@
 
 import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+
+// ¡CAMBIOS AQUÍ! Importa los módulos de Angular Material para el Datepicker
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+
 import { FirebaseService } from '../firebase/firefirebase-service.service';
 import { Subscription, combineLatest, of } from 'rxjs';
 import { switchMap, tap, catchError, map } from 'rxjs/operators';
 import { Cart, CartItem } from '../models/cart.model';
-import { ReservationItem } from '../models/reservation.model';
+import { ReservationItem, DailyAvailabilityMap } from '../models/reservation.model';
 import { Servicio } from '../models/servicio.model';
 import { AuthService } from '../auth/auth.service';
 import { Router } from '@angular/router';
-import { FormsModule } from '@angular/forms';
-// Remove MatDatepickerModule, MatNativeDateModule, MatFormFieldModule, MatInputModule imports
-// if you are not using Angular Material's date picker components.
-// If you use other Material components, keep their specific imports.
-// For now, I'll comment them out as they are not relevant to the native date input.
-// import { MatDatepickerModule } from '@angular/material/datepicker';
-// import { MatNativeDateModule } from '@angular/material/core';
-// import { MatFormFieldModule } from '@angular/material/form-field';
-// import { MatInputModule } from '@angular/material/input';
 
 @Component({
   selector: 'app-carrito',
@@ -26,10 +25,10 @@ import { FormsModule } from '@angular/forms';
   imports: [
     CommonModule,
     FormsModule,
-    // MatDatepickerModule, // Comment out if not using Angular Material Datepicker
-    // MatNativeDateModule, // Comment out if not using Angular Material Datepicker
-    // MatFormFieldModule,  // Comment out if not using Angular Material Datepicker
-    // MatInputModule,      // Comment out if not using Angular Material Datepicker
+    MatDatepickerModule,
+    MatNativeDateModule,
+    MatFormFieldModule,
+    MatInputModule,
   ],
   templateUrl: './carrito.component.html',
   styleUrls: ['./carrito.component.css'],
@@ -42,17 +41,20 @@ export class CarritoComponent implements OnInit, OnDestroy {
   cart: Cart | null = null;
   currentUserUid: string | null = null;
   private mainSubscription: Subscription | null = null;
+  private availabilitySubscription: Subscription | null = null;
 
-  // Change type to string | null as native input type="date" returns a string
-  selectedReservationDate: string | null = null;
-  minDate: Date; // Keep these as Date objects for logic, but format for HTML binding
+  selectedReservationDate: Date | null = null;
+  minDate: Date;
   maxDate: Date;
+
+  allAvailabilityMap: DailyAvailabilityMap = {};
 
   constructor() {
     const today = new Date();
     this.minDate = today;
-    this.maxDate = new Date();
-    this.maxDate.setFullYear(this.maxDate.getFullYear() + 2);
+    const maxAllowedDate = new Date();
+    maxAllowedDate.setFullYear(maxAllowedDate.getFullYear() + 2);
+    this.maxDate = maxAllowedDate;
   }
 
   ngOnInit(): void {
@@ -99,8 +101,8 @@ export class CarritoComponent implements OnInit, OnDestroy {
         }
 
         console.log('CarritoComponent: Processing with cartData and allServicios.');
-        console.log('  cartData:', cartData);
-        console.log('  allServicios:', allServicios);
+        console.log('   cartData:', cartData);
+        console.log('   allServicios:', allServicios);
 
         if (cartData && Object.keys(cartData).length > 0 && allServicios && allServicios.length > 0) {
           const items: { [serviceId: string]: CartItem } = {};
@@ -145,12 +147,31 @@ export class CarritoComponent implements OnInit, OnDestroy {
         this.cart = { items: {}, total: 0 };
       }
     );
+
+    // ¡CAMBIOS AQUÍ! Suscribirse a la disponibilidad de todos los días
+    this.availabilitySubscription = this.firebaseService.allReservations$().pipe(
+      tap(data => console.log('CarritoComponent: Daily availability data received:', data)),
+      catchError(error => {
+        console.error('CarritoComponent: Error fetching daily availability:', error);
+        return of({}); // Devuelve un objeto vacío en caso de error
+      })
+    ).subscribe(
+      (availabilityMap: DailyAvailabilityMap) => {
+        this.allAvailabilityMap = availabilityMap;
+      },
+      (error) => {
+        console.error('CarritoComponent: Error in availability subscription:', error);
+      }
+    );
   }
 
   ngOnDestroy(): void {
     console.log('CarritoComponent: ngOnDestroy - Desuscribiendo.');
     if (this.mainSubscription) {
       this.mainSubscription.unsubscribe();
+    }
+    if (this.availabilitySubscription) {
+      this.availabilitySubscription.unsubscribe();
     }
   }
 
@@ -196,13 +217,68 @@ export class CarritoComponent implements OnInit, OnDestroy {
     }
   }
 
-  private formatDate(date: Date): string {
-    // This function now *expects* a Date object. The conversion happens in proceedToCheckout.
+  private formatDateToYYYYMMDD(date: Date): string {
     const year = date.getFullYear();
     const month = (date.getMonth() + 1).toString().padStart(2, '0');
     const day = date.getDate().toString().padStart(2, '0');
     return `${year}-${month}-${day}`;
   }
+
+  onDateSelect(event: any): void {
+    this.selectedReservationDate = event.value; // event.value is of type Date
+    console.log('Fecha seleccionada del Datepicker:', this.selectedReservationDate);
+  }
+
+  // Función dateClass para colorear los días del calendario (sin cambios aquí)
+  dateClass = (date: Date): string => {
+    const formattedDate = this.formatDateToYYYYMMDD(date);
+    const availability = this.allAvailabilityMap[formattedDate];
+
+    if (availability && availability.available === false) { // Usamos '=== false' para ser explícitos
+      if (this.currentUserUid && availability.bookedBy === this.currentUserUid) {
+        return 'booked-by-current-user';
+      }
+      return 'booked-by-others';
+    }
+    return '';
+  };
+
+  // ¡¡¡CAMBIOS AQUÍ!!! Nueva función para deshabilitar fechas
+  dateFilter = (date: Date | null): boolean => {
+    // Si la fecha es nula, no la habilites (aunque mat-datepicker usualmente maneja esto)
+    if (!date) {
+      return false;
+    }
+
+    // Deshabilita fechas pasadas (opcional, si minDate no lo hace ya completamente)
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Normaliza a inicio del día
+    if (date < today) {
+      return false; // No permite seleccionar fechas pasadas
+    }
+
+    const formattedDate = this.formatDateToYYYYMMDD(date);
+    const availability = this.allAvailabilityMap[formattedDate];
+
+    // Si no hay datos de disponibilidad, asumimos que está disponible
+    if (!availability) {
+      return true;
+    }
+
+    // Un día es seleccionable si:
+    // 1. Está marcado como 'available: true'
+    // 2. O si está marcado como 'available: false' PERO fue reservado por el usuario actual.
+    //    Esto permitiría al usuario seleccionar su propia reserva para ver detalles o cancelarla.
+    //    Si solo quieres que NO SE PUEDA VOLVER A SELECCIONAR NINGUNA FECHA RESERVADA (ni siquiera la propia),
+    //    entonces simplemente devuelve `availability.available`.
+    //
+    //    Opción 1: Permitir seleccionar tu propia reserva (útil si luego quieres editarla/cancelarla desde aquí)
+    return availability.available === true || (availability.available === false && availability.bookedBy === this.currentUserUid);
+    //
+    //    Opción 2: NO permitir seleccionar ninguna fecha reservada (más restrictivo para el calendario de reserva)
+    //    return availability.available === true;
+  };
+
 
   async proceedToCheckout(): Promise<void> {
     console.log('CarritoComponent: Iniciando proceedToCheckout...');
@@ -219,52 +295,33 @@ export class CarritoComponent implements OnInit, OnDestroy {
       return;
     }
 
-    console.log('DEBUG: selectedReservationDate from HTML (string):', this.selectedReservationDate);
-    console.log('DEBUG: typeof selectedReservationDate:', typeof this.selectedReservationDate);
-
-
-    // Check if a date string exists
     if (!this.selectedReservationDate) {
       alert('Por favor, selecciona una fecha para tu reserva.');
-      console.warn('CarritoComponent: Abortando checkout porque selectedReservationDate (string) está vacío.');
+      console.warn('CarritoComponent: Abortando checkout porque selectedReservationDate está vacío.');
       return;
     }
 
-    // Convert the string from the native input to a Date object
-    const parsedDate = new Date(this.selectedReservationDate);
+    // ¡CAMBIOS AQUÍ! Verificar que la fecha seleccionada no esté ya reservada por otro
+    const formattedDate = this.formatDateToYYYYMMDD(this.selectedReservationDate);
+    const selectedDayAvailability = this.allAvailabilityMap[formattedDate];
 
-    console.log('DEBUG: Parsed Date object:', parsedDate);
-    console.log('DEBUG: instanceof Date:', parsedDate instanceof Date);
-    console.log('DEBUG: isNaN(parsedDate.getTime()):', isNaN(parsedDate.getTime()));
-
-
-    // Validate if the parsedDate is a valid Date object
-    if (!(parsedDate instanceof Date) || isNaN(parsedDate.getTime())) {
-      alert('La fecha seleccionada no es válida. Por favor, asegúrate de seleccionarla correctamente.');
-      console.error('CarritoComponent: Fecha seleccionada inválida después de parseo:', this.selectedReservationDate);
+    // Si el día está reservado y no es por el usuario actual
+    if (selectedDayAvailability && selectedDayAvailability.available === false && selectedDayAvailability.bookedBy !== this.currentUserUid) {
+      alert('La fecha seleccionada ya ha sido reservada por otro usuario. Por favor, elige otra fecha.');
+      console.warn('CarritoComponent: Abortando checkout, fecha ya reservada por otro.');
       return;
     }
-
-    const formattedDate = this.formatDate(parsedDate); // Pass the validated Date object
-    console.log(`CarritoComponent: Fecha seleccionada formateada: ${formattedDate}`);
 
     try {
-      console.log(`CarritoComponent: Verificando si ya existe una reserva para el usuario ${this.currentUserUid} en la fecha ${formattedDate}...`);
-      const hasExistingReservation = await this.firebaseService.hasReservationForDate(this.currentUserUid, formattedDate).toPromise();
-
-      console.log(`CarritoComponent: Resultado de la verificación de reserva existente: ${hasExistingReservation}`);
-
-      if (hasExistingReservation) {
-        alert('¡Ya tienes una reserva para el día ' + formattedDate + '!\nDebes cancelar tu reserva existente antes de realizar una nueva para esta fecha.');
-        return;
-      }
-
       const reservationItems: ReservationItem[] = this.cartItemsArray.map(cartItem => ({
         id: cartItem.id,
-        nombre: cartItem.nombre,
+        nombre: cartItem.nombre, // Corrected this, should be cartItem.nombre
         descripcion: cartItem.descripcion,
         precio: cartItem.precio,
         cantidad: cartItem.cantidad,
+        imagen: cartItem.imagen,
+        categoria: cartItem.categoria,
+        duracion: cartItem.duracion
       }));
 
       console.log('CarritoComponent: Preparando ítems para la reserva:', reservationItems);
@@ -280,13 +337,13 @@ export class CarritoComponent implements OnInit, OnDestroy {
       console.log('CarritoComponent: Limpiando carrito de Firebase después de la reserva exitosa...');
       await this.firebaseService.guardarCarritoUsuario(this.currentUserUid, {});
       this.cart = { items: {}, total: 0 };
-      this.selectedReservationDate = null; // Clear the string value
+      this.selectedReservationDate = null; // Limpiar el valor del datepicker
 
       alert(`¡Reserva realizada con éxito! ID de la reserva: ${reservationId}. Puedes ver tus reservas en la Agenda.`);
       this.router.navigate(['/agenda']);
-    } catch (error) {
+    } catch (error: any) {
       console.error('CarritoComponent: Error al procesar la reserva:', error);
-      alert('Hubo un error al procesar tu reserva. Por favor, intenta de nuevo. Revisa la consola para más detalles.');
+      alert(error.message || 'Hubo un error inesperado al procesar tu reserva. Por favor, intenta de nuevo.');
     }
   }
 }

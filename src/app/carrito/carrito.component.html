@@ -3,7 +3,8 @@
 
   @if (cartItemsArray.length === 0) {
     <p class="empty-cart-message">Tu carrito está vacío.</p>
-    <button class="back-to-services-button" routerLink="/servicios">Explorar Servicios</button> } @else {
+    <button class="back-to-services-button" routerLink="/servicios">Explorar Servicios</button>
+  } @else {
     <div class="cart-items-grid">
       @for (item of cartItemsArray; track trackByItemId(item)) {
         <div class="cart-item-card"
@@ -30,11 +31,19 @@
       <h3>Total Carrito: ${{ totalCarrito | number:'1.2-2' }}</h3>
 
       <div class="date-selection">
-        <label for="reservationDate">Selecciona una fecha de reserva:</label>
-        <input type="date" id="reservationDate" name="reservationDate"
-           [(ngModel)]="selectedReservationDate"
-           [min]="minDate | date:'yyyy-MM-dd'"
-           [max]="maxDate | date:'yyyy-MM-dd'" required>
+        <label for="reservationDate">Fecha de la Reserva:</label>
+        <mat-form-field appearance="fill">
+          <mat-label>Elige una fecha</mat-label>
+          <input matInput [matDatepicker]="picker"
+                 [(ngModel)]="selectedReservationDate"
+                 (dateChange)="onDateSelect($event)"
+                 [min]="minDate"
+                 [max]="maxDate"
+                 [matDatepickerFilter]="dateFilter"  name="reservationDate"
+                 required>
+          <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+          <mat-datepicker #picker [dateClass]="dateClass"></mat-datepicker>
+        </mat-form-field>
       </div>
 
       <button class="checkout-button" (click)="proceedToCheckout()"
