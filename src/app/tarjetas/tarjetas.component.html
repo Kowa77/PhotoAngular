@@ -1,0 +1,43 @@
+<div class="tarjetas-container">
+  <div class="tarjeta">
+    <a [routerLink]="['/cumpleanos']" class="tarjeta-enlace">
+      <div class="tarjeta-fondo">
+        <picture class="tarjeta-fondo-picture">
+          <source srcset="assets/img/cumple.avif" type="image/avif">
+          <img src="assets/img/cumple.avif" alt="Imagen temática de cumpleaños" class="imagen-cumpleaños">
+        </picture>
+      </div>
+      <div class="tarjeta-footer">
+        <p class="descripcion">Descubre opciones especiales para tu fiesta de 15.</p>
+      </div>
+    </a>
+  </div>
+
+  <div class="tarjeta">
+    <a [routerLink]="['/casamientos']" class="tarjeta-enlace">
+      <div class="tarjeta-fondo">
+        <picture class="tarjeta-fondo-picture">
+          <source srcset="../../assets/img/casamiento.jpg" type="image/png">
+          <img src="../../assets/img/casamiento.png" alt="Imagen temática de casamiento" class="imagen-casamientos ">
+        </picture>
+      </div>
+      <div class="tarjeta-footer">
+        <p class="descripcion">Todo lo que necesitas para un casamiento inolvidable.</p>
+      </div>
+    </a>
+  </div>
+
+  <div class="tarjeta">
+    <a [routerLink]="['/extras']" class="tarjeta-enlace">
+      <div class="tarjeta-fondo">
+        <picture class="tarjeta-fondo-picture">
+          <source srcset="assets/img/extras2.avif" type="image/avif">
+          <img src="assets/img/extras2.jpg" alt="Imagen temática de extras" class="imagen-extras">
+        </picture>
+      </div>
+      <div class="tarjeta-footer">
+        <p class="descripcion">Amplía tu evento con nuestras opciones extra de alquiler.</p>
+      </div>
+    </a>
+  </div>
+</div>

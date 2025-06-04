@@ -1,0 +1,126 @@
+/* src/app/agenda/agenda.component.css */
+
+/* Tus estilos existentes */
+.agenda-container {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+h1, h2 {
+  text-align: center;
+  color: #333;
+  margin-bottom: 20px;
+}
+
+.calendar-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.reservations-list-section {
+  border-top: 1px solid #eee;
+  padding-top: 20px;
+}
+
+.reservations-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.reservation-card {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  background-color: #fff;
+}
+
+.reservation-card h4 {
+  color: #007bff;
+  margin-top: 0;
+  margin-bottom: 10px;
+}
+
+.reservation-card ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 10px 0;
+}
+
+.reservation-card ul li {
+  margin-bottom: 5px;
+  font-size: 0.95em;
+  color: #555;
+}
+
+.btn {
+  padding: 8px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.btn-danger {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+}
+
+.btn-danger:hover {
+  background-color: #c82333;
+}
+
+.btn:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+/* Opcional: estilo para los elementos keyvalue pipe si necesitas algo más específico */
+.keyvalue-pipe-item {
+  /* Tus estilos aquí */
+}
+
+/* --- Estilos para el calendario de Angular Material --- */
+
+/* Ajustes generales para las celdas de los días en el calendario */
+.mat-calendar-table-cell {
+  /* Asegura que los días tengan un radio de borde circular (opcional) */
+  border-radius: 50% !important;
+  /* Añade una transición suave para los cambios de color de fondo */
+  transition: background-color 0.2s ease-in-out;
+}
+
+/* ESTILO PRINCIPAL PARA LOS DÍAS RESERVADOS (con la clase 'has-bookings') */
+.mat-calendar-table-cell.has-bookings {
+  background-color: #d4edda !important; /* Un verde claro para indicar reservas */
+  color: #212529; /* Un color de texto oscuro para que contraste bien con el verde claro */
+  font-weight: bold; /* Hace el número del día más negrita */
+}
+
+/*
+  Opcional: Estilos para cuando un día reservado también es el día seleccionado o el día de hoy.
+  Esto evita que el color de "reservado" se anule por los estilos por defecto de Angular Material
+  para días seleccionados o el día actual, o permite darles un tono diferente.
+*/
+.mat-calendar-table-cell.mat-calendar-body-selected.has-bookings,
+.mat-calendar-table-cell.mat-calendar-body-today.has-bookings {
+  background-color: #c3e6cb !important; /* Un verde ligeramente más oscuro para el seleccionado/hoy */
+  /* Puedes mantener el color del texto si es legible, o cambiarlo */
+  color: #155724;
+}
+
+/*
+  Si los días no disponibles tienen una reserva,
+  puede que no quieras que el usuario pueda hacer clic en ellos.
+  Descomenta esto si quieres deshabilitar la interacción.
+*/
+/*
+.mat-calendar-table-cell.has-bookings {
+  pointer-events: none;
+  cursor: default;
+}
+*/

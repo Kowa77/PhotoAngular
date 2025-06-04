@@ -1,0 +1,89 @@
+/* Estilos generales */
+.birthday-service-card {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding-top: 70px;
+  margin-bottom: 30px;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  background-color: #fff;
+}
+
+.carousel-container {
+  flex: 0 0 50%;
+  max-width: 50%;
+}
+
+.service-image {
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+  border-radius: 0;
+  aspect-ratio: 16 / 9;
+}
+
+.service-info {
+  flex: 0 0 50%;
+  max-width: 50%;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.service-title {
+  font-weight: bold;
+  color: #ff6b6b;
+  margin-bottom: 10px;
+}
+
+.service-price {
+  font-weight: bold;
+  color: #007bff;
+  margin-bottom: 15px;
+}
+
+.btn-outline-primary {
+  border-color: #007bff;
+  color: #007bff;
+  transition: background-color 0.3s ease;
+}
+
+.btn-outline-primary:hover {
+  background-color: #007bff;
+  color: #fff;
+}
+
+/* Estilos para los detalles (inicialmente ocultos por *ngIf) */
+.service-details {
+  padding: 20px;
+  margin-top: 20px;
+  border: 1px solid #eee;
+  border-radius: 4px;
+  background-color: #f9f9f9;
+}
+
+.service-details h3 {
+  color: #ff6b6b;
+  margin-bottom: 10px;
+}
+
+/* Media query para pantallas más pequeñas */
+@media (max-width: 768px) {
+  .birthday-service-card {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .carousel-container,
+  .service-info {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+
+  .service-info {
+    padding: 15px;
+  }
+}

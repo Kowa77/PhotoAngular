@@ -1,0 +1,134 @@
+/* Estilos para el contenedor de las tarjetas */
+.tarjetas-container {
+  display: flex;
+  justify-content: center; /* Centra las tarjetas horizontalmente */
+  gap: 30px; /* Espacio entre las tarjetas */
+  padding: calc(0px  + 15%); /* Reemplaza 'altura-de-tu-navbar' con la altura real de tu navbar (ej: 60px, 4rem) y ajusta el espacio adicional (20px) si lo deseas */
+  margin-top: 0; /* Asegúrate de que no haya margen superior innecesario */
+
+  /* Estilos para el fondo de la página */
+  background-image: url('../../assets/img/4.png'); /* ¡CAMBIA ESTO por la ruta real de tu imagen! */
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  min-height: calc(100vh - altura-de-tu-navbar); /* Ajusta la altura mínima para evitar que el fondo se corte */
+  flex-wrap: wrap; /* Permite que las tarjetas pasen a la siguiente línea si no hay suficiente espacio horizontal */
+}
+
+
+
+/* Estilos base para cada tarjeta */
+.tarjeta {
+  width: 300px; /* Ancho base de la tarjeta */
+  height: 450px; /* Alto base de la tarjeta */
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.3);
+  transition: transform 0.3s ease-in-out;
+  position: relative;
+  background-color: rgba(255, 255, 255, 0.8);
+}
+
+.tarjeta:hover {
+  transform: translateY(-10px) scale(1.1);
+  box-shadow: 8px 8px 20px rgba(0, 0, 0, 0.4);
+}
+
+.tarjeta-enlace {
+  display: block;
+  width: 100%;
+  height: 100%;
+  text-decoration: none;
+}
+
+.tarjeta-fondo {
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  transition: transform 0.3s ease-in-out;
+}
+
+.tarjeta:hover .tarjeta-fondo {
+  transform: scale(1.1);
+}
+
+.tarjeta-fondo-picture {
+  display: block; /* Evita espacios en blanco extra alrededor de <picture> */
+  width: 100%;
+  height: 100%;
+}
+
+.tarjeta-fondo-picture img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Escala la imagen manteniendo su proporción y cubriendo el contenedor */
+}
+
+.tarjeta-footer {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0) 100%);
+  color: #fdfdfd;
+  padding: 15px;
+  text-align: center;
+  opacity: 0;
+  transform: translateY(100%);
+  transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+}
+
+.tarjeta-footer .descripcion {
+  margin: 0;
+  font-size: 0.9em;
+}
+
+.tarjeta:hover .tarjeta-footer {
+  opacity: 1;
+  transform: translateY(0);
+}
+/* Media query para pantallas pequeñas (ejemplo: hasta 768px de ancho) */
+@media (max-width: 768px) {
+  .tarjetas-container {
+    flex-direction: column;
+    align-items: center; /* Centra las tarjetas verticalmente */
+    padding: calc(0px  + 5%); /* Ajusta el padding para pantallas pequeñas */
+    margin-top: 0; /* Asegúrate de que no haya margen superior innecesario */
+  }
+
+  .tarjeta {
+    width: auto;
+    height: auto;
+    min-height: 400px; /* Ajusta este valor según la altura promedio de tus imágenes + el footer */
+    margin-bottom: 20px;
+  }
+  .tarjeta-footer {
+    opacity: 1; /* El footer siempre está visible */
+    transform: translateY(0); /* Asegura que no esté oculto */
+    position: relative; /* Para que no se superponga si la altura es auto */
+    background: rgba(0, 0, 0, 0.7); /* Un fondo un poco más sólido para mejor legibilidad */
+  }
+
+  .tarjeta-enlace {
+    display: block;
+    width: 100%;
+    height: auto; /* Aseguramos que la altura del enlace se ajuste al contenido */
+    text-decoration: none; /* Ya lo tienes, solo lo incluyo para contexto */
+  }
+
+  .tarjeta-fondo {
+    width: 100%;
+    height: auto; /* Se ajusta a la proporción de la imagen con background-size: cover */
+    background-size: cover;
+  }
+
+  .tarjeta:hover {
+    transform: translateY(-5px); /* Un efecto más sutil en móvil */
+    box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.3);
+  }
+
+  .tarjeta:hover .tarjeta-fondo {
+    transform: scale(1.05); /* Un efecto más sutil en móvil */
+  }
+}

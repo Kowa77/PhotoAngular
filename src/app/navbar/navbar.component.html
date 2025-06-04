@@ -1,0 +1,52 @@
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <a class="navbar-brand" routerLink="/">
+    <img src="assets/img/logo_blanco_pequeño.png" width="200" class="logo" alt="logo de mi app">
+  </a>
+  <button class="navbar-toggler" type="button"
+          (click)="toggleMenu()" aria-controls="navbarNav"
+          aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+  <div class="collapse navbar-collapse" id="navbarNav" [ngClass]="{'show': isMenuOpen}">
+    <ul>
+      <li><a routerLink="/" (click)="closeMenu()">Inicio</a></li>
+      <li><a routerLink="/cumpleanos" (click)="closeMenu()">Cumpleaños</a></li>
+      <li><a routerLink="/casamientos" (click)="closeMenu()">Casamientos</a></li>
+      <li><a routerLink="/extras" (click)="closeMenu()">Extras</a></li>
+      <li><a routerLink="/contacto" (click)="closeMenu()">Contacto</a></li>
+      <li *ngIf="isLoggedIn"><a routerLink="/servicios" (click)="closeMenu()">Servicios</a></li>
+      <li *ngIf="isLoggedIn"><a routerLink="/agenda" (click)="closeMenu()">Agendas</a></li>
+      <!-- <li><a routerLink="/servicios" (click)="closeMenu()">Servicios</a></li> -->
+
+      <ul class="grupo_btn">
+        <li  *ngIf="loggedIn" class="botones">
+          <span class="welcome">Bienvenido: {{ loggedIn }}</span>
+        </li>
+        <li  *ngIf="loggedIn" class="botones">
+          <button class=" auth-button logout-button" (click)="logout()">Cerrar Sesión</button>
+        </li>
+        <li *ngIf="loggedIn">
+          <a routerLink="/carrito" (click)="closeMenu()">
+            <i class="fas fa-shopping-cart fa-2x"></i></a>
+        </li>
+        <li  *ngIf="!loggedIn" class="botones">
+          <button class="auth-button" (click)="openLoginModal()">Iniciar Sesión</button>
+        </li>
+        <li  *ngIf="!loggedIn" class="botones">
+          <button class="auth-button" (click)="openRegisterModal()">Registrarse</button>
+        </li>
+      </ul>
+
+    </ul>
+  </div>
+  <app-login-modal
+  #loginModal
+  (closeModalEvent)="closeLoginModal()"
+  (openRegisterModalEvent)="openRegisterModal()">
+  </app-login-modal>
+
+  <app-register-modal
+    #registerModal
+    (closeModalEvent)="closeRegisterModal()">
+  </app-register-modal>
+</nav>

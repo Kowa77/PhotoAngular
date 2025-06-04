@@ -1,0 +1,164 @@
+/* Estilos generales del container y títulos, si los tienes en un global.css puedes omitirlos aquí */
+.container {
+  max-width: 960px; /* Ancho máximo para centrar contenido */
+}
+
+h1.text-center {
+  color: #343a40; /* Color oscuro para el título principal */
+  font-weight: bold;
+}
+
+h2.text-center {
+  color: #495057; /* Color un poco más claro para subtítulos */
+}
+
+p.text-muted {
+  color: #6c757d !important; /* Color gris para el texto del footer */
+}
+
+/* Estilos específicos para la sección del formulario */
+.contact-form-section {
+  background-color: #f8f9fa !important; /* Fondo claro para la sección del formulario */
+  padding: 1.5rem !important; /* Espaciado interno */
+  border-radius: 0.5rem !important; /* Bordes ligeramente más redondeados */
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075) !important; /* Sombra sutil */
+  margin: 0 auto; /* Centrar la sección */
+  max-width: 700px; /* Ancho máximo para la sección */
+}
+
+/* Estilos para el formulario en sí, para centrarlo y darle un ancho máximo */
+.contact-form {
+  display: block; /* Asegura que no se alinee en línea si hay estilos conflictivos */
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 500px; /* Ancho máximo para el formulario dentro de la sección */
+  text-align: left; /* Alineación del texto de etiquetas dentro del formulario */
+}
+
+
+/* Estilos para etiquetas y controles de formulario (inputs, textareas) */
+.form-label {
+  display: block; /* Asegura que la etiqueta esté en su propia línea */
+  margin-bottom: 0.5rem; /* Espacio entre etiqueta y input */
+  font-weight: 600; /* Etiquetas un poco más negritas */
+  color: #343a40;
+}
+
+.form-control {
+  width: 100%; /* Ocupa todo el ancho disponible */
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: #495057;
+  background-color: #fff;
+  background-clip: padding-box;
+  border: 1px solid #ced4da;
+  border-radius: 0.25rem;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.form-control:focus {
+  border-color: #80bdff;
+  outline: 0;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.form-control[readonly] {
+  background-color: #e9ecef; /* Color de fondo para inputs de solo lectura */
+  opacity: 1; /* Asegura que no se vea deshabilitado */
+}
+
+textarea.form-control {
+  resize: vertical; /* Permite redimensionar solo verticalmente */
+}
+
+/* Estilos para el texto de ayuda debajo del email */
+.form-text {
+  display: block; /* Asegura que esté en su propia línea */
+  margin-top: 0.25rem;
+  font-size: 0.875em;
+  color: #6c757d !important;
+}
+
+/* Estilos para el botón de enviar */
+.btn-primary {
+  background-color: #0d6efd; /* Color primario de Bootstrap para el botón */
+  border-color: #0d6efd;
+  font-weight: bold;
+  padding: 0.75rem 1.25rem;
+}
+
+.btn-primary:hover {
+  background-color: #0b5ed7;
+  border-color: #0a58ca;
+}
+
+.btn-lg {
+  padding: 0.75rem 1.5rem;
+  font-size: 1.25rem;
+  border-radius: 0.3rem;
+}
+
+.d-grid {
+  display: grid; /* Hace que el botón ocupe todo el ancho de su contenedor */
+}
+
+/* Estilos para los mensajes de validación (usando [class.is-invalid] y invalid-feedback) */
+.is-invalid {
+  border-color: #dc3545; /* Borde rojo para campos inválidos */
+}
+
+.invalid-feedback {
+  display: block; /* Asegura que el mensaje de error sea visible */
+  color: #dc3545; /* Texto rojo para errores */
+  font-size: 0.875em; /* Tamaño de fuente más pequeño */
+  margin-top: 0.25rem; /* Espacio superior */
+}
+
+/* Estilos para los mensajes de estado del email (éxito/error) */
+.alert-success {
+  color: #0f5132;
+  background-color: #d1e7dd;
+  border-color: #badbcc;
+}
+
+.alert-danger {
+  color: #842029;
+  background-color: #f8d7da;
+  border-color: #f5c2c7;
+}
+
+.alert {
+  padding: 1rem 1rem;
+  margin-bottom: 1rem;
+  border: 1px solid transparent;
+  border-radius: 0.25rem;
+}
+
+.alert-link {
+  font-weight: 700;
+  text-decoration: none;
+  color: inherit; /* Hereda el color del alert para consistencia */
+}
+
+.alert-link:hover {
+  text-decoration: underline;
+}
+
+/* Pequeños ajustes de espacio para mantener la consistencia (Bootstrap classes) */
+.mb-3 { margin-bottom: 1rem !important; }
+.mb-4 { margin-bottom: 1.5rem !important; }
+.mt-3 { margin-top: 1rem !important; }
+.mt-4 { margin-top: 1.5rem !important; }
+.py-5 { padding-top: 3rem !important; padding-bottom: 3rem !important; }
+
+/* Para los breaks de línea del extras.component */
+br {
+  display: block;
+  margin-bottom: 1rem;
+}
+
+/* Centrar el contenido de la sección del formulario */
+.contact-form-section .text-center {
+  text-align: center;
+}

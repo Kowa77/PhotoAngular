@@ -1,0 +1,77 @@
+<div class="servicios-container">
+
+  <section class="category-section category-fotos">
+    <h2>Servicios de Fotografía</h2>
+    @if (fotos.length === 0) { <p class="text-muted">No hay servicios de fotografía disponibles en este momento.</p>
+    } @else {
+      <div class="services-grid">
+        @for (servicio of fotos; track servicio.id) { <div class="servicio-card" [class.in-cart]="isInCart(servicio.id)">
+            <img [src]="servicio.imagen" alt="{{ servicio.nombre }}">
+            <h3>{{ servicio.nombre }}</h3>
+            <p>{{ servicio.descripcion }}</p>
+            <p class="precio-texto">Precio: {{ servicio.precio | currency:'USD':'symbol':'1.2-2' }}</p>
+
+            <button (click)="toggleCart(servicio)"
+                    [class.btn-success]="!isInCart(servicio.id)"
+                    [class.btn-danger]="isInCart(servicio.id)"
+                    [disabled]="!currentUserUid">
+              {{ isInCart(servicio.id) ? 'Quitar del Carrito' : 'Añadir al Carrito' }}
+            </button>
+          </div>
+        }
+      </div>
+    }
+  </section>
+
+  <section class="category-section category-videos">
+    <h2>Servicios de Video</h2>
+    @if (videos.length === 0) { <p class="text-muted">No hay servicios de video disponibles en este momento.</p>
+    } @else {
+      <div class="services-grid">
+        @for (servicio of videos; track servicio.id) { <div class="servicio-card" [class.in-cart]="isInCart(servicio.id)">
+            <img [src]="servicio.imagen" alt="{{ servicio.nombre }}">
+            <h3>{{ servicio.nombre }}</h3>
+            <p>{{ servicio.descripcion }}</p>
+            <p class="precio-texto">Precio: {{ servicio.precio | currency:'USD':'symbol':'1.2-2' }}</p>
+
+            <button (click)="toggleCart(servicio)"
+                    [class.btn-success]="!isInCart(servicio.id)"
+                    [class.btn-danger]="isInCart(servicio.id)"
+                    [disabled]="!currentUserUid">
+              {{ isInCart(servicio.id) ? 'Quitar del Carrito' : 'Añadir al Carrito' }}
+            </button>
+          </div>
+        }
+      </div>
+    }
+  </section>
+
+  <section class="category-section category-extras">
+    <h2>Servicios Extras</h2>
+    @if (extras.length === 0) { <p class="text-muted">No hay servicios extras disponibles en este momento.</p>
+    } @else {
+      <div class="services-grid">
+        @for (servicio of extras; track servicio.id) { <div class="servicio-card" [class.in-cart]="isInCart(servicio.id)">
+            <img [src]="servicio.imagen" alt="{{ servicio.nombre }}">
+            <h3>{{ servicio.nombre }}</h3>
+            <p>{{ servicio.descripcion }}</p>
+            @if (servicio.duracion) { <p>Duración: {{ servicio.duracion }}</p> }
+            <p class="precio-texto">Precio: {{ servicio.precio | currency:'USD':'symbol':'1.2-2' }}</p>
+
+            <button (click)="toggleCart(servicio)"
+                    [class.btn-success]="!isInCart(servicio.id)"
+                    [class.btn-danger]="isInCart(servicio.id)"
+                    [disabled]="!currentUserUid">
+              {{ isInCart(servicio.id) ? 'Quitar del Carrito' : 'Añadir al Carrito' }}
+            </button>
+          </div>
+        }
+      </div>
+    }
+  </section>
+
+  <div class="cart-summary">
+    <h3>Total Carrito: {{ totalCarrito | currency:'USD':'symbol':'1.2-2' }}</h3>
+    <button (click)="verCarrito()" [disabled]="!currentUserUid">Ir al Carrito</button>
+  </div>
+</div>

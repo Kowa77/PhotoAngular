@@ -1,0 +1,74 @@
+{
+  "servicios": {
+    "civil": {
+      "imagen": "img/007-wedding-contract.png",
+      "nombre": "Civil",
+      "precio": 4500,
+      "descripcion": "Servicio de fotografía para ceremonia civil"
+    },
+    "exteriores": {
+      "imagen": "img/022-photo.png",
+      "nombre": "Exteriores",
+      "precio": 4500,
+      "descripcion": "Servicio de fotografía en exteriores"
+    },
+    "fiesta": {
+      "imagen": "img/012-hindu-wedding.png",
+      "nombre": "Fiesta",
+      "precio": 12000,
+      "descripcion": "Servicio de fotografía para fiesta de casamiento"
+    },
+    "getting": {
+      "imagen": "img/009-wedding-dress.png",
+      "nombre": "Getting Ready",
+      "precio": 4500,
+      "descripcion": "Servicio de fotografía para preparación de los novios"
+    },
+    "iglesia": {
+      "imagen": "img/002-church.png",
+      "nombre": "Iglesia",
+      "precio": 4500,
+      "descripcion": "Servicio de fotografía para ceremonia religiosa"
+    },
+    "video": {
+      "imagen": "img/019-video.png",
+      "nombre": "Video de novios",
+      "precio": 2500,
+      "descripcion": "Servicio de video para casamiento"
+    }
+  },
+  "users": {
+    "uid_del_usuario_1": {
+      "compras": {
+        "compra_1": {
+          "fecha": "2025-05-05T12:30:00Z",
+          "servicios": [
+            { "nombre": "Civil", "precio": 4500 },
+            { "nombre": "Exteriores", "precio": 4500 }
+          ],
+          "total": 9000
+        },
+        "compra_2": {
+          "fecha": "2025-05-10T15:45:00Z",
+          "servicios": [
+            { "nombre": "Fiesta", "precio": 12000 }
+          ],
+          "total": 12000
+        }
+      }
+    },
+    "uid_del_usuario_2": {
+      "compras": {
+        "compra_unica": {
+          "fecha": "2025-05-07T10:00:00Z",
+          "servicios": [
+            { "nombre": "Getting Ready", "precio": 4500 },
+            { "nombre": "Iglesia", "precio": 4500 },
+            { "nombre": "Video de novios", "precio": 2500 }
+          ],
+          "total": 11500
+        }
+      }
+    }
+  }
+}

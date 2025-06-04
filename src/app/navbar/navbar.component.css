@@ -1,0 +1,118 @@
+nav {
+  background: #D8D0C5;
+  background: radial-gradient(circle, rgb(138, 126, 110) 0%, rgb(126, 98, 51) 50%, rgba(63, 54, 36, 1) 100%);
+  color: #fdfdfd;
+  position: sticky; /* O fixed si prefieres */
+  top: 0;
+  z-index: 1000;
+}
+a {
+  text-decoration: none;
+  color: #ffffff;
+  font: 1.1em/1 'Oswald', sans-serif;
+  text-transform: uppercase;
+  text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.5);
+  transition: color 0.3s, text-shadow 0.3s;
+}
+a:hover {
+  color: #e8be95;
+  text-shadow: 3px 3px 10px rgba(0, 0, 0, 0.7);
+}
+ul {
+  list-style: none;
+  width: 100%;
+  display: flex; /* Ya deberías tener esto */
+  flex-direction: row; /* Ya deberías tener esto */
+  align-items: center; /* Añade esta línea para la alineación vertical */
+  margin: 0;
+  padding: 0;
+}
+li { margin-left: 20px; }
+
+.welcome{
+  font-family: "Chewy", system-ui;
+  font-weight: 400;
+  color: blanchedalmond;
+  font-style: normal;
+  font-size: 1.2em;
+  transition: color 0.3s, text-shadow 0.3s;
+  text-shadow: 3px 3px 10px rgb(3, 3, 3);
+}
+.auth-button {
+  padding: 0.5rem 1rem;
+  border-radius: 0.3rem;
+  background: #e8be95;
+  background: linear-gradient(90deg, rgba(232, 190, 149, 1) 0%, rgb(250, 250, 250) 35%, rgba(242, 242, 242, 1) 100%);
+  border: none;
+  color: #584c30;
+  cursor: pointer;
+  transition: background-color 0.3s, color 0.3s, border 0.3s, text-shadow 0.3s;
+  font: 0.9em/1 'Oswald', sans-serif;
+  text-transform: uppercase;
+  text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.5);
+}
+.auth-button:hover {
+  background: #d1ccb4;
+  background: linear-gradient(90deg, rgba(209, 204, 180, 1) 0%, rgba(160, 129, 75, 1) 50%, rgba(63, 54, 36, 1) 100%);
+  color: #fdfdfd;
+  border: #141414 1px solid;
+  text-shadow: 3px 3px 10px rgba(0, 0, 0, 0.7);
+}
+
+
+
+
+@media screen and (max-width: 820px) {
+  ul {
+    display: flex;
+    flex-direction: column; /* Apila los items de la lista verticalmente */
+    width: 100%;
+    padding: 20px 0;
+    align-items: center; /* Centra los items horizontalmente */
+  }
+  li {
+    margin: 10px 0;
+    width: 100%;
+    text-align: center;
+  }
+  a {
+    display: block;
+    padding: 10px 0;
+    color: #ecf0b8; /* O el color de tus enlaces */
+    text-decoration: none;
+  }
+  a:hover {
+    color: #6a6b61; /* O el color de tus enlaces */
+  }
+  .welcome {
+    display: block;
+    width: 100%;
+    text-align: center;
+    margin: 0px;
+  }
+
+  .auth-button {
+    display: block;
+    width: calc(100% - 40px); /* Ancho con márgenes */
+    margin: 10px 20px;
+    text-align: center;
+  }
+  .logout-button {
+    color: rgb(219, 134, 36);
+    border-color: #151a27;
+  }
+}
+
+
+@media screen and (min-width: 820px) and (max-width: 1240px) {
+.grupo_btn{
+   display: flex;
+   position: sticky;
+    flex-direction: column; /* Mantiene la disposición horizontal */
+    flex-wrap: wrap; /* Permite que los elementos se envuelvan a la siguiente línea */
+
+  }
+
+
+
+}
