@@ -1,14 +1,11 @@
-# Usa una imagen base de PHP con Apache
 FROM php:8.1-apache
 
-# Establece el directorio de trabajo dentro del contenedor
 WORKDIR /var/www/html
 
-# Instala extensiones PHP necesarias si las tienes (ej. curl para API requests)
-# Esto es un ejemplo, podrías necesitar otras.
-# Para Mercado Pago, 'curl' y 'json' suelen ser útiles.
+# Instala apt-utils primero para evitar errores de debconf, y luego el resto de dependencias.
 RUN apt-get update && \
     apt-get install -y \
+    apt-utils \
     libcurl4-openssl-dev \
     libzip-dev \
     git \
@@ -20,23 +17,15 @@ RUN apt-get update && \
     && rm -rf /var/lib/apt/lists/*
 
 # Copia los archivos de tu aplicación PHP al directorio de trabajo del contenedor
+# Asegúrate de que los archivos dentro de phpServer/ se copien a /var/www/html
 COPY . /var/www/html
 
-# Si usas Composer (y ya tienes un composer.json/composer.lock para Mercado Pago SDK),
-# asegúrate de instalar las dependencias:
+# Si tu directorio 'vendor' ya está en Git, no necesitas descomentar la línea de composer install.
+# Si 'vendor' no está en Git y quieres que Composer lo genere en Back4App,
+# entonces descomenta las siguientes líneas:
 # COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # RUN composer install --no-dev --optimize-autoloader
 
-# Habilita el módulo de reescritura de Apache si lo necesitas (para URLs amigables)
-# Tu `index.php` probablemente no lo necesite si toda la lógica está en un solo archivo.
-# RUN a2enmod rewrite
-
-# Si tu .htaccess o alguna configuración especial de Apache no está en la raíz,
-# o si quieres una configuración personalizada, podrías copiar un archivo de config.conf:
-# COPY apache/config.conf /etc/apache2/sites-available/000-default.conf
-
-# Expone el puerto 80 (el puerto por defecto de Apache)
 EXPOSE 80
 
-# Comando para que Apache se ejecute cuando el contenedor se inicie
 CMD ["apache2-foreground"]
