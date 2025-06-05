@@ -24,16 +24,17 @@ RUN apt-get update && \
 
 # --- Fase 2: Instalación de extensiones PHP y Composer ---
 # Instala extensiones PHP comunes (intl, curl, json) utilizando docker-php-ext-install.
-# Para 'zip', se utiliza un método manual de compilación para mayor fiabilidad.
+# Para 'zip', se utiliza docker-php-ext-configure y docker-php-ext-install,
+# que es el método preferido para estas imágenes.
 RUN docker-php-ext-install intl curl json && \
-    # Extrae el código fuente de PHP, indispensable para compilar extensiones PECL
+    # Extrae el código fuente de PHP, indispensable para compilar extensiones PECL.
+    # Aunque docker-php-ext-install puede hacer esto internamente para algunas,
+    # es buena práctica mantenerlo explícito si se usan comandos pecl directos o para debugging.
     docker-php-source extract && \
-    # Proceso manual de compilación e instalación de la extensión 'zip'
-    (cd /usr/src/php/ext/zip && \
-    phpize && \
-    ./configure && \
-    make && \
-    make install) && \
+    # Configura y luego instala la extensión 'zip' usando las herramientas de Docker PHP.
+    # Esto es más robusto que la compilación manual para la mayoría de los casos.
+    docker-php-ext-configure zip && \
+    docker-php-ext-install zip && \
     # Habilita la extensión 'zip' en la configuración de PHP
     docker-php-ext-enable zip && \
     # Limpia el código fuente de PHP después de la compilación para mantener la imagen ligera
@@ -48,6 +49,7 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Copia todos los archivos de tu aplicación al directorio de trabajo del contenedor
 COPY . /var/www/html
 # Instala las dependencias de Composer definidas en tu composer.json
+# --no-dev y --optimize-autoloader son buenas prácticas para producción
 RUN composer install --no-dev --optimize-autoloader
 
 # --- Fase 4: Configuración de permisos ---
