@@ -1,8 +1,9 @@
 FROM php:8.3-apache
+# Stick to 8.3 for now, or 8.2 if you prefer
 
 WORKDIR /var/www/html
 
-# Install system dependencies and PHP extensions
+# Install system dependencies
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     apt-utils \
@@ -10,20 +11,22 @@ RUN apt-get update && \
     libzip-dev \
     git \
     unzip \
-    # Corrected: php8.3-dev and php-pear are part of the apt-get install command,
-    # and are correctly continued from the previous line with a backslash.
-    php8.3-dev \
-    php-pear \
+    # We still need make and gcc for compilation
     make \
     gcc && \
-    # Install curl and json PHP extensions directly
-    docker-php-ext-install curl json && \
+    # Clean up apt caches (moved here to reduce image size before source download)
+    rm -rf /var/lib/apt/lists/* && \
+    rm -rf /tmp/*
+
+# Install and enable PHP extensions
+RUN docker-php-ext-install curl json && \
+    # Use docker-php-source to prepare for PECL
+    docker-php-source extract && \
     # Install and enable the zip extension via pecl
     pecl install zip && \
     docker-php-ext-enable zip && \
-    # Clean up apt caches to reduce image size
-    rm -rf /var/lib/apt/lists/* && \
-    rm -rf /tmp/*
+    # Clean up PHP source files after compilation
+    docker-php-source delete
 
 # Copy your application files to the container's working directory
 COPY . /var/www/html
