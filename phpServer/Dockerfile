@@ -1,4 +1,4 @@
-FROM php:8.4-apache
+FROM php:8.3-apache
 
 WORKDIR /var/www/html
 
@@ -10,8 +10,8 @@ RUN apt-get update && \
     libzip-dev \
     git \
     unzip \
-    # Install specific PHP 8.4 development headers and pear/pecl
-    php8.4-dev \
+    # Now php8.3-dev (or php8.2-dev) and php-pear should be available
+    php8.3-dev \ # or php8.2-dev if using php:8.2-apache
     php-pear \
     make \
     gcc && \
