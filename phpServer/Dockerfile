@@ -8,12 +8,20 @@ RUN apt-get update && \
     libcurl4-openssl-dev \
     libzip-dev \
     git \
-    unzip && \
+    unzip \
+    # Instalar las herramientas necesarias para pecl, si no están ya
+    php-dev \
+    # ¡Importante! Asegurarse de tener make y gcc para la compilación de pecl
+    make \
+    gcc && \
+    # Instalar curl y json con el método usual
     docker-php-ext-install curl json && \
-    docker-php-ext-configure zip && \
-    docker-php-ext-install zip && \
+    # Ahora, instalar y habilitar la extensión zip con pecl
+    pecl install zip && \
+    docker-php-ext-enable zip && \
     rm -rf /var/lib/apt/lists/*
 
+# Copia los archivos de tu aplicación PHP al directorio de trabajo del contenedor
 COPY . /var/www/html
 
 EXPOSE 80
