@@ -14,7 +14,6 @@ RUN apt-get update && \
     docker-php-ext-install zip && \
     rm -rf /var/lib/apt/lists/*
 
-# Copia los archivos de tu aplicación PHP al directorio de trabajo del contenedor
 COPY . /var/www/html
 
 EXPOSE 80
