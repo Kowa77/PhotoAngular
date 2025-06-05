@@ -1,47 +1,51 @@
-FROM php:8.3-apache
+FROM php:7.4-apache
 
+# Establece el directorio de trabajo en el contenedor
 WORKDIR /var/www/html
 
-# Stage 1: Install system dependencies
-# We add necessary build tools and libraries for PHP extensions.
+# Instalar las dependencias del sistema necesarias
+# Incluimos 'libicu-dev' para la extensión 'intl' que sugiere la guía,
+# y 'libzip-dev' junto con 'zlib1g-dev' para la extensión 'zip'.
+# 'make' y 'gcc' son esenciales para compilar extensiones.
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-    apt-utils \
-    libcurl4-openssl-dev \
+    libicu-dev \
     libzip-dev \
     zlib1g-dev \
     git \
     unzip \
     make \
     gcc && \
-    # Clean up apt caches to reduce image size
+    # Limpiamos las cachés de apt para reducir el tamaño final de la imagen
     rm -rf /var/lib/apt/lists/* && \
     rm -rf /tmp/*
 
-# Stage 2: Install and enable PHP extensions
-# This includes common extensions and the manually compiled zip extension.
-RUN docker-php-ext-install curl json && \
-    # Extract PHP source, required to build PECL extensions like zip
+# Instalar y habilitar las extensiones PHP
+# Usamos 'docker-php-ext-install' para 'intl' y 'curl'.
+# Para 'zip', seguimos el proceso manual de compilación probado para evitar errores.
+RUN docker-php-ext-install intl curl json && \
+    # Extraemos el código fuente de PHP, necesario para compilar extensiones PECL
     docker-php-source extract && \
-    # Manually build and install the zip extension
-    # This bypasses potential issues with 'pecl install' in certain environments.
+    # Compilamos e instalamos la extensión 'zip' manualmente
     (cd /usr/src/php/ext/zip && \
     phpize && \
     ./configure && \
     make && \
     make install) && \
-    # Enable the zip extension in PHP's configuration
+    # Habilitamos la extensión 'zip' en la configuración de PHP
     docker-php-ext-enable zip && \
-    # Clean up PHP source files to keep the final image size minimal
-    docker-php-source delete
+    # Limpiamos el código fuente de PHP para mantener la imagen pequeña
+    docker-php-source delete && \
+    # Habilitamos el módulo de reescritura de Apache, como sugiere la guía
+    a2enmod rewrite
 
-# Copy your application files into the container
-# Ensure your application code is in the same directory as this Dockerfile.
+# Copia los archivos de tu aplicación en el contenedor
+# Asegúrate de que los archivos de tu aplicación estén en el mismo directorio que este Dockerfile.
 COPY . /var/www/html
 
-# Expose port 80, the default for Apache web servers
+# Exponer el puerto 80, que es el predeterminado para los servidores Apache
 EXPOSE 80
 
-# Define the command to run when the container starts
-# This starts Apache in the foreground.
+# Define el comando que se ejecutará cuando se inicie el contenedor
+# Esto inicia Apache en primer plano.
 CMD ["apache2-foreground"]
