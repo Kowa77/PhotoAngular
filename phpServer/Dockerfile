@@ -1,35 +1,40 @@
 FROM php:8.3-apache
-# Keep using 8.3 or 8.2 for stability
 
 WORKDIR /var/www/html
 
-# Stage 1: Install system dependencies and build extensions
+# Stage 1: Install system dependencies
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     apt-utils \
     libcurl4-openssl-dev \
     libzip-dev \
-    # Explicitly add zlib1g-dev, which is a common dependency for zip extension compilation
+    # Still needed for zip compilation
     zlib1g-dev \
     git \
     unzip \
     make \
     gcc && \
-    # Clean up apt caches immediately after installation
     rm -rf /var/lib/apt/lists/* && \
     rm -rf /tmp/*
 
 # Stage 2: Install and enable PHP extensions
-# We put this in a separate RUN to ensure previous dependencies are solid.
-# This also allows Docker to cache the system dependencies layer.
 RUN docker-php-ext-install curl json && \
-    # Extract PHP source to compile PECL extensions
+    # Extract PHP source (for pecl to compile against)
     docker-php-source extract && \
-    # Install the zip extension using pecl
-    pecl install zip && \
-    # Enable the zip extension
+    # Build and install the zip extension manually
+    # Navigate to the zip extension source directory
+    (cd /usr/src/php/ext/zip && \
+    # Run phpize to prepare the build environment
+    phpize && \
+    # Configure the extension for compilation
+    ./configure && \
+    # Compile the extension
+    make && \
+    # Install the compiled extension
+    make install) && \
+    # Enable the zip extension in PHP
     docker-php-ext-enable zip && \
-    # Clean up PHP source after compilation to reduce image size
+    # Clean up PHP source after compilation
     docker-php-source delete
 
 # Copy your application files to the container's working directory
