@@ -2,26 +2,27 @@ FROM php:8.4-apache
 
 WORKDIR /var/www/html
 
+# Install system dependencies and PHP extensions
 RUN apt-get update && \
-    apt-get install -y \
+    apt-get install -y --no-install-recommends \
     apt-utils \
     libcurl4-openssl-dev \
     libzip-dev \
     git \
     unzip \
-    # Instalar las herramientas necesarias para pecl, si no están ya
     php-dev \
-    # ¡Importante! Asegurarse de tener make y gcc para la compilación de pecl
     make \
     gcc && \
-    # Instalar curl y json con el método usual
+    # Install curl and json PHP extensions directly
     docker-php-ext-install curl json && \
-    # Ahora, instalar y habilitar la extensión zip con pecl
+    # Install and enable the zip extension via pecl
     pecl install zip && \
     docker-php-ext-enable zip && \
-    rm -rf /var/lib/apt/lists/*
+    # Clean up apt caches to reduce image size
+    rm -rf /var/lib/apt/lists/* && \
+    rm -rf /tmp/*
 
-# Copia los archivos de tu aplicación PHP al directorio de trabajo del contenedor
+# Copy your application files to the container's working directory
 COPY . /var/www/html
 
 EXPOSE 80
