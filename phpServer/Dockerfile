@@ -1,4 +1,4 @@
-FROM php:8.4-apache # ¡CAMBIO AQUÍ!
+FROM php:8.4-apache
 
 WORKDIR /var/www/html
 
@@ -9,7 +9,6 @@ RUN apt-get update && \
     libzip-dev \
     git \
     unzip && \
-    # Instala las extensiones PHP. Separamos 'zip' por si acaso.
     docker-php-ext-install curl json && \
     docker-php-ext-configure zip && \
     docker-php-ext-install zip && \
