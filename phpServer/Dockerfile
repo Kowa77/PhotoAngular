@@ -10,8 +10,9 @@ RUN apt-get update && \
     libzip-dev \
     git \
     unzip \
-    # Now php8.3-dev (or php8.2-dev) and php-pear should be available
-    php8.3-dev \ # or php8.2-dev if using php:8.2-apache
+    # Corrected: php8.3-dev and php-pear are part of the apt-get install command,
+    # and are correctly continued from the previous line with a backslash.
+    php8.3-dev \
     php-pear \
     make \
     gcc && \
