@@ -1,9 +1,11 @@
-FROM php:8.2-apache
+FROM php:8.3-apache
 
+# Establece el directorio de trabajo dentro del contenedor
 WORKDIR /var/www/html
 
-# Stage 1: Install system dependencies
-# These are necessary build tools and libraries for PHP extensions.
+# --- Fase 1: Instalación de dependencias del sistema y herramientas de compilación ---
+# Actualiza los repositorios e instala paquetes necesarios para la compilación
+# y las extensiones de PHP.
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     apt-utils \
@@ -16,35 +18,44 @@ RUN apt-get update && \
     unzip \
     make \
     gcc && \
-    # Clean up apt caches to reduce image size
+    # Limpia las cachés de apt para reducir el tamaño final de la imagen
     rm -rf /var/lib/apt/lists/* && \
     rm -rf /tmp/*
 
-# Stage 2: Install and enable PHP extensions
-# This includes common extensions (intl, curl, json) and the manually compiled zip extension.
-# Note: For PHP 8.x, docker-php-ext-install curl usually works without pkg-config issues,
-# but leaving pkg-config and libcurl4-openssl-dev won't hurt.
+# --- Fase 2: Instalación de extensiones PHP y Composer ---
+# Instala extensiones PHP comunes (intl, curl, json) utilizando docker-php-ext-install.
+# Para 'zip', se utiliza un método manual de compilación para mayor fiabilidad.
 RUN docker-php-ext-install intl curl json && \
-    # Extract PHP source, required to build PECL extensions like zip
+    # Extrae el código fuente de PHP, indispensable para compilar extensiones PECL
     docker-php-source extract && \
-    # Manually build and install the zip extension
-    # This bypasses potential issues with 'pecl install' in certain environments.
+    # Proceso manual de compilación e instalación de la extensión 'zip'
     (cd /usr/src/php/ext/zip && \
     phpize && \
     ./configure && \
     make && \
     make install) && \
-    # Enable the zip extension in PHP
+    # Habilita la extensión 'zip' en la configuración de PHP
     docker-php-ext-enable zip && \
-    # Clean up PHP source files to keep the final image size minimal
+    # Limpia el código fuente de PHP después de la compilación para mantener la imagen ligera
     docker-php-source delete && \
-    # Enable Apache's rewrite module
+    # Habilita el módulo 'rewrite' de Apache para URLs amigables
     a2enmod rewrite
 
-# Copy your application files into the container
-# Ensure your application code is in the same directory as this Dockerfile.
+# --- Fase 3: Copiar la aplicación y sus dependencias ---
+# Copia la imagen de Composer y luego instala las dependencias de tu proyecto.
+# Asume que tu archivo composer.json está en la raíz de tu proyecto.
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+# Copia todos los archivos de tu aplicación al directorio de trabajo del contenedor
 COPY . /var/www/html
+# Instala las dependencias de Composer definidas en tu composer.json
+RUN composer install --no-dev --optimize-autoloader
 
+# --- Fase 4: Configuración de permisos ---
+# Cambia la propiedad de los archivos de la aplicación al usuario de Apache (www-data)
+RUN chown -R www-data:www-data /var/www/html
+
+# --- Fase 5: Configuración de red y punto de entrada ---
+# Expone el puerto 80, que es el puerto HTTP estándar para Apache
 EXPOSE 80
-
+# Define el comando que se ejecutará al iniciar el contenedor, arrancando Apache en primer plano
 CMD ["apache2-foreground"]
