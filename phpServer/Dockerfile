@@ -3,16 +3,14 @@ FROM php:7.4-apache
 WORKDIR /var/www/html
 
 # Stage 1: Install system dependencies
-# Added pkg-config and ensuring common curl dev packages are present.
+# Removed the conflicting libcurl4-gnutls-dev.
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     apt-utils \
-    # Adding pkg-config explicitly
     pkg-config \
     libicu-dev \
-    # Providing both common libcurl dev packages for broader compatibility
+    # ONLY install libcurl4-openssl-dev (removed gnutls to avoid conflict)
     libcurl4-openssl-dev \
-    libcurl4-gnutls-dev \
     libzip-dev \
     zlib1g-dev \
     git \
