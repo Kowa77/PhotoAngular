@@ -24,17 +24,16 @@ RUN apt-get update && \
 
 # --- Fase 2: Instalación de extensiones PHP y Composer ---
 # Instala extensiones PHP comunes (intl, curl, json) utilizando docker-php-ext-install.
-# Para 'zip', se utiliza docker-php-ext-configure y docker-php-ext-install,
-# que es el método preferido para estas imágenes.
+# Para 'zip', se utiliza el método manual de compilación probado que funcionó.
 RUN docker-php-ext-install intl curl json && \
-    # Extrae el código fuente de PHP, indispensable para compilar extensiones PECL.
-    # Aunque docker-php-ext-install puede hacer esto internamente para algunas,
-    # es buena práctica mantenerlo explícito si se usan comandos pecl directos o para debugging.
+    # Extrae el código fuente de PHP, indispensable para compilar extensiones PECL
     docker-php-source extract && \
-    # Configura y luego instala la extensión 'zip' usando las herramientas de Docker PHP.
-    # Esto es más robusto que la compilación manual para la mayoría de los casos.
-    docker-php-ext-configure zip && \
-    docker-php-ext-install zip && \
+    # Proceso manual de compilación e instalación de la extensión 'zip' (la solución probada)
+    (cd /usr/src/php/ext/zip && \
+    phpize && \
+    ./configure && \
+    make && \
+    make install) && \
     # Habilita la extensión 'zip' en la configuración de PHP
     docker-php-ext-enable zip && \
     # Limpia el código fuente de PHP después de la compilación para mantener la imagen ligera
