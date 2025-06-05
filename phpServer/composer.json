@@ -1,11 +1,15 @@
 {
-    "require": {
-        "mercadopago/dx-php": "3.4",
-        "vlucas/phpdotenv": "^5.6"
-    },
+    "name": "eigt/php-server",
     "autoload": {
         "psr-4": {
-            "App\\": "app/"
+            "Eigt\\PhpServer\\": "src/"
         }
-    }
+    },
+    "authors": [
+        {
+            "name": "kowa77",
+            "email": "estebangarriga@hotmail.com"
+        }
+    ],
+    "require": {}
 }

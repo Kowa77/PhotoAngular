@@ -232,13 +232,20 @@ export class CarritoComponent implements OnInit, OnDestroy {
       }
 
       // URL de tu servidor PHP. Ajusta el '/create_preference' si tu ruta es diferente.
-      const response = await fetch("http://localhost:8000/create_preference", { // <--- ¡VERIFICA ESTA URL CON TU BACKEND PHP!
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(orderData)
-      });
+//       const response = await fetch("http://https://sporting-mia-kowa77-f503b438.koyeb.app/create_preference", { // <--- ¡VERIFICA ESTA URL CON TU BACKEND PHP!
+//         method: "POST",
+//         headers: {
+//           "Content-Type": "application/json"
+//         },
+//         body: JSON.stringify(orderData)
+//       });
+      const response = await fetch("https://sporting-mia-kowa77-f503b438.koyeb.app/create_preference", {
+          method: "POST",
+          headers: {
+              "Content-Type": "application/json"
+          },
+          body: JSON.stringify(orderData)
+      });
 
       if (!response.ok) {
         const errorBody = await response.json();
