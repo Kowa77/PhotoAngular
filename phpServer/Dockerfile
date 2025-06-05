@@ -10,7 +10,9 @@ RUN apt-get update && \
     libzip-dev \
     git \
     unzip \
-    php-dev \
+    # Install specific PHP 8.4 development headers and pear/pecl
+    php8.4-dev \
+    php-pear \
     make \
     gcc && \
     # Install curl and json PHP extensions directly
