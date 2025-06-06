@@ -4,7 +4,7 @@
   "scripts": {
     "build:prod": "ng build --configuration production",
     "ng": "ng",
-    "start": "serve -s dist/servicephoto-angular/browser -l 8000",
+    "start": "serve -s dist/servicephoto-angular/browser -l 80",
     "build": "ng build --configuration production",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
