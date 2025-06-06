@@ -7,6 +7,13 @@ use MercadoPago\MercadoPagoConfig;
 use MercadoPago\Client\Preference\PreferenceClient;
 use Dotenv\Dotenv;
 
+// ** AÑADE ESTAS LÍNEAS DE DEPURACIÓN **
+error_log("DEBUG: index.php script started."); // Un log al inicio
+// Si ves este log pero no los de las cabeceras, algo falla antes.
+
+// Esto asegura que la variable $_ENV se llene si .env existe.
+// En Koyeb, las variables de entorno se inyectan directamente, por lo que Dotenv podría ser redundante
+// para variables de entorno del sistema, pero no hace daño si el .env no está.
 $dotenv = Dotenv::createImmutable(__DIR__);
 $dotenv->load();
 
@@ -15,28 +22,34 @@ $dotenv->load();
 MercadoPagoConfig::setAccessToken($_ENV['ACCESS_TOKEN']);
 
 // --- INICIO DE LA CONFIGURACIÓN DE CORS (UNIFICADA Y CORREGIDA) ---
-// Estas cabeceras se enviarán para TODAS las solicitudes (GET, POST, OPTIONS, etc.)
-// ¡IMPORTANTE: Usar la URL EXACTA de tu frontend en producción!
+
+// ** AÑADE ESTOS LOGS ANTES DE CADA CABECERA CORS **
+error_log("DEBUG: Setting Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Origin: *"); // Permite solicitudes desde el frontend específico
+
+error_log("DEBUG: Setting Access-Control-Allow-Methods...");
 header("Access-Control-Allow-Methods: GET, POST, OPTIONS"); // Incluye todos los métodos que usarás
+
+error_log("DEBUG: Setting Access-Control-Allow-Headers...");
 header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With"); // Incluye los encabezados comunes
+
+error_log("DEBUG: Setting Access-Control-Max-Age...");
 header("Access-Control-Max-Age: 86400"); // Cachear la respuesta OPTIONS por 24 horas
 
 // Manejar explícitamente las solicitudes OPTIONS (preflight).
-// Si la solicitud es OPTIONS, respondemos con 200 OK y terminamos el script.
-// Esto es CRUCIAL para las solicitudes preflight CORS.
+error_log("DEBUG: Checking request method: " . $_SERVER['REQUEST_METHOD']);
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    error_log("DEBUG: OPTIONS request received, sending 200 OK and exiting.");
     http_response_code(200); // Envía un código de estado 200 OK
     exit(); // ¡CRUCIAL! Termina la ejecución del script aquí para las solicitudes OPTIONS.
 }
+error_log("DEBUG: Not an OPTIONS request, continuing script.");
 // --- FIN DE LA CONFIGURACIÓN DE CORS ---
 
 
 // Obtener la ruta de la solicitud HTTP (ej. /create_preference)
-// $SERVER['REQUEST_URI'] contiene la URL completa de la solicitud, incluyendo parámetros de consulta
-//parse_url descompone la URL y extrae solo la ruta, ignorando parámetros de consulta
-$requestUri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH); // Extrae la ruta de la URL de la solicitud y la almacena en $requestUri
-$requestMethod = $_SERVER['REQUEST_METHOD']; // Obtiene el método de la solicitud (GET, POST, etc.) y lo almacena en $requestMethod
+$requestUri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+$requestMethod = $_SERVER['REQUEST_METHOD'];
 
 // Función de ayuda para enviar respuestas JSON
 function sendJsonResponse($data, $statusCode = 200) {
@@ -48,44 +61,50 @@ function sendJsonResponse($data, $statusCode = 200) {
 
 // === LÓGICA DE ENRUTAMIENTO Y MANEJO DE SOLICITUDES ===
 if ($requestMethod === 'GET' && $requestUri === '/') {
-    sendJsonResponse(['message' => 'Hello World!']); // Responde con un mensaje simple para la ruta raíz en GET y lo muestra en el navegador
+    error_log("DEBUG: GET / request received.");
+    sendJsonResponse(['message' => 'Hello World!']);
 }
 
 // Ruta POST /create_preference: Maneja la creación de preferencias de pago con Mercado Pago
 if ($requestMethod === 'POST' && $requestUri === '/create_preference') {
-    $input = file_get_contents('php://input'); // file_get_contents lee el cuerpo de la solicitud POST y lo almacena en la variable $input
+    error_log("DEBUG: POST /create_preference request received.");
+    $input = file_get_contents('php://input');
     // Verifica si se recibió algún input
     if (!$input) {
-        sendJsonResponse(['error' => 'No input provided'], 400); // Responde con un error 400 si no hay entrada
+        error_log("DEBUG: No input provided.");
+        sendJsonResponse(['error' => 'No input provided'], 400);
     }
     $requestData = json_decode($input, true); // Decodifica el JSON a un array asociativo de PHP
 
     // Verifica si hubo un error al decodificar el JSON
     if (json_last_error() !== JSON_ERROR_NONE) {
-        sendJsonResponse(['error' => 'Invalid JSON input'], 400); // Responde con un error 400 si el JSON es inválido
+        error_log("DEBUG: Invalid JSON input: " . json_last_error_msg());
+        sendJsonResponse(['error' => 'Invalid JSON input'], 400);
     }
     try {
+        error_log("DEBUG: Attempting to create Mercado Pago Preference.");
         $client = new PreferenceClient();
         $items = [
             [
-                "title" => $requestData['title'] ?? 'Producto por defecto', // Título del producto
-                "quantity" => (int)($requestData['quantity'] ?? 1),       // Cantidad, casteado a entero
-                "unit_price" => (float)($requestData['price'] ?? 0),      // Precio unitario, casteado a flotante
-                "currency_id" => "UYU",                                   // Moneda (ej. Pesos Uruguayos)
+                "title" => $requestData['title'] ?? 'Producto por defecto',
+                "quantity" => (int)($requestData['quantity'] ?? 1),
+                "unit_price" => (float)($requestData['price'] ?? 0),
+                "currency_id" => "UYU",
             ]
         ];
         $preferenceData = [
-            "items" => $items, // Los ítems definidos anteriormente
-            "back_urls" => [   // URLs a las que Mercado Pago redirigirá después del pago
-                "success" => "https://www.elpais.com.uy/", // URL para pago exitoso
-                "failure" => "https://www.elpais.com.uy/", // URL para pago fallido
-                "pending" => "https://www.elpais.com.uy/"  // URL para pago pendiente
+            "items" => $items,
+            "back_urls" => [
+                "success" => "https://www.elpais.com.uy/",
+                "failure" => "https://www.elpais.com.uy/",
+                "pending" => "https://www.elpais.com.uy/"
             ],
-            "auto_return" => "approved", // Redirige automáticamente al usuario después de un pago aprobado
+            "auto_return" => "approved",
         ];
 
         // Crea la preferencia de pago en Mercado Pago
         $preference = $client->create($preferenceData);
+        error_log("DEBUG: Mercado Pago Preference created successfully: " . $preference->id);
 
         // Envía la ID de la preferencia creada de vuelta al frontend
         sendJsonResponse(['id' => $preference->id]);
@@ -94,8 +113,8 @@ if ($requestMethod === 'POST' && $requestUri === '/create_preference') {
         error_log('Error creating preference: ' . $e->getMessage()); // Registra el error en los logs del servidor
         sendJsonResponse(['error' => 'Error al crear la preferencia ;(', 'details' => $e->getMessage()], 500);
     }
+} else {
+    error_log("DEBUG: Endpoint not found for method " . $requestMethod . " and URI " . $requestUri);
+    sendJsonResponse(['error' => 'Endpoint not found'], 404);
 }
-
-sendJsonResponse(['error' => 'Endpoint not found'], 404);
-
 ?>
