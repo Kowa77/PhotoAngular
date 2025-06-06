@@ -8,7 +8,6 @@ declare global {
     FIREBASE_MESSAGING_SENDER_ID?: string;
     FIREBASE_APP_ID?: string;
     FIREBASE_MEASUREMENT_ID?: string;
-    VEXOR_PAY_PUBLIC_KEY?: string;
     // Agrega aquí cualquier otra variable de entorno que uses
   }
 }

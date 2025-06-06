@@ -10,12 +10,14 @@ use Dotenv\Dotenv;
 $dotenv = Dotenv::createImmutable(__DIR__);
 $dotenv->load();
 
+// Verifica si ACCESS_TOKEN está disponible, si no, el script fallará aquí o más abajo.
+// Puedes agregar un log temporal: error_log("MP_ACCESS_TOKEN: " . getenv('ACCESS_TOKEN'));
 MercadoPagoConfig::setAccessToken($_ENV['ACCESS_TOKEN']);
 
 // --- INICIO DE LA CONFIGURACIÓN DE CORS (UNIFICADA Y CORREGIDA) ---
 // Estas cabeceras se enviarán para TODAS las solicitudes (GET, POST, OPTIONS, etc.)
 // ¡IMPORTANTE: Usar la URL EXACTA de tu frontend en producción!
-header("Access-Control-Allow-Origin: https://frontend-fotos-kowa77-12fcae88.koyeb.app"); // <--- ¡RUTA CORREGIDA AQUÍ!
+header("Access-Control-Allow-Origin: *"); // Permite solicitudes desde el frontend específico
 header("Access-Control-Allow-Methods: GET, POST, OPTIONS"); // Incluye todos los métodos que usarás
 header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With"); // Incluye los encabezados comunes
 header("Access-Control-Max-Age: 86400"); // Cachear la respuesta OPTIONS por 24 horas
