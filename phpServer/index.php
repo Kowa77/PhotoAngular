@@ -12,10 +12,43 @@ $dotenv->load();
 // Configurar credenciales de Mercado Pago
 MercadoPagoConfig::setAccessToken($_ENV['ACCESS_TOKEN']);
 
-// Habilitar CORS (ajusta para tu entorno de producción)
-header("Access-Control-Allow-Origin: *"); // Permite solicitudes desde cualquier origen
-header("Access-Control-Allow-Methods: POST, GET, OPTIONS"); // Permite los métodos que usarás
-header("Access-Control-Allow-Headers: Content-Type, Authorization"); // Permite los encabezados comunes
+// --- INICIO DE LA CONFIGURACIÓN DE CORS (AJUSTADA) ---
+// Obtener el origen de la solicitud
+$origin = getenv('HTTP_ORIGIN') ?: '*'; // Utiliza el origin de la solicitud o '*'
+
+// Define los orígenes permitidos (puedes hacer esto más estricto en producción)
+// Para producción, idealmente sería:
+// $allowed_origins = [
+//     'https://cold-ailina-kowa77-12fcae88.koyeb.app'
+// ];
+// if (in_array($origin, $allowed_origins)) {
+//     header("Access-Control-Allow-Origin: " . $origin);
+// } else {
+//     header("Access-Control-Allow-Origin: *"); // O no enviar el header si no es permitido
+// }
+
+// Por ahora, para depurar y que funcione, mantengamos '*'
+header("Access-Control-Allow-Origin: " . $origin); // Permitir el origen que envió la solicitud
+
+// Si la solicitud es un preflight OPTIONS
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    // Especifica los métodos permitidos
+    header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
+    // Especifica los encabezados permitidos
+    header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
+    // Especifica el tiempo que el navegador puede cachear la respuesta preflight
+    header("Access-Control-Max-Age: 86400"); // 24 horas
+
+    // Envía una respuesta 200 OK y termina el script
+    http_response_code(200);
+    exit(); // Crucial: termina aquí para OPTIONS requests
+}
+
+// Para solicitudes GET/POST reales, también asegúrate de enviar el Origin
+header("Access-Control-Allow-Origin: " . $origin); // Repetir para seguridad si no es OPTIONS
+header("Access-Control-Allow-Methods: POST, GET, OPTIONS"); // Asegurar que los métodos estén presentes para las requests reales
+header("Access-Control-Allow-Headers: Content-Type, Authorization"); // Asegurar encabezados para requests reales
+
 
 // Manejar solicitudes OPTIONS (preflight requests)
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
