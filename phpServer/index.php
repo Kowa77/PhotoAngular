@@ -1,110 +1,128 @@
 <?php
+// Incluye el autoloader de Composer, esencial para que las clases de librerías funcionen
 require __DIR__ . '/vendor/autoload.php';
 
+// Importa las clases necesarias con 'use' para simplificar su uso
 use MercadoPago\MercadoPagoConfig;
 use MercadoPago\Client\Preference\PreferenceClient;
 use Dotenv\Dotenv;
 
-// Cargar variables de entorno
+// Cargar variables de entorno desde el archivo .env
+// Asegúrate de que tu archivo .env esté en la misma carpeta que index.php
 $dotenv = Dotenv::createImmutable(__DIR__);
 $dotenv->load();
 
-// Configurar credenciales de Mercado Pago
+// Configurar las credenciales de Mercado Pago usando el token de acceso de tus variables de entorno
 MercadoPagoConfig::setAccessToken($_ENV['ACCESS_TOKEN']);
 
-// --- INICIO DE LA CONFIGURACIÓN DE CORS (AJUSTADA) ---
-// Obtener el origen de la solicitud
-$origin = getenv('HTTP_ORIGIN') ?: '*'; // Utiliza el origin de la solicitud o '*'
+// --- INICIO DE LA CONFIGURACIÓN DE CORS ---
+// Este bloque es fundamental para permitir que tu frontend (Angular) se comunique con este backend.
 
-// Define los orígenes permitidos (puedes hacer esto más estricto en producción)
-// Para producción, idealmente sería:
-// $allowed_origins = [
-//     'https://cold-ailina-kowa77-12fcae88.koyeb.app'
-// ];
-// if (in_array($origin, $allowed_origins)) {
-//     header("Access-Control-Allow-Origin: " . $origin);
-// } else {
-//     header("Access-Control-Allow-Origin: *"); // O no enviar el header si no es permitido
-// }
+// Define el origen permitido. Es CRUCIAL usar la URL exacta de tu frontend en producción.
+// Para depuración, se puede usar "*" (permitir cualquier origen), pero esto no es seguro en producción.
+// Si tu frontend es https://cold-ailina-kowa77-12fcae88.koyeb.app, úsala aquí.
+header("Access-Control-Allow-Origin: https://cold-ailina-kowa77-12fcae88.koyeb.app");
+// Si quieres permitir cualquier origen para pruebas (NO RECOMENDADO EN PRODUCCIÓN):
+// header("Access-Control-Allow-Origin: *");
 
-// Por ahora, para depurar y que funcione, mantengamos '*'
-header("Access-Control-Allow-Origin: " . $origin); // Permitir el origen que envió la solicitud
+// Define los métodos HTTP que están permitidos para las solicitudes CORS.
+// Incluye POST, GET, y OPTIONS (para las solicitudes preflight).
+header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
+
+// Define los encabezados que el cliente (frontend) puede enviar en las solicitudes CORS.
+// Content-Type es común para JSON, Authorization para tokens, X-Requested-With para solicitudes AJAX.
+header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
+
+// Especifica cuánto tiempo (en segundos) el navegador puede cachear la respuesta de la solicitud preflight (OPTIONS).
+// Un valor alto (ej. 86400 segundos = 24 horas) reduce la cantidad de solicitudes preflight.
+header("Access-Control-Max-Age: 86400"); // 24 horas
+
+// Manejar explícitamente las solicitudes OPTIONS (preflight requests).
+// El navegador envía una solicitud OPTIONS antes de una solicitud "real" (como POST) para verificar los permisos CORS.
+// Si el método de la solicitud es OPTIONS, respondemos con 200 OK y salimos del script.
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200); // Envía un código de estado 200 OK
+    exit(); // ¡CRUCIAL! Termina la ejecución del script aquí para las solicitudes OPTIONS.
+}
+// --- FIN DE LA CONFIGURACIÓN DE CORS ---
 
 
-
-
-// Habilitar CORS (ajusta para tu entorno de producción)
-header("Access-Control-Allow-Origin: *"); // Permite solicitudes desde cualquier origen
-header("Access-Control-Allow-Methods: POST, GET, OPTIONS"); // Permite los métodos que usarás
-header("Access-Control-Allow-Headers: Content-Type, Authorization"); // Permite los encabezados comunes
-
-
-// // Manejar solicitudes OPTIONS (preflight requests)
-// if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-//     http_response_code(200);
-//     exit();
-// }
-
-// Obtener la ruta de la solicitud
+// Obtener la ruta de la solicitud HTTP (ej. /create_preference)
 $requestUri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+// Obtener el método HTTP de la solicitud (ej. GET, POST)
 $requestMethod = $_SERVER['REQUEST_METHOD'];
 
-// Función para enviar respuestas JSON
+// Función de ayuda para enviar respuestas JSON
 function sendJsonResponse($data, $statusCode = 200) {
+    // Establece el encabezado Content-Type para indicar que la respuesta es JSON
     header('Content-Type: application/json');
+    // Establece el código de estado HTTP de la respuesta
     http_response_code($statusCode);
+    // Codifica los datos a formato JSON y los imprime
     echo json_encode($data);
+    // Termina la ejecución del script después de enviar la respuesta
     exit();
 }
 
-// Ruta GET /
+// === LÓGICA DE ENRUTAMIENTO Y MANEJO DE SOLICITUDES ===
+
+// Ruta GET /: Responde con un mensaje simple "Hello World!"
 if ($requestMethod === 'GET' && $requestUri === '/') {
     sendJsonResponse(['message' => 'Hello World!']);
 }
 
-// Ruta POST /create_preference
+// Ruta POST /create_preference: Maneja la creación de preferencias de pago con Mercado Pago
 if ($requestMethod === 'POST' && $requestUri === '/create_preference') {
-    // Obtener el cuerpo de la solicitud JSON
+    // Obtener el cuerpo de la solicitud JSON enviada por el frontend
     $input = file_get_contents('php://input');
-    $requestData = json_decode($input, true);
+    $requestData = json_decode($input, true); // Decodifica el JSON a un array asociativo de PHP
 
+    // Verifica si hubo un error al decodificar el JSON
     if (json_last_error() !== JSON_ERROR_NONE) {
-        sendJsonResponse(['error' => 'Invalid JSON input'], 400);
+        sendJsonResponse(['error' => 'Invalid JSON input'], 400); // Responde con un error 400 si el JSON es inválido
     }
 
     try {
+        // Crea una nueva instancia del cliente de preferencias de Mercado Pago
         $client = new PreferenceClient();
 
+        // Prepara los ítems para la preferencia de pago
+        // Usa operadores de fusión de null (??) para proporcionar valores por defecto si no se reciben en la solicitud
         $items = [
             [
-                "title" => $requestData['title'] ?? 'Producto por defecto',
-                "quantity" => (int)($requestData['quantity'] ?? 1),
-                "unit_price" => (float)($requestData['price'] ?? 0),
-                "currency_id" => "UYU",
+                "title" => $requestData['title'] ?? 'Producto por defecto', // Título del producto
+                "quantity" => (int)($requestData['quantity'] ?? 1),       // Cantidad, casteado a entero
+                "unit_price" => (float)($requestData['price'] ?? 0),      // Precio unitario, casteado a flotante
+                "currency_id" => "UYU",                                   // Moneda (ej. Pesos Uruguayos)
             ]
         ];
 
+        // Prepara los datos de la preferencia de pago
         $preferenceData = [
-            "items" => $items,
-            "back_urls" => [
-                "success" => "https://www.elpais.com.uy/",
-                "failure" => "https://www.elpais.com.uy/",
-                "pending" => "https://www.elpais.com.uy/"
+            "items" => $items, // Los ítems definidos anteriormente
+            "back_urls" => [   // URLs a las que Mercado Pago redirigirá después del pago
+                "success" => "https://www.elpais.com.uy/", // URL para pago exitoso
+                "failure" => "https://www.elpais.com.uy/", // URL para pago fallido
+                "pending" => "https://www.elpais.com.uy/"  // URL para pago pendiente
             ],
-            "auto_return" => "approved",
+            "auto_return" => "approved", // Redirige automáticamente al usuario después de un pago aprobado
         ];
 
+        // Crea la preferencia de pago en Mercado Pago
         $preference = $client->create($preferenceData);
 
+        // Envía la ID de la preferencia creada de vuelta al frontend
         sendJsonResponse(['id' => $preference->id]);
 
     } catch (Exception $e) {
-        error_log('Error creating preference: ' . $e->getMessage());
+        // Captura cualquier excepción que ocurra durante el proceso
+        error_log('Error creating preference: ' . $e->getMessage()); // Registra el error en los logs del servidor
+        // Envía una respuesta de error al frontend
         sendJsonResponse(['error' => 'Error al crear la preferencia ;(', 'details' => $e->getMessage()], 500);
     }
 }
 
-// Ruta no encontrada
+// Si ninguna de las rutas anteriores coincide, envía una respuesta de "Endpoint not found"
 sendJsonResponse(['error' => 'Endpoint not found'], 404);
 
 ?>
