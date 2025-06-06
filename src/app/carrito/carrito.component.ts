@@ -239,7 +239,7 @@ export class CarritoComponent implements OnInit, OnDestroy {
 //         },
 //         body: JSON.stringify(orderData)
 //       });
-      const response = await fetch("https://sporting-mia-kowa77-f503b438.koyeb.app/create_preference", {
+      const response = await fetch("https://backend-foto-kowa77-f503b438.koyeb.app/create_preference", {
           method: "POST",
           headers: {
               "Content-Type": "application/json"
