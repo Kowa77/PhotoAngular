@@ -231,14 +231,6 @@ export class CarritoComponent implements OnInit, OnDestroy {
         // orderData.userId = this.userId; // Descomenta si necesitas enviar el userId
       }
 
-      // URL de tu servidor PHP. Ajusta el '/create_preference' si tu ruta es diferente.
-//       const response = await fetch("http://https://sporting-mia-kowa77-f503b438.koyeb.app/create_preference", { // <--- ¡VERIFICA ESTA URL CON TU BACKEND PHP!
-//         method: "POST",
-//         headers: {
-//           "Content-Type": "application/json"
-//         },
-//         body: JSON.stringify(orderData)
-//       });
       const response = await fetch("https://backend-foto-kowa77-f503b438.koyeb.app/create_preference", {
           method: "POST",
           headers: {
