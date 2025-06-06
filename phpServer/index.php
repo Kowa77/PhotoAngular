@@ -29,8 +29,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit(); // ¡CRUCIAL! Termina la ejecución del script aquí para las solicitudes OPTIONS.
 }
 // --- FIN DE LA CONFIGURACIÓN DE CORS ---
-header('Access-Control-Allow-Origin: *'); //para permitir solicitudes desde cualquier origen local
-header('Content-Type: application/json'); // Establece el tipo de contenido de la respuesta como JSON
+header("Access-Control-Allow-Origin: https://frontend-fotos-kowa77-12fcae88.koyeb.app");
+header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
+header("Access-Control-Max-Age: 86400"); // 24 horas
 
 // Obtener la ruta de la solicitud HTTP (ej. /create_preference)
 $requestUri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
