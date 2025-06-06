@@ -31,8 +31,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 
 
 // Obtener la ruta de la solicitud HTTP (ej. /create_preference)
-$requestUri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-$requestMethod = $_SERVER['REQUEST_METHOD'];
+// $SERVER['REQUEST_URI'] contiene la URL completa de la solicitud, incluyendo parámetros de consulta
+//parse_url descompone la URL y extrae solo la ruta, ignorando parámetros de consulta
+$requestUri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH); // Extrae la ruta de la URL de la solicitud y la almacena en $requestUri
+$requestMethod = $_SERVER['REQUEST_METHOD']; // Obtiene el método de la solicitud (GET, POST, etc.) y lo almacena en $requestMethod
 
 // Función de ayuda para enviar respuestas JSON
 function sendJsonResponse($data, $statusCode = 200) {
@@ -44,12 +46,16 @@ function sendJsonResponse($data, $statusCode = 200) {
 
 // === LÓGICA DE ENRUTAMIENTO Y MANEJO DE SOLICITUDES ===
 if ($requestMethod === 'GET' && $requestUri === '/') {
-    sendJsonResponse(['message' => 'Hello World!']);
+    sendJsonResponse(['message' => 'Hello World!']); // Responde con un mensaje simple para la ruta raíz en GET y lo muestra en el navegador
 }
 
 // Ruta POST /create_preference: Maneja la creación de preferencias de pago con Mercado Pago
 if ($requestMethod === 'POST' && $requestUri === '/create_preference') {
-    $input = file_get_contents('php://input');
+    $input = file_get_contents('php://input'); // file_get_contents lee el cuerpo de la solicitud POST y lo almacena en la variable $input
+    // Verifica si se recibió algún input
+    if (!$input) {
+        sendJsonResponse(['error' => 'No input provided'], 400); // Responde con un error 400 si no hay entrada
+    }
     $requestData = json_decode($input, true); // Decodifica el JSON a un array asociativo de PHP
 
     // Verifica si hubo un error al decodificar el JSON
