@@ -7,9 +7,8 @@ use MercadoPago\MercadoPagoConfig;
 use MercadoPago\Client\Preference\PreferenceClient;
 use Dotenv\Dotenv;
 
-// ** AÑADE ESTAS LÍNEAS DE DEPURACIÓN **
-error_log("DEBUG: index.php script started."); // Un log al inicio
-// Si ves este log pero no los de las cabeceras, algo falla antes.
+// ** Mantén este log de depuración si lo deseas **
+error_log("DEBUG: index.php script started.");
 
 // Esto asegura que la variable $_ENV se llene si .env existe.
 // En Koyeb, las variables de entorno se inyectan directamente, por lo que Dotenv podría ser redundante
@@ -18,32 +17,14 @@ $dotenv = Dotenv::createImmutable(__DIR__);
 $dotenv->load();
 
 // Verifica si ACCESS_TOKEN está disponible, si no, el script fallará aquí o más abajo.
-// Puedes agregar un log temporal: error_log("MP_ACCESS_TOKEN: " . getenv('ACCESS_TOKEN'));
 MercadoPagoConfig::setAccessToken($_ENV['ACCESS_TOKEN']);
 
-// --- INICIO DE LA CONFIGURACIÓN DE CORS (UNIFICADA Y CORREGIDA) ---
+// --- INICIO DE LA CONFIGURACIÓN DE CORS (AHORA EN NGINX) ---
+// TODAS las cabeceras CORS y el manejo de solicitudes OPTIONS se han movido a la configuración de Nginx.
+// POR FAVOR, ASEGÚRATE DE QUE EL NGINX.CONF ESTÉ CORRECTAMENTE CONFIGURADO CON LAS CABECERAS CORS.
 
-// ** AÑADE ESTOS LOGS ANTES DE CADA CABECERA CORS **
-error_log("DEBUG: Setting Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Origin: *"); // Permite solicitudes desde el frontend específico
-
-error_log("DEBUG: Setting Access-Control-Allow-Methods...");
-header("Access-Control-Allow-Methods: GET, POST, OPTIONS"); // Incluye todos los métodos que usarás
-
-error_log("DEBUG: Setting Access-Control-Allow-Headers...");
-header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With"); // Incluye los encabezados comunes
-
-error_log("DEBUG: Setting Access-Control-Max-Age...");
-header("Access-Control-Max-Age: 86400"); // Cachear la respuesta OPTIONS por 24 horas
-
-// Manejar explícitamente las solicitudes OPTIONS (preflight).
-error_log("DEBUG: Checking request method: " . $_SERVER['REQUEST_METHOD']);
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    error_log("DEBUG: OPTIONS request received, sending 200 OK and exiting.");
-    http_response_code(200); // Envía un código de estado 200 OK
-    exit(); // ¡CRUCIAL! Termina la ejecución del script aquí para las solicitudes OPTIONS.
-}
-error_log("DEBUG: Not an OPTIONS request, continuing script.");
+// No necesitamos manejar explícitamente las solicitudes OPTIONS aquí en PHP.
+// Nginx ya interceptará y responderá con 204 para OPTIONS antes de que la solicitud llegue a PHP.
 // --- FIN DE LA CONFIGURACIÓN DE CORS ---
 
 
