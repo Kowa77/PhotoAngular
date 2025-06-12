@@ -1,11 +1,11 @@
 {
   "name": "servicephoto-angular",
   "version": "0.0.0",
-  "scripts": {
+   "scripts": {
     "build:prod": "ng build --configuration production",
     "ng": "ng",
-    "start": "ng serve",
-    "build": "ng build",
+    "start": "npm run build:prod && serve -s dist/servicephoto-angular -l $PORT",
+    "build": "ng build --configuration production",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
   },
@@ -32,6 +32,7 @@
     "zone.js": "~0.15.0"
   },
   "devDependencies": {
+    "serve": "^14.2.3",
     "@angular-devkit/build-angular": "^19.2.11",
     "@angular/cli": "^19.2.11",
     "@angular/compiler-cli": "^19.2.10",
