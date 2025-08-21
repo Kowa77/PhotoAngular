@@ -10,12 +10,14 @@
   <div class="collapse navbar-collapse" id="navbarNav" [ngClass]="{'show': isMenuOpen}">
     <ul>
       <li><a routerLink="/" (click)="closeMenu()">Inicio</a></li>
-      <li><a routerLink="/cumpleanos" (click)="closeMenu()">Cumpleaños</a></li>
+      <!-- <li><a routerLink="/cumpleanos" (click)="closeMenu()">Cumpleaños</a></li>
       <li><a routerLink="/casamientos" (click)="closeMenu()">Casamientos</a></li>
-      <li><a routerLink="/extras" (click)="closeMenu()">Extras</a></li>
+      <li><a routerLink="/extras" (click)="closeMenu()">Extras</a></li> -->
+      <li><a routerLink="/nosotros" (click)="closeMenu()">Nosotros</a></li>
       <li><a routerLink="/contacto" (click)="closeMenu()">Contacto</a></li>
       <li *ngIf="isLoggedIn"><a routerLink="/servicios" (click)="closeMenu()">Servicios</a></li>
       <li *ngIf="isLoggedIn"><a routerLink="/agenda" (click)="closeMenu()">Agendas</a></li>
+      <li *ngIf="isLoggedIn"><a routerLink="/perfil" (click)="closeMenu()">Perfil</a></li>
       <!-- <li><a routerLink="/servicios" (click)="closeMenu()">Servicios</a></li> -->
 
       <ul class="grupo_btn">

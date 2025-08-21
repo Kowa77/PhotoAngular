@@ -9,6 +9,7 @@ import { NosotrosComponent } from './paginas/nosotros/nosotros.component';
 import { ServiciosComponent } from './servicios/servicios.component';
 import { CarritoComponent } from './carrito/carrito.component';
 import { AgendaComponent } from './agenda/agenda.component'; // Importa el nuevo componente
+import { PerfilComponent } from './perfil/perfil.component';
 
 export const routes: Routes = [
   { path: '', component: TarjetasComponent }, // Ruta por defecto
@@ -17,6 +18,7 @@ export const routes: Routes = [
   { path: 'extras', component: ExtrasComponent },
   { path: 'contacto', component: ContactoComponent },
   { path: 'nosotros', component: NosotrosComponent },
+  { path: 'perfil', component: PerfilComponent },
   { path: 'servicios', component: ServiciosComponent },
   { path: 'carrito', component: CarritoComponent },
   { path: 'agenda', component: AgendaComponent }, // Nueva ruta para la agenda
