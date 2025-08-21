@@ -6,11 +6,12 @@
     <button class="back-to-services-button" routerLink="/servicios">Explorar Servicios</button>
   } @else {
     <div class="cart-items-grid">
-      @for (item of cartItemsArray; track trackByItemId(item)) {
+      @for (item of cartItemsArray; track trackByItemId($index, item)) { <!-- CAMBIO AQUÍ: trackByItemId -->
         <div class="cart-item-card"
              [class.category-fotos]="item.categoria === 'foto'"
              [class.category-videos]="item.categoria === 'video'"
-             [class.category-extras]="item.categoria === 'extra'">
+             [class.category-extras]="item.categoria === 'extra'"
+             [class.category-sugerido]="item.categoria === 'sugerido'"> <!-- NUEVO: Clase para servicios sugeridos -->
           <img [src]="item.imagen" alt="{{ item.nombre }}">
           <div class="item-details">
             <h3>{{ item.nombre }}</h3>
@@ -28,7 +29,7 @@
     </div>
 
     <div class="cart-summary">
-      <h3>Total Carrito: ${{ totalCarrito | number:'1.2-2' }}</h3>
+      <h3>Total Carrito: ${{ currentCartTotal | number:'1.2-2' }}</h3> <!-- CAMBIO AQUÍ: currentCartTotal -->
 
       <div class="date-selection">
         <label for="reservationDate">Fecha de la Reserva:</label>
@@ -39,7 +40,7 @@
                  (dateChange)="onDateSelect($event)"
                  [min]="minDate"
                  [max]="maxDate"
-                 [matDatepickerFilter]="dateFilter"  name="reservationDate"
+                 [matDatepickerFilter]="dateFilter" name="reservationDate"
                  required>
           <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
           <mat-datepicker #picker [dateClass]="dateClass"></mat-datepicker>

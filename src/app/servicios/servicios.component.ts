@@ -1,7 +1,7 @@
 // src/app/servicios/servicios.component.ts
 import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router'; // Importa Router
+import { Router } from '@angular/router'; // Importa RouterLink también si lo usas en el template
 import { Auth, User } from '@angular/fire/auth';
 import { Subscription, combineLatest } from 'rxjs';
 import { AuthService } from '../auth/auth.service';
@@ -13,19 +13,25 @@ import { Servicio } from '../models/servicio.model';
   templateUrl: './servicios.component.html',
   styleUrls: ['./servicios.component.css'],
   standalone: true,
-  imports: [CommonModule] // Añade RouterLink a imports
+  imports: [CommonModule] // Asegúrate de que RouterLink esté aquí si lo usas en el template
 })
 export class ServiciosComponent implements OnInit, OnDestroy {
   private authService: AuthService = inject(AuthService);
   private firebaseService: FirebaseService = inject(FirebaseService);
   private auth: Auth = inject(Auth);
-  private router: Router = inject(Router); // Inyecta Router para la navegación programática
+  private router: Router = inject(Router);
 
   currentUserUid: string | null = null;
-  allAvailableServices: Servicio[] = [];
+  allAvailableServices: Servicio[] = []; // Contendrá todos los servicios combinados
+
+  // Si necesitas separarlos, puedes usar estos, o quizás adaptarlos a las nuevas categorías (casamientos, cumpleaños, sugeridos, extras)
   fotos: Servicio[] = [];
   videos: Servicio[] = [];
   extras: Servicio[] = [];
+  sugeridos: Servicio[] = []; // Nueva propiedad para los servicios sugeridos
+  casamientos: Servicio[] = []; // Nueva propiedad para los servicios de casamientos
+  cumpleanos: Servicio[] = []; // Nueva propiedad para los servicios de cumpleaños
+
   serviciosEnCarrito: Set<string> = new Set();
   totalCarrito: number = 0;
 
@@ -46,8 +52,6 @@ export class ServiciosComponent implements OnInit, OnDestroy {
             })
           );
         } else {
-          // Lógica para carrito local (localStorage) si no hay usuario logueado
-          // Esto ya lo maneja el CarritoComponent, aquí solo vaciamos el Set si no hay usuario.
           this.serviciosEnCarrito = new Set();
           this.calculateTotalCart();
           console.log("ServiciosComponent: Usuario deslogueado, carrito local a considerar vacío para esta vista.");
@@ -63,17 +67,27 @@ export class ServiciosComponent implements OnInit, OnDestroy {
   }
 
   private fetchServices() {
+    // Ahora usamos el nuevo método getTodosLosServicios() que combina todo
     this.subscriptions.add(
-      combineLatest([
-        this.firebaseService.getFotos(),
-        this.firebaseService.getVideos(),
-        this.firebaseService.getExtras()
-      ]).subscribe(([fotos, videos, extras]) => {
-        this.fotos = fotos;
-        this.videos = videos;
-        this.extras = extras;
-        this.allAvailableServices = [...fotos, ...videos, ...extras];
-        console.log("ServiciosComponent: Servicios cargados y clasificados:", { fotos, videos, extras });
+      this.firebaseService.getTodosLosServicios().subscribe(allServices => {
+        this.allAvailableServices = allServices;
+        console.log("ServiciosComponent: Todos los servicios cargados:", this.allAvailableServices);
+
+        // Opcional: Si tu template sigue necesitando las categorías separadas (fotos, videos, extras, sugeridos, etc.)
+        // Puedes filtrarlos aquí o refactorizar tu template para usar directamente allAvailableServices
+        this.fotos = allServices.filter(s => s.categoria === 'foto');
+        this.videos = allServices.filter(s => s.categoria === 'video');
+        this.extras = allServices.filter(s => s.categoria === 'extra');
+        this.sugeridos = allServices.filter(s => s.categoria === 'sugerido');
+
+        // Para los servicios de casamientos/cumpleaños, necesitas decidir cómo los quieres categorizar aquí.
+        // Si tu UI los agrupa por "tipo" (foto/video) dentro de "evento" (casamientos/cumpleaños),
+        // podrías necesitar lógica más compleja o simplemente mostrar toda la lista y dejar que el usuario filtre.
+        // Por ahora, 'fotos', 'videos', 'extras', 'sugeridos' se basan en la propiedad 'categoria' que mapea tu servicio.
+        // Si quieres 'casamientos' y 'cumpleaños' como listas separadas, necesitarías ajustar el mapeo en FirebaseService
+        // para que cada servicio tenga una propiedad 'evento' (ej. 'casamiento', 'cumpleaños').
+
+        this.calculateTotalCart(); // Recalcula el total del carrito con todos los servicios
       }, error => {
         console.error("ServiciosComponent: Error al cargar los servicios:", error);
       })
@@ -88,21 +102,19 @@ export class ServiciosComponent implements OnInit, OnDestroy {
   // Nuevo método para alternar (añadir/quitar) un servicio del carrito
   async toggleCart(servicio: Servicio): Promise<void> {
     if (!this.currentUserUid) {
-      alert('Necesitas iniciar sesión para agregar ítems al carrito.');
+      // Usar un modal en lugar de alert
+      console.warn('Necesitas iniciar sesión para agregar ítems al carrito.');
+      // Aquí podrías abrir un modal informativo para el usuario
       return;
     }
 
     if (this.isInCart(servicio.id)) {
-      // Quitar del carrito
       await this.firebaseService.quitarDelCarrito(this.currentUserUid, servicio.id);
       console.log(`ServiciosComponent: Servicio ${servicio.nombre} quitado del carrito.`);
     } else {
-      // Agregar al carrito
-      // ¡CORRECCIÓN AQUÍ! Llama a addToCart y pasa el objeto 'servicio' completo.
       await this.firebaseService.addToCart(this.currentUserUid, servicio);
       console.log(`ServiciosComponent: Servicio ${servicio.nombre} agregado al carrito.`);
     }
-    // La actualización del Set 'serviciosEnCarrito' y el total se hará a través de la suscripción a 'obtenerCarritoUsuario'.
   }
 
   calculateTotalCart(): void {
@@ -119,7 +131,6 @@ export class ServiciosComponent implements OnInit, OnDestroy {
     console.log("ServiciosComponent: Total Carrito Actualizado:", this.totalCarrito);
   }
 
-  // Método 'pagar' ahora solo navegará al carrito
   pagar(): void {
     console.log("Navegando al carrito...");
     this.router.navigate(['/carrito']);
@@ -134,11 +145,7 @@ export class ServiciosComponent implements OnInit, OnDestroy {
     }
   }
 
-  // Navega al carrito de compras
   verCarrito(): void {
-    // Aquí puedes navegar a la ruta del carrito, por ejemplo:
     this.router.navigate(['/carrito']);
-    // O mostrar un modal, según tu lógica de navegación
-
   }
 }
