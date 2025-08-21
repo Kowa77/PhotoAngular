@@ -49,6 +49,10 @@ export class CarritoComponent implements OnInit, OnDestroy {
 
   allAvailabilityMap: DailyAvailabilityMap = {};
 
+  // Propiedades para almacenar los ítems del carrito como un array y el total
+  cartItemsArray: CartItem[] = []; // Ahora es una propiedad, no un getter
+  currentCartTotal: number = 0; // Ahora es una propiedad, no un getter
+
   constructor() {
     const today = new Date();
     this.minDate = today;
@@ -66,7 +70,7 @@ export class CarritoComponent implements OnInit, OnDestroy {
         console.log('CarritoComponent: currentUserUid:', this.currentUserUid);
         if (!this.currentUserUid) {
           console.log('CarritoComponent: No hay usuario autenticado, limpiando carrito.');
-          this.cart = { items: {}, total: 0 };
+          this.setEmptyCart(); // Usa el nuevo método para vaciar el carrito
         }
       }),
       switchMap(user => {
@@ -81,7 +85,8 @@ export class CarritoComponent implements OnInit, OnDestroy {
               return of({} as Record<string, number>);
             })
           ),
-          this.firebaseService.getServicios().pipe(
+          // ¡CAMBIO CLAVE AQUÍ! Usar getTodosLosServicios()
+          this.firebaseService.getTodosLosServicios().pipe(
             tap(data => console.log('CarritoComponent: allServicios loaded (from combineLatest):', data)),
             catchError(error => {
               console.error('CarritoComponent: Error fetching all services:', error);
@@ -96,13 +101,13 @@ export class CarritoComponent implements OnInit, OnDestroy {
       ({ cartData, allServicios }) => {
         if (!this.currentUserUid) {
           console.log('CarritoComponent: Carrito limpiado porque no hay usuario (re-check).');
-          this.cart = { items: {}, total: 0 };
+          this.setEmptyCart(); // Asegura que el carrito se vacíe
           return;
         }
 
         console.log('CarritoComponent: Processing with cartData and allServicios.');
-        console.log('   cartData:', cartData);
-        console.log('   allServicios:', allServicios);
+        console.log('    cartData:', cartData);
+        console.log('    allServicios:', allServicios);
 
         if (cartData && Object.keys(cartData).length > 0 && allServicios && allServicios.length > 0) {
           const items: { [serviceId: string]: CartItem } = {};
@@ -135,20 +140,21 @@ export class CarritoComponent implements OnInit, OnDestroy {
             }
           }
           this.cart = { items, total };
+          this.updateCartDisplayData(); // Actualiza cartItemsArray y currentCartTotal
           console.log(`CarritoComponent: Successfully processed ${itemsProcessedCount} items. Final visible cart:`, this.cart);
         } else {
           console.log('CarritoComponent: CartData or allServicios is empty/null, setting cart as empty locally.');
-          this.cart = { items: {}, total: 0 };
+          this.setEmptyCart(); // Usa el nuevo método para vaciar el carrito
         }
         console.log('CarritoComponent: After update, cartItemsArray.length is:', this.cartItemsArray.length);
       },
       (error) => {
         console.error('CarritoComponent: Major error in main subscription:', error);
-        this.cart = { items: {}, total: 0 };
+        this.setEmptyCart(); // Asegura que el carrito se vacíe en caso de error mayor
       }
     );
 
-    // ¡CAMBIOS AQUÍ! Suscribirse a la disponibilidad de todos los días
+    // Suscribirse a la disponibilidad de todos los días
     this.availabilitySubscription = this.firebaseService.allReservations$().pipe(
       tap(data => console.log('CarritoComponent: Daily availability data received:', data)),
       catchError(error => {
@@ -175,17 +181,20 @@ export class CarritoComponent implements OnInit, OnDestroy {
     }
   }
 
-  get cartItemsArray(): CartItem[] {
-    const items = this.cart ? Object.values(this.cart.items) : [];
-    console.log('CarritoComponent: cartItemsArray calculated (getter):', items.length, items);
-    return items;
+  // Nuevo método para vaciar el carrito de forma consistente
+  private setEmptyCart(): void {
+    this.cart = { items: {}, total: 0 };
+    this.updateCartDisplayData();
   }
 
-  get totalCarrito(): number {
-    return this.cart ? this.cart.total : 0;
+  // Nuevo método para actualizar cartItemsArray y currentCartTotal
+  private updateCartDisplayData(): void {
+    this.cartItemsArray = this.cart ? Object.values(this.cart.items) : [];
+    this.currentCartTotal = this.cart ? this.cart.total : 0;
+    console.log('CarritoComponent: Cart display data updated. Items:', this.cartItemsArray.length, 'Total:', this.currentCartTotal);
   }
 
-  trackByItemId(item: CartItem): string {
+  trackByItemId(index: number, item: CartItem): string { // Agregado 'index' para la firma común de trackBy
     return item.id;
   }
 
@@ -193,9 +202,11 @@ export class CarritoComponent implements OnInit, OnDestroy {
     const target = event.target as HTMLInputElement;
     const newQuantity = parseInt(target.value, 10);
 
+    // Asegúrate de que this.cart.items exista antes de intentar iterar
     if (this.currentUserUid && this.cart && this.cart.items && newQuantity >= 1) {
       const currentItem = this.cart.items[serviceId];
       if (currentItem) {
+        // Crea una copia del objeto de items para enviar a Firebase
         const updatedFirebaseCart: { [key: string]: number } = {};
         for (const key in this.cart.items) {
           if (this.cart.items.hasOwnProperty(key)) {
@@ -206,6 +217,7 @@ export class CarritoComponent implements OnInit, OnDestroy {
 
         await this.firebaseService.guardarCarritoUsuario(this.currentUserUid, updatedFirebaseCart);
         console.log(`CarritoComponent: Cantidad de ${serviceId} actualizada a ${newQuantity} en Firebase.`);
+        // No es necesario actualizar this.cart.items aquí, la suscripción a obtenerCarritoUsuario lo hará automáticamente.
       }
     }
   }
@@ -229,12 +241,11 @@ export class CarritoComponent implements OnInit, OnDestroy {
     console.log('Fecha seleccionada del Datepicker:', this.selectedReservationDate);
   }
 
-  // Función dateClass para colorear los días del calendario (sin cambios aquí)
   dateClass = (date: Date): string => {
     const formattedDate = this.formatDateToYYYYMMDD(date);
     const availability = this.allAvailabilityMap[formattedDate];
 
-    if (availability && availability.available === false) { // Usamos '=== false' para ser explícitos
+    if (availability && availability.available === false) {
       if (this.currentUserUid && availability.bookedBy === this.currentUserUid) {
         return 'booked-by-current-user';
       }
@@ -243,79 +254,62 @@ export class CarritoComponent implements OnInit, OnDestroy {
     return '';
   };
 
-  // ¡¡¡CAMBIOS AQUÍ!!! Nueva función para deshabilitar fechas
   dateFilter = (date: Date | null): boolean => {
-    // Si la fecha es nula, no la habilites (aunque mat-datepicker usualmente maneja esto)
     if (!date) {
       return false;
     }
 
-    // Deshabilita fechas pasadas (opcional, si minDate no lo hace ya completamente)
     const today = new Date();
-    today.setHours(0, 0, 0, 0); // Normaliza a inicio del día
+    today.setHours(0, 0, 0, 0);
     if (date < today) {
-      return false; // No permite seleccionar fechas pasadas
+      return false;
     }
 
     const formattedDate = this.formatDateToYYYYMMDD(date);
     const availability = this.allAvailabilityMap[formattedDate];
 
-    // Si no hay datos de disponibilidad, asumimos que está disponible
     if (!availability) {
       return true;
     }
 
-    // Un día es seleccionable si:
-    // 1. Está marcado como 'available: true'
-    // 2. O si está marcado como 'available: false' PERO fue reservado por el usuario actual.
-    //    Esto permitiría al usuario seleccionar su propia reserva para ver detalles o cancelarla.
-    //    Si solo quieres que NO SE PUEDA VOLVER A SELECCIONAR NINGUNA FECHA RESERVADA (ni siquiera la propia),
-    //    entonces simplemente devuelve `availability.available`.
-    //
-    //    Opción 1: Permitir seleccionar tu propia reserva (útil si luego quieres editarla/cancelarla desde aquí)
     return availability.available === true || (availability.available === false && availability.bookedBy === this.currentUserUid);
-    //
-    //    Opción 2: NO permitir seleccionar ninguna fecha reservada (más restrictivo para el calendario de reserva)
-    //    return availability.available === true;
   };
-
 
   async proceedToCheckout(): Promise<void> {
     console.log('CarritoComponent: Iniciando proceedToCheckout...');
 
     if (!this.currentUserUid) {
-      alert('Debes iniciar sesión para proceder con la reserva.');
+      // Reemplazado alert por console.warn y redirección, como buena práctica
+      console.warn('Debes iniciar sesión para proceder con la reserva.');
       this.router.navigate(['/auth']);
       return;
     }
 
     if (!this.cartItemsArray || this.cartItemsArray.length === 0) {
-      alert('Tu carrito está vacío. Añade servicios antes de proceder.');
-      console.warn('CarritoComponent: Abortando checkout porque cartItemsArray está vacío.');
+      console.warn('Tu carrito está vacío. Añade servicios antes de proceder.');
+      // Aquí podrías mostrar un modal de error si tienes uno configurado
       return;
     }
 
     if (!this.selectedReservationDate) {
-      alert('Por favor, selecciona una fecha para tu reserva.');
-      console.warn('CarritoComponent: Abortando checkout porque selectedReservationDate está vacío.');
+      console.warn('Por favor, selecciona una fecha para tu reserva.');
+      // Aquí podrías mostrar un modal de error si tienes uno configurado
       return;
     }
 
-    // ¡CAMBIOS AQUÍ! Verificar que la fecha seleccionada no esté ya reservada por otro
     const formattedDate = this.formatDateToYYYYMMDD(this.selectedReservationDate);
     const selectedDayAvailability = this.allAvailabilityMap[formattedDate];
 
-    // Si el día está reservado y no es por el usuario actual
     if (selectedDayAvailability && selectedDayAvailability.available === false && selectedDayAvailability.bookedBy !== this.currentUserUid) {
-      alert('La fecha seleccionada ya ha sido reservada por otro usuario. Por favor, elige otra fecha.');
-      console.warn('CarritoComponent: Abortando checkout, fecha ya reservada por otro.');
+      console.warn('La fecha seleccionada ya ha sido reservada por otro usuario. Por favor, elige otra fecha.');
+      // Aquí podrías mostrar un modal de error si tienes uno configurado
       return;
     }
 
     try {
       const reservationItems: ReservationItem[] = this.cartItemsArray.map(cartItem => ({
         id: cartItem.id,
-        nombre: cartItem.nombre, // Corrected this, should be cartItem.nombre
+        nombre: cartItem.nombre,
         descripcion: cartItem.descripcion,
         precio: cartItem.precio,
         cantidad: cartItem.cantidad,
@@ -325,25 +319,27 @@ export class CarritoComponent implements OnInit, OnDestroy {
       }));
 
       console.log('CarritoComponent: Preparando ítems para la reserva:', reservationItems);
-
       console.log('CarritoComponent: Guardando reserva...');
+
       const reservationId = await this.firebaseService.saveReservation(
         this.currentUserUid,
         formattedDate,
         reservationItems,
-        this.totalCarrito
+        this.currentCartTotal // Usar la nueva propiedad
       );
 
       console.log('CarritoComponent: Limpiando carrito de Firebase después de la reserva exitosa...');
       await this.firebaseService.guardarCarritoUsuario(this.currentUserUid, {});
-      this.cart = { items: {}, total: 0 };
+      this.setEmptyCart(); // Usa el nuevo método para vaciar el carrito
       this.selectedReservationDate = null; // Limpiar el valor del datepicker
 
-      alert(`¡Reserva realizada con éxito! ID de la reserva: ${reservationId}. Puedes ver tus reservas en la Agenda.`);
+      console.log(`¡Reserva realizada con éxito! ID de la reserva: ${reservationId}. Puedes ver tus reservas en la Agenda.`);
+      // Aquí podrías mostrar un modal de éxito en lugar de alert
       this.router.navigate(['/agenda']);
     } catch (error: any) {
       console.error('CarritoComponent: Error al procesar la reserva:', error);
-      alert(error.message || 'Hubo un error inesperado al procesar tu reserva. Por favor, intenta de nuevo.');
+      // Reemplazado alert por console.error
+      console.error(error.message || 'Hubo un error inesperado al procesar tu reserva. Por favor, intenta de nuevo.');
     }
   }
 }

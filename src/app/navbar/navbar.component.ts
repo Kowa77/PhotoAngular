@@ -4,7 +4,7 @@ import { CommonModule } from '@angular/common';
 import { LoginModalComponent } from '../login-modal/login-modal.component';
 import { RegisterModalComponent } from '../register-modal/register-modal.component';
 import { AuthService } from '../auth/auth.service';
-import { User } from '@angular/fire/auth';
+//import { User } from '@angular/fire/auth';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -79,14 +79,6 @@ export class NavbarComponent implements OnInit, OnDestroy {
   closeRegisterModal(): void {
     // Lógica adicional al cerrar el modal de registro si es necesario
   }
-
-  // handleLoginSuccess(user: any): void {
-  //   // El observable getAuthState ya está manejando la actualización del estado
-  // }
-
-  // handleRegisterSuccess(user: any): void {
-  //   // El observable getAuthState ya está manejando la actualización del estado
-  // }
 
   logout(): void {
     this.authService.logoutUser().then(() => {

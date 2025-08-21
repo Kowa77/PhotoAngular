@@ -5,7 +5,6 @@ import { Database, ref, set, get, remove, onValue, push, runTransaction } from '
 import { Observable, combineLatest, map, tap, from } from 'rxjs';
 import { Auth, user, User as FirebaseAuthUser } from '@angular/fire/auth';
 import { Servicio } from '../models/servicio.model';
-// ¡Importa DailyAvailabilityMap y DailyAvailabilityEntry! (Ya estaban correctos)
 import { Reservation, ReservationItem, ReservationDetails, ReservationsByDateMap, DailyAvailabilityMap, DailyAvailabilityEntry } from '../models/reservation.model';
 import { AuthService } from '../auth/auth.service';
 
@@ -15,13 +14,19 @@ import { AuthService } from '../auth/auth.service';
 export class FirebaseService {
   private database: Database = inject(Database);
   private auth: Auth = inject(Auth);
-  private authService: AuthService = inject(AuthService);
+  private authService: AuthService = inject(AuthService); // Inyectar AuthService para obtener el UID del usuario actual
 
   constructor() {
     console.log("FirebaseService: Firebase Database (modular) injected.");
   }
 
-  // --- Métodos para obtener servicios (fotos, videos, extras) ---
+  // --- MÉTODOS REFACTORIZADOS PARA LA NUEVA ESTRUCTURA DE BD ---
+
+  /**
+   * Método privado genérico para obtener una colección de servicios de Realtime Database.
+   * @param path La ruta al nodo de la base de datos (ej. 'servicios/casamientos/fotos').
+   * @returns Un Observable que emite un array de objetos Servicio.
+   */
   private getCategory<T>(path: string): Observable<T[]> {
     const categoryRef = ref(this.database, path);
     console.log(`FirebaseService: Obteniendo colección de Realtime DB: ${path}`);
@@ -36,6 +41,7 @@ export class FirebaseService {
               const rawItem = data[key];
               let mappedItem: any = { id: key };
 
+              // Lógica de mapeo adaptada para las nuevas rutas
               const category = path.split('/').pop();
 
               if (category === 'fotos') {
@@ -51,12 +57,12 @@ export class FirebaseService {
                 mappedItem.imagen = rawItem.imagen_v;
                 mappedItem.categoria = 'video';
                 mappedItem.duracion = typeof rawItem.duracion_v === 'string' ? Number(rawItem.duracion_v) : rawItem.duracion_v;
-              } else if (category === 'extras') {
+              } else if (category === 'extras' || category === 'sugeridos') {
                 mappedItem.nombre = rawItem.nombre_e;
                 mappedItem.descripcion = rawItem.descripcion_e;
                 mappedItem.precio = rawItem.precio_e;
                 mappedItem.imagen = rawItem.imagen_e;
-                mappedItem.categoria = 'extra';
+                mappedItem.categoria = (category === 'extras') ? 'extra' : 'sugerido';
                 mappedItem.duracion = typeof rawItem.duracion_e === 'string' ? Number(rawItem.duracion_e) : rawItem.duracion_e;
               }
               console.log(`FirebaseService: Mapeando item de ${path}:`, mappedItem);
@@ -75,41 +81,62 @@ export class FirebaseService {
     });
   }
 
-  getFotos(): Observable<Servicio[]> {
-    return this.getCategory<Servicio>('servicios/fotos').pipe(
-      tap(data => console.log('FirebaseService: Servicios de fotos cargados (modular):', data))
+  // --- Nuevos métodos públicos para cada tipo de servicio ---
+
+  getServiciosCasamientos(): Observable<Servicio[]> {
+    return combineLatest([
+      this.getCategory<Servicio>('servicios/casamientos/fotos'),
+      this.getCategory<Servicio>('servicios/casamientos/videos')
+    ]).pipe(
+      map(([fotos, videos]) => [...fotos, ...videos]),
+      tap(data => console.log('Servicios de casamientos cargados:', data))
     );
   }
 
-  getVideos(): Observable<Servicio[]> {
-    return this.getCategory<Servicio>('servicios/videos').pipe(
-      tap(data => console.log('FirebaseService: Servicios de videos cargados (modular):', data))
+  getServiciosCumpleanos(): Observable<Servicio[]> {
+    return combineLatest([
+      this.getCategory<Servicio>('servicios/cumpleaños/fotos'),
+      this.getCategory<Servicio>('servicios/cumpleaños/videos')
+    ]).pipe(
+      map(([fotos, videos]) => [...fotos, ...videos]),
+      tap(data => console.log('Servicios de cumpleaños cargados:', data))
+    );
+  }
+
+  getServiciosSugeridos(): Observable<Servicio[]> {
+    return this.getCategory<Servicio>('servicios/sugeridos').pipe(
+      tap(data => console.log('Servicios sugeridos cargados:', data))
     );
   }
 
   getExtras(): Observable<Servicio[]> {
     return this.getCategory<Servicio>('servicios/extras').pipe(
-      tap(data => console.log('FirebaseService: Servicios de extras cargados (modular):', data))
+      tap(data => console.log('Servicios de extras cargados:', data))
     );
   }
 
-  getServicios(): Observable<Servicio[]> {
-    console.log("FirebaseService: getServicios - Combinando todos los servicios de Realtime Database.");
+  /**
+   * Combina todos los servicios de todas las categorías en un solo Observable.
+   */
+  getTodosLosServicios(): Observable<Servicio[]> {
+    console.log("FirebaseService: getTodosLosServicios - Combinando todos los servicios de Realtime Database.");
     return combineLatest([
-      this.getFotos(),
-      this.getVideos(),
+      this.getServiciosCasamientos(),
+      this.getServiciosCumpleanos(),
+      this.getServiciosSugeridos(),
       this.getExtras()
     ]).pipe(
-      map(([fotos, videos, extras]) => {
-        const allServicios = [...fotos, ...videos, ...extras];
-        console.log("FirebaseService: getServicios - Total de servicios combinados desde Realtime Database:", allServicios.length, allServicios);
+      map(([casamientos, cumpleanos, sugeridos, extras]) => {
+        const allServicios = [...casamientos, ...cumpleanos, ...sugeridos, ...extras];
+        console.log("FirebaseService: getTodosLosServicios - Total de servicios combinados:", allServicios.length, allServicios);
         return allServicios;
       })
     );
   }
 
-  // --- Métodos para el carrito de usuario en Realtime Database ---
+  // --- MÉTODOS ORIGINALES (NO NECESITAN CAMBIOS) ---
 
+  // --- Métodos para el carrito de usuario en Realtime Database ---
   obtenerCarritoUsuario(userId: string): Observable<{ [serviceId: string]: number }> {
     const carritoRef = ref(this.database, `carritos/${userId}`);
     console.log(`FirebaseService: Suscribiéndose a carrito de Realtime DB para UID: ${userId}`);
@@ -164,13 +191,12 @@ export class FirebaseService {
       const transactionResult = await runTransaction(availabilityRef, (currentData) => {
         console.log(`FirebaseService: runTransaction - currentData para ${reservationDate}:`, currentData);
 
-        // Si el día está nulo o disponible, se puede reservar
         if (currentData === null || currentData.available === true) {
           console.log(`FirebaseService: Día ${reservationDate} disponible. Marcando como no disponible.`);
-          return { available: false, maxBookings: 1, bookedBy: userId }; // Guardar bookedBy
+          return { available: false, maxBookings: 1, bookedBy: userId };
         } else {
           console.warn(`FirebaseService: El día ${reservationDate} ya está ocupado, transacción abortada.`);
-          return undefined; // Abortar transacción
+          return undefined;
         }
       });
 
@@ -179,7 +205,6 @@ export class FirebaseService {
 
         const reservationsForDateRef = ref(this.database, `reservations/${reservationDate}`);
         const newReservationRef = push(reservationsForDateRef);
-
         reservationId = newReservationRef.key;
 
         if (!reservationId) {
@@ -206,11 +231,9 @@ export class FirebaseService {
         console.log(`FirebaseService: Guardando nueva reserva (ID: ${reservationId}) para ${userId} en ${reservationDate}:`, reservationToSave);
         await set(newReservationRef, reservationToSave);
         console.log(`FirebaseService: Reserva ${reservationId} guardada exitosamente.`);
-
         return reservationId;
 
       } else {
-        // La transacción no se comprometió (ej. el día ya estaba ocupado)
         throw new Error(`El día ${reservationDate} ya ha sido reservado. Por favor, elige otra fecha.`);
       }
 
@@ -227,9 +250,7 @@ export class FirebaseService {
     try {
       const snapshot = await get(reservationRef);
       const reservationData = snapshot.val();
-
-      // Usar el servicio de autenticación para obtener el UID actual
-      const currentUserUid = await from(this.authService.getCurrentUserUid()).toPromise(); // Convertir Observable a Promise
+      const currentUserUid = await from(this.authService.getCurrentUserUid()).toPromise();
 
       if (!currentUserUid || !reservationData || reservationData.details.userId !== currentUserUid) {
         throw new Error('No tienes permiso para cancelar esta reserva o la reserva no existe.');
@@ -238,7 +259,6 @@ export class FirebaseService {
       await remove(reservationRef);
       console.log(`FirebaseService: Reserva ${reservationId} cancelada exitosamente.`);
 
-      // Contar las reservas restantes para ese día después de la cancelación
       const remainingReservationsSnapshot = await get(ref(this.database, `reservations/${reservationDate}`));
       const remainingReservations = remainingReservationsSnapshot.val();
 
@@ -246,14 +266,10 @@ export class FirebaseService {
         console.log(`FirebaseService: runTransaction - Liberando ${reservationDate}. currentData:`, currentData);
 
         if (!remainingReservations || Object.keys(remainingReservations).length === 0) {
-          // Si no quedan más reservas para ese día, marcar como disponible
           console.log(`Día ${reservationDate} no tiene más reservas. Marcando como disponible.`);
-          return { available: true, maxBookings: 1, bookedBy: null }; // bookedBy a null
+          return { available: true, maxBookings: 1, bookedBy: null };
         } else {
-          // Si todavía quedan reservas, el día sigue no disponible
           console.log(`Día ${reservationDate} aún tiene ${Object.keys(remainingReservations).length} reservas. Sigue no disponible.`);
-          // Puedes optar por mantener el 'bookedBy' del primer/último restante, o dejarlo como estaba si no es importante
-          // ¡CAMBIOS AQUÍ! Asegurarse de mantener el 'bookedBy' si aún hay reservas
           return { ...currentData, available: false, bookedBy: currentData?.bookedBy || null };
         }
       });
@@ -278,9 +294,8 @@ export class FirebaseService {
         if (data) {
           for (const dateKey in data) {
             if (Object.prototype.hasOwnProperty.call(data, dateKey)) {
-              // Asegúrate de que 'available' sea un booleano explícito
               mappedData[dateKey] = {
-                available: typeof data[dateKey].available === 'boolean' ? data[dateKey].available : true, // Por defecto a true si no es booleano (seguro)
+                available: typeof data[dateKey].available === 'boolean' ? data[dateKey].available : true,
                 maxBookings: data[dateKey].maxBookings || null,
                 bookedBy: data[dateKey].bookedBy || undefined
               };
@@ -298,8 +313,6 @@ export class FirebaseService {
     });
   }
 
-  // ¡¡¡FALTA ESTE MÉTODO EN TU CÓDIGO ACTUAL!!!
-  // Agrega este método al final de tu clase FirebaseService
   getReservationsForDate(date: string): Observable<ReservationsByDateMap[string]> {
     const reservationsDateRef = ref(this.database, `reservations/${date}`);
     console.log(`FirebaseService: Obteniendo reservas para la fecha: ${date}`);
@@ -312,7 +325,7 @@ export class FirebaseService {
           observer.next(data as ReservationsByDateMap[string]);
         } else {
           console.log(`FirebaseService: No hay reservas para ${date}.`);
-          observer.next({}); // Devuelve un objeto vacío si no hay reservas
+          observer.next({});
         }
       }, (error) => {
         console.error(`FirebaseService: Error al obtener reservas para la fecha ${date}:`, error);

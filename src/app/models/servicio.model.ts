@@ -6,7 +6,7 @@ export interface Servicio {
   descripcion: string;
   precio: number;
   imagen: string; // URL de la imagen
-  categoria: 'foto' | 'video' | 'extra'; // Tipo de categoría
+  categoria: 'foto' | 'video' | 'extra' | 'sugerido'; // Tipo de categoría
   duracion?: number; // Duración en número (ej. minutos), opcional
   // Puedes añadir otras propiedades específicas si las necesitas
 }
