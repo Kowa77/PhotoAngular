@@ -1,9 +1,9 @@
 // src/app/servicios/servicios.component.ts
 import { Component, OnInit, OnDestroy, inject } from '@angular/core';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router'; // Importa RouterLink también si lo usas en el template
 import { Auth, User } from '@angular/fire/auth';
-import { Subscription, combineLatest } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { AuthService } from '../auth/auth.service';
 import { FirebaseService } from '../firebase/firefirebase-service.service';
 import { Servicio } from '../models/servicio.model';
@@ -13,24 +13,23 @@ import { Servicio } from '../models/servicio.model';
   templateUrl: './servicios.component.html',
   styleUrls: ['./servicios.component.css'],
   standalone: true,
-  imports: [CommonModule] // Asegúrate de que RouterLink esté aquí si lo usas en el template
+  imports: [CommonModule, RouterLink]
 })
 export class ServiciosComponent implements OnInit, OnDestroy {
   private authService: AuthService = inject(AuthService);
   private firebaseService: FirebaseService = inject(FirebaseService);
   private auth: Auth = inject(Auth);
   private router: Router = inject(Router);
+  private route: ActivatedRoute = inject(ActivatedRoute);
 
   currentUserUid: string | null = null;
-  allAvailableServices: Servicio[] = []; // Contendrá todos los servicios combinados
+  currentCategory: string = '';
 
-  // Si necesitas separarlos, puedes usar estos, o quizás adaptarlos a las nuevas categorías (casamientos, cumpleaños, sugeridos, extras)
+  // Vuelven las propiedades para el HTML
   fotos: Servicio[] = [];
   videos: Servicio[] = [];
   extras: Servicio[] = [];
-  sugeridos: Servicio[] = []; // Nueva propiedad para los servicios sugeridos
-  casamientos: Servicio[] = []; // Nueva propiedad para los servicios de casamientos
-  cumpleanos: Servicio[] = []; // Nueva propiedad para los servicios de cumpleaños
+  sugeridos: Servicio[] = []; // Si tienes una sección para "sugeridos" en tu HTML
 
   serviciosEnCarrito: Set<string> = new Set();
   totalCarrito: number = 0;
@@ -59,52 +58,72 @@ export class ServiciosComponent implements OnInit, OnDestroy {
       })
     );
 
-    this.fetchServices();
+    this.subscriptions.add(
+      this.route.paramMap.subscribe(params => {
+        this.currentCategory = params.get('categoria') || '';
+        if (this.currentCategory) {
+          this.fetchServicesByCategory(this.currentCategory);
+        }
+      })
+    );
   }
 
   ngOnDestroy() {
     this.subscriptions.unsubscribe();
   }
 
-  private fetchServices() {
-    // Ahora usamos el nuevo método getTodosLosServicios() que combina todo
+  private fetchServicesByCategory(categoria: string) {
+    let servicesObservable;
+
+    switch (categoria) {
+      case 'casamientos':
+        servicesObservable = this.firebaseService.getServiciosCasamientos();
+        break;
+      case 'cumpleanos':
+        servicesObservable = this.firebaseService.getServiciosCumpleanos();
+        break;
+      case 'extras':
+        servicesObservable = this.firebaseService.getExtras();
+        break;
+      case 'sugeridos':
+        servicesObservable = this.firebaseService.getServiciosSugeridos();
+        break;
+      default:
+        console.error(`Categoría desconocida: ${categoria}`);
+        // Limpiar todos los arrays si la categoría no es válida
+        this.fotos = [];
+        this.videos = [];
+        this.extras = [];
+        this.sugeridos = [];
+        return;
+    }
+
     this.subscriptions.add(
-      this.firebaseService.getTodosLosServicios().subscribe(allServices => {
-        this.allAvailableServices = allServices;
-        console.log("ServiciosComponent: Todos los servicios cargados:", this.allAvailableServices);
+      servicesObservable.subscribe(services => {
+        // Asignar los servicios a sus respectivos arrays
+        this.fotos = services.filter(s => s.categoria === 'foto');
+        this.videos = services.filter(s => s.categoria === 'video');
+        this.extras = services.filter(s => s.categoria === 'extra');
+        this.sugeridos = services.filter(s => s.categoria === 'sugerido'); // Si lo usas
 
-        // Opcional: Si tu template sigue necesitando las categorías separadas (fotos, videos, extras, sugeridos, etc.)
-        // Puedes filtrarlos aquí o refactorizar tu template para usar directamente allAvailableServices
-        this.fotos = allServices.filter(s => s.categoria === 'foto');
-        this.videos = allServices.filter(s => s.categoria === 'video');
-        this.extras = allServices.filter(s => s.categoria === 'extra');
-        this.sugeridos = allServices.filter(s => s.categoria === 'sugerido');
-
-        // Para los servicios de casamientos/cumpleaños, necesitas decidir cómo los quieres categorizar aquí.
-        // Si tu UI los agrupa por "tipo" (foto/video) dentro de "evento" (casamientos/cumpleaños),
-        // podrías necesitar lógica más compleja o simplemente mostrar toda la lista y dejar que el usuario filtre.
-        // Por ahora, 'fotos', 'videos', 'extras', 'sugeridos' se basan en la propiedad 'categoria' que mapea tu servicio.
-        // Si quieres 'casamientos' y 'cumpleaños' como listas separadas, necesitarías ajustar el mapeo en FirebaseService
-        // para que cada servicio tenga una propiedad 'evento' (ej. 'casamiento', 'cumpleaños').
-
-        this.calculateTotalCart(); // Recalcula el total del carrito con todos los servicios
+        console.log(`ServiciosComponent: Servicios para la categoría "${categoria}" cargados y filtrados.`);
+        console.log('Fotos:', this.fotos.length);
+        console.log('Videos:', this.videos.length);
+        console.log('Extras:', this.extras.length);
+        this.calculateTotalCart();
       }, error => {
         console.error("ServiciosComponent: Error al cargar los servicios:", error);
       })
     );
   }
 
-  // Nuevo método para verificar si un servicio está en el carrito
   isInCart(serviceId: string): boolean {
     return this.serviciosEnCarrito.has(serviceId);
   }
 
-  // Nuevo método para alternar (añadir/quitar) un servicio del carrito
   async toggleCart(servicio: Servicio): Promise<void> {
     if (!this.currentUserUid) {
-      // Usar un modal en lugar de alert
       console.warn('Necesitas iniciar sesión para agregar ítems al carrito.');
-      // Aquí podrías abrir un modal informativo para el usuario
       return;
     }
 
@@ -119,9 +138,11 @@ export class ServiciosComponent implements OnInit, OnDestroy {
 
   calculateTotalCart(): void {
     let total = 0;
-    if (this.allAvailableServices.length > 0 && this.serviciosEnCarrito.size > 0) {
+    // Debes sumar los precios de todos los servicios, no solo de una categoría
+    const allServices = [...this.fotos, ...this.videos, ...this.extras, ...this.sugeridos];
+    if (allServices.length > 0 && this.serviciosEnCarrito.size > 0) {
       this.serviciosEnCarrito.forEach(serviceId => {
-        const servicio = this.allAvailableServices.find(s => s.id === serviceId);
+        const servicio = allServices.find(s => s.id === serviceId);
         if (servicio) {
           total += servicio.precio;
         }
