@@ -19,7 +19,7 @@ export const routes: Routes = [
   { path: 'contacto', component: ContactoComponent },
   { path: 'nosotros', component: NosotrosComponent },
   { path: 'perfil', component: PerfilComponent },
-  { path: 'servicios', component: ServiciosComponent },
+  { path: 'servicios/:categoria', component: ServiciosComponent },
   { path: 'carrito', component: CarritoComponent },
   { path: 'agenda', component: AgendaComponent }, // Nueva ruta para la agenda
   { path: '**', redirectTo: '' } // Cualquier otra ruta redirige a la página principal

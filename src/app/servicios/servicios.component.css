@@ -45,13 +45,17 @@
 /* Estilo del Grid de Servicios */
 .services-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); /* 220px de ancho mínimo por tarjeta */
-  justify-content: center; /* Centrar las tarjetas si no llenan la última fila */
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); /* 220px de ancho mínimo por tarjeta */
+  gap: 100px; /* Espacio entre las tarjetas */
+  max-width: 100%;  /* Ajusta el ancho para que el grid se adapte al contenedor padre */
+  margin-left: auto;/* Añade estas propiedades para centrar el grid horizontalmente */
+  margin-right: auto;
+  justify-items: center;/* Centra los items del grid si el contenedor es más grande que el contenido */
 }
 
 /* Estilos para cada tarjeta de servicio */
 .servicio-card {
-  width: 90%;
+  width: 300px;
   display: flex;
   text-align: center;
   flex-direction: column;
@@ -181,12 +185,35 @@
   background-color: #6c757d; /* Gris para deshabilitado */
   cursor: not-allowed;
 }
+/* Estilos para el banner de Servicios Extras */
+.extras-banner-container {
+  text-align: center; /* Centra el banner */
+  margin: 50px auto 30px; /* Margen superior e inferior para separarlo del contenido */
+  padding: 20px;
+}
+
+.extras-banner .btn {
+  font-size: 1.25rem;
+  padding: 15px 30px;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+}
+
+.extras-banner .btn:hover {
+  transform: translateY(-5px); /* Pequeño efecto de elevación al pasar el mouse */
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
+}
+
+.extras-banner .bi {
+  margin: 0 5px;
+}
 
 /* Media queries para responsividad */
 @media (max-width: 768px) {
   .services-grid {
     grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); /* Más pequeñas en móviles */
-    gap: 15px;
+    gap: 120px; /* Espacio entre las tarjetas */
   }
 
   .servicio-card img {
