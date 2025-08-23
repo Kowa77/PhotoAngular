@@ -87,18 +87,25 @@ h1, h2 {
 /* --- Estilos para el calendario de Angular Material --- */
 
 /* Ajustes generales para las celdas de los días en el calendario */
-.mat-calendar-table-cell {
-  /* Asegura que los días tengan un radio de borde circular (opcional) */
+/* Aplicar directamente al contenido, asegurando el radio de borde */
+/* Esto se aplica a todas las celdas de contenido, para los bordes redondeados */
+.mat-calendar-body-cell-content {
   border-radius: 50% !important;
-  /* Añade una transición suave para los cambios de color de fondo */
-  transition: background-color 0.2s ease-in-out;
+  transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+  height: 36px; /* Asegura un tamaño consistente para el círculo */
+  width: 36px;  /* Asegura un tamaño consistente para el círculo */
+  display: flex; /* Centra el contenido */
+  align-items: center; /* Centra el contenido verticalmente */
+  justify-content: center; /* Centra el contenido horizontalmente */
 }
 
 /* ESTILO PRINCIPAL PARA LOS DÍAS RESERVADOS (con la clase 'has-bookings') */
-.mat-calendar-table-cell.has-bookings {
+/* Aplicar al div que contiene el número del día, pero solo si su padre td tiene 'has-bookings' */
+/* Hacemos el selector un poco más específico para sobreescribir cualquier estilo por defecto */
+.mat-calendar-body-cell.has-bookings .mat-calendar-body-cell-content {
   background-color: #d4edda !important; /* Un verde claro para indicar reservas */
-  color: #212529; /* Un color de texto oscuro para que contraste bien con el verde claro */
-  font-weight: bold; /* Hace el número del día más negrita */
+  color: #212529 !important; /* Un color de texto oscuro para que contraste bien con el verde claro */
+  font-weight: bold !important; /* Hace el número del día más negrita */
 }
 
 /*
@@ -106,11 +113,10 @@ h1, h2 {
   Esto evita que el color de "reservado" se anule por los estilos por defecto de Angular Material
   para días seleccionados o el día actual, o permite darles un tono diferente.
 */
-.mat-calendar-table-cell.mat-calendar-body-selected.has-bookings,
-.mat-calendar-table-cell.mat-calendar-body-today.has-bookings {
+.mat-calendar-body-cell.mat-calendar-body-selected.has-bookings .mat-calendar-body-cell-content,
+.mat-calendar-body-cell.mat-calendar-body-today.has-bookings .mat-calendar-body-cell-content {
   background-color: #c3e6cb !important; /* Un verde ligeramente más oscuro para el seleccionado/hoy */
-  /* Puedes mantener el color del texto si es legible, o cambiarlo */
-  color: #155724;
+  color: #155724 !important; /* Aseguramos que el color de texto se aplique */
 }
 
 /*

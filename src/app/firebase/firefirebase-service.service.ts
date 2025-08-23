@@ -2,7 +2,7 @@
 
 import { Injectable, inject } from '@angular/core';
 import { Database, ref, set, get, remove, onValue, push, runTransaction } from '@angular/fire/database';
-import { Observable, combineLatest, map, tap, from } from 'rxjs';
+import { Observable, combineLatest, map, tap, from, defer } from 'rxjs';
 import { Auth, user, User as FirebaseAuthUser } from '@angular/fire/auth';
 import { Servicio } from '../models/servicio.model';
 import { Reservation, ReservationItem, ReservationDetails, ReservationsByDateMap, DailyAvailabilityMap, DailyAvailabilityEntry } from '../models/reservation.model';
@@ -12,22 +12,22 @@ import { AuthService } from '../auth/auth.service';
   providedIn: 'root'
 })
 export class FirebaseService {
+  // --- CAMBIO CLAVE AQUÍ: Usar inject() en la declaración de propiedades ---
   private database: Database = inject(Database);
   private auth: Auth = inject(Auth);
-  private authService: AuthService = inject(AuthService); // Inyectar AuthService para obtener el UID del usuario actual
+  private authService: AuthService = inject(AuthService);
 
   constructor() {
     console.log("FirebaseService: Firebase Database (modular) injected.");
   }
 
-  // --- MÉTODOS REFACTORIZADOS PARA LA NUEVA ESTRUCTURA DE BD ---
-
   /**
    * Método privado genérico para obtener una colección de servicios de Realtime Database.
+   * Se asegura de que la propiedad 'duracion' sea siempre un número o null, nunca undefined.
    * @param path La ruta al nodo de la base de datos (ej. 'servicios/casamientos/fotos').
    * @returns Un Observable que emite un array de objetos Servicio.
    */
-  private getCategory<T>(path: string): Observable<T[]> {
+  private getCategory<T extends Servicio>(path: string): Observable<T[]> {
     const categoryRef = ref(this.database, path);
     console.log(`FirebaseService: Obteniendo colección de Realtime DB: ${path}`);
 
@@ -39,7 +39,14 @@ export class FirebaseService {
           for (const key in data) {
             if (Object.prototype.hasOwnProperty.call(data, key)) {
               const rawItem = data[key];
-              let mappedItem: any = { id: key };
+              let mappedItem: Servicio = {
+                id: key,
+                nombre: '',
+                descripcion: '',
+                precio: 0,
+                imagen: '',
+                categoria: 'foto' // Valor predeterminado
+              };
 
               // Lógica de mapeo adaptada para las nuevas rutas
               const category = path.split('/').pop();
@@ -50,21 +57,29 @@ export class FirebaseService {
                 mappedItem.precio = rawItem.precio_f;
                 mappedItem.imagen = rawItem.imagen_f;
                 mappedItem.categoria = 'foto';
+                mappedItem.duracion = null; // Para fotos, la duración es null.
               } else if (category === 'videos') {
                 mappedItem.nombre = rawItem.nombre_v;
                 mappedItem.descripcion = rawItem.descripcion_v;
                 mappedItem.precio = rawItem.precio_v;
                 mappedItem.imagen = rawItem.imagen_v;
                 mappedItem.categoria = 'video';
-                mappedItem.duracion = typeof rawItem.duracion_v === 'string' ? Number(rawItem.duracion_v) : rawItem.duracion_v;
+                // Usar ?? null para asegurar que sea number o null, nunca undefined
+                mappedItem.duracion = typeof rawItem.duracion_v === 'string' ? Number(rawItem.duracion_v) : (rawItem.duracion_v ?? null);
               } else if (category === 'extras' || category === 'sugeridos') {
                 mappedItem.nombre = rawItem.nombre_e;
                 mappedItem.descripcion = rawItem.descripcion_e;
                 mappedItem.precio = rawItem.precio_e;
                 mappedItem.imagen = rawItem.imagen_e;
                 mappedItem.categoria = (category === 'extras') ? 'extra' : 'sugerido';
-                mappedItem.duracion = typeof rawItem.duracion_e === 'string' ? Number(rawItem.duracion_e) : rawItem.duracion_e;
+                // Usar ?? null para asegurar que sea number o null, nunca undefined
+                mappedItem.duracion = typeof rawItem.duracion_e === 'string' ? Number(rawItem.duracion_e) : (rawItem.duracion_e ?? null);
               }
+              // CAPA DE SEGURIDAD: Si por alguna razón `duracion` sigue siendo undefined, lo establecemos a null.
+              if (mappedItem.duracion === undefined) {
+                mappedItem.duracion = null;
+              }
+
               console.log(`FirebaseService: Mapeando item de ${path}:`, mappedItem);
               items.push(mappedItem as T);
             }
@@ -134,32 +149,56 @@ export class FirebaseService {
     );
   }
 
-  // --- MÉTODOS ORIGINALES (NO NECESITAN CAMBIOS) ---
-
   // --- Métodos para el carrito de usuario en Realtime Database ---
+  // --- CAMBIO CLAVE AQUÍ: obtenerCarritoUsuario devuelve un mapa de IDs a CANTIDADES ---
   obtenerCarritoUsuario(userId: string): Observable<{ [serviceId: string]: number }> {
     const carritoRef = ref(this.database, `carritos/${userId}`);
-    console.log(`FirebaseService: Suscribiéndose a carrito de Realtime DB para UID: ${userId}`);
+    console.log(`FirebaseService: Suscribiéndose a carrito de Realtime DB para UID: ${userId} en ruta: ${carritoRef.toString()}`);
 
-    return new Observable(observer => {
-      const unsubscribe = onValue(carritoRef, (snapshot) => {
-        const data = snapshot.val();
-        if (data) {
-          console.log(`FirebaseService: Carrito recibido de Realtime DB para ${userId}:`, data);
-          observer.next(data as { [serviceId: string]: number });
-        } else {
-          console.log(`FirebaseService: Carrito vacío o no existe en Realtime DB para ${userId}.`);
-          observer.next({});
-        }
-      }, (error) => {
-        console.error(`FirebaseService: Error al obtener carrito de Realtime DB para ${userId}:`, error);
-        observer.error(error);
+    return defer(() => {
+      return new Observable<{ [serviceId: string]: number }>(observer => {
+        // Hacemos una lectura inicial con 'get'
+        get(carritoRef).then(initialSnapshot => {
+          const initialData = initialSnapshot.val();
+          console.log(`FirebaseService: (DEBUG) Lectura inicial del carrito para ${userId}:`, initialData);
+          observer.next(initialData || {});
+        }).catch(error => {
+          console.error(`FirebaseService: Error en lectura inicial de carrito para ${userId}:`, error);
+          // observer.error(error); // No emitir error si queremos que el onValue siga funcionando
+        });
+
+        // Luego, nos suscribimos a cambios en tiempo real con 'onValue'
+        const unsubscribe = onValue(carritoRef, (snapshot) => {
+          const data = snapshot.val();
+          console.log(`FirebaseService: (DEBUG) onValue snapshot.val() recibido para carrito de ${userId}:`, data);
+
+          // Emitimos los datos tal cual vienen de Firebase, que es un mapa de ID a CANTIDAD
+          if (data) {
+            console.log(`FirebaseService: Carrito en tiempo real recibido de Realtime DB para ${userId}:`, data);
+            observer.next(data as { [serviceId: string]: number });
+          } else {
+            console.log(`FirebaseService: Carrito en tiempo real vacío o no existe en Realtime DB para ${userId}.`);
+            observer.next({});
+          }
+        }, (error) => {
+          console.error(`FirebaseService: Error al obtener carrito en tiempo real de Realtime DB para ${userId}:`, error);
+          observer.error(error);
+        });
+
+        return { unsubscribe: () => unsubscribe() };
       });
-
-      return { unsubscribe };
     });
   }
 
+  // --- CAMBIO CLAVE AQUÍ: guardarCarritoUsuario ahora guarda el objeto CartItem completo ---
+  // Esto es para que `obtenerCarritoUsuario` pueda reconstruir el CartItem completo.
+  // Pero espera, tu Firebase REALMENTE solo guarda la cantidad.
+  // Si `guardarCarritoUsuario` recibiera un `Cart` completo (o un mapa de `CartItem`),
+  // entonces la estructura en Firebase cambiaría.
+  // Dado que tu Firebase solo guarda la cantidad, entonces `guardarCarritoUsuario`
+  // debería recibir `{[serviceId: string]: number}`.
+
+  // Revierto a cómo estaba si la intención es solo guardar la cantidad en Firebase.
   async guardarCarritoUsuario(userId: string, carrito: { [serviceId: string]: number }): Promise<void> {
     const carritoRef = ref(this.database, `carritos/${userId}`);
     console.log(`FirebaseService: Guardando/actualizando carrito completo en Realtime DB para ${userId}:`, carrito);
@@ -170,9 +209,15 @@ export class FirebaseService {
   async addToCart(userId: string, item: Servicio): Promise<void> {
     const itemRef = ref(this.database, `carritos/${userId}/${item.id}`);
     console.log(`FirebaseService: Añadiendo/actualizando ${item.nombre} (ID: ${item.id}) en carrito de Realtime DB para ${userId}.`);
-    await set(itemRef, 1);
+    // Aquí solo guardamos la cantidad, no el objeto Servicio completo.
+    // Asumiendo que siempre añadimos 1 al hacer click en "añadir"
+    await set(itemRef, 1); // <--- Esto sobrescribirá cualquier cantidad existente a 1.
+                         // Si quieres incrementar, necesitarías leer la cantidad actual y sumarle 1.
     console.log(`FirebaseService: Servicio ${item.id} añadido/actualizado en Realtime DB para ${userId}.`);
   }
+
+  // --- Si `addToCart` solo guarda "1", y tu Firebase muestra "1",
+  // entonces el problema no es en guardar.
 
   async quitarDelCarrito(userId: string, serviceIdToRemove: string): Promise<void> {
     const itemRef = ref(this.database, `carritos/${userId}/${serviceIdToRemove}`);
@@ -200,32 +245,41 @@ export class FirebaseService {
         }
       });
 
-      if (transactionResult.committed) {
+      if (transactionResult.committed) { // commited significa que la transacción se aplicó correctamente
         console.log(`FirebaseService: Transacción de disponibilidad para ${reservationDate} exitosa.`);
 
-        const reservationsForDateRef = ref(this.database, `reservations/${reservationDate}`);
-        const newReservationRef = push(reservationsForDateRef);
-        reservationId = newReservationRef.key;
-
+        const reservationsForDateRef = ref(this.database, `reservations/${reservationDate}`); // Referencia al nodo de reservas para la fecha específica
+        const newReservationRef = push(reservationsForDateRef); // Crear una nueva referencia con ID único generado por Firebase push()
+        reservationId = newReservationRef.key;   // Obtener el ID generado
         if (!reservationId) {
           throw new Error("No se pudo generar un ID para la reserva.");
         }
 
+        // Construir el objeto Reservation a guardar en la base de datos y asegurarse de que 'duracion' no sea undefined en los items
+        // Es importante que 'duracion' sea number o null, nunca undefined, para evitar problemas en Firebase (no permite undefined)
         const reservationDetails: ReservationDetails = {
           date: reservationDate,
           userId: userId,
           totalAmount: total,
           timestamp: Date.now(),
-          status: 'pending'
+          status: 'pending'  // Estado inicial de la reserva, luego puede cambiar a 'confirmed' o 'cancelled' (hay que implementar esa lógica)
         };
 
+        const cleanedReservationItems: { [serviceId: string]: ReservationItem } = {}; // Mapa limpio de items de reserva a guardar en Firebase
+
+        cartItems.forEach(item => { // Iterar sobre los items del carrito proporcionados por el usuario y limpiarlos si es necesario
+          const cleanItem = { ...item }; // Clonar el item para no modificar el original del carrito
+          if (cleanItem.duracion === undefined) {
+            cleanItem.duracion = null; // Convertir undefined a null para Firebase
+          }
+          cleanedReservationItems[item.id] = cleanItem;
+        });
+
+        //Reservation se define en el modelo reservation.model
         const reservationToSave: Reservation = {
           id: reservationId,
           details: reservationDetails,
-          items: cartItems.reduce((acc, item) => {
-            acc[item.id] = item;
-            return acc;
-          }, {} as { [serviceId: string]: ReservationItem })
+          items: cleanedReservationItems // Usar los ítems ya limpiados
         };
 
         console.log(`FirebaseService: Guardando nueva reserva (ID: ${reservationId}) para ${userId} en ${reservationDate}:`, reservationToSave);
@@ -270,7 +324,8 @@ export class FirebaseService {
           return { available: true, maxBookings: 1, bookedBy: null };
         } else {
           console.log(`Día ${reservationDate} aún tiene ${Object.keys(remainingReservations).length} reservas. Sigue no disponible.`);
-          return { ...currentData, available: false, bookedBy: currentData?.bookedBy || null };
+          // Asegurarse de que bookedBy no sea undefined si no se establece explícitamente.
+          return { ...currentData, available: false, bookedBy: currentData?.bookedBy ?? null };
         }
       });
       console.log(`FirebaseService: Disponibilidad de ${reservationDate} actualizada después de cancelación.`);
@@ -282,7 +337,6 @@ export class FirebaseService {
   }
 
   // --- Métodos de lectura de Reservas y Disponibilidad (para el calendario/agenda) ---
-
   allReservations$(): Observable<DailyAvailabilityMap> {
     const allAvailabilityRef = ref(this.database, `availability`);
     console.log("FirebaseService: Suscribiéndose a la disponibilidad de todos los días en Realtime DB.");
@@ -297,7 +351,7 @@ export class FirebaseService {
               mappedData[dateKey] = {
                 available: typeof data[dateKey].available === 'boolean' ? data[dateKey].available : true,
                 maxBookings: data[dateKey].maxBookings || null,
-                bookedBy: data[dateKey].bookedBy || undefined
+                bookedBy: data[dateKey].bookedBy || null // <-- CAMBIO AQUÍ: null en lugar de undefined para bookedBy al leer
               };
             }
           }
@@ -321,8 +375,25 @@ export class FirebaseService {
       const unsubscribe = onValue(reservationsDateRef, (snapshot) => {
         const data = snapshot.val();
         if (data) {
-          console.log(`FirebaseService: Reservas recibidas para ${date}:`, data);
-          observer.next(data as ReservationsByDateMap[string]);
+          // Asegurar que los items de la reserva no tengan undefined en duracion al leer
+          const cleanedData: ReservationsByDateMap[string] = {};
+          for (const reservationId in data) {
+            if (Object.prototype.hasOwnProperty.call(data, reservationId)) {
+              const reservation = { ...data[reservationId] }; // Clonar la reserva
+              if (reservation.items) {
+                for (const itemId in reservation.items) {
+                  if (Object.prototype.hasOwnProperty.call(reservation.items, itemId)) {
+                    if (reservation.items[itemId].duracion === undefined) {
+                      reservation.items[itemId].duracion = null; // Convertir undefined a null
+                    }
+                  }
+                }
+              }
+              cleanedData[reservationId] = reservation;
+            }
+          }
+          console.log(`FirebaseService: Reservas recibidas para ${date}:`, cleanedData);
+          observer.next(cleanedData as ReservationsByDateMap[string]);
         } else {
           console.log(`FirebaseService: No hay reservas para ${date}.`);
           observer.next({});

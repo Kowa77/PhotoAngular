@@ -1,19 +1,26 @@
 <div class="carrito-container">
   <h1>Tu Carrito de Compras</h1>
 
-  @if (cartItemsArray.length === 0) {
+  @if (isLoading) {
+    <div class="loading-spinner">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Cargando...</span>
+      </div>
+      <p>Cargando carrito...</p>
+    </div>
+  } @else if (cartItemsArray.length === 0) {
     <p class="empty-cart-message">Tu carrito está vacío.</p>
     <button class="back-to-services-button" routerLink="/servicios">Explorar Servicios</button>
   } @else {
     <div class="cart-items-grid">
-      @for (item of cartItemsArray; track trackByItemId($index, item)) { <!-- CAMBIO AQUÍ: trackByItemId -->
+      @for (item of cartItemsArray; track trackByItemId($index, item)) {
         <div class="cart-item-card"
              [class.category-fotos]="item.categoria === 'foto'"
              [class.category-videos]="item.categoria === 'video'"
              [class.category-extras]="item.categoria === 'extra'"
-             [class.category-sugerido]="item.categoria === 'sugerido'"> <!-- NUEVO: Clase para servicios sugeridos -->
-          <img [src]="item.imagen" alt="{{ item.nombre }}">
-          <div class="item-details">
+             [class.category-sugerido]="item.categoria === 'sugerido'">
+          <img [src]="item.imagen" alt="{{ item.nombre }}" id="item-image-{{item.id}}">
+          <div class="item-details" id="item-details-{{item.id}}">
             <h3>{{ item.nombre }}</h3>
             <p>{{ item.descripcion }}</p>
             @if (item.duracion) {
@@ -29,10 +36,12 @@
     </div>
 
     <div class="cart-summary">
-      <h3>Total Carrito: ${{ currentCartTotal | number:'1.2-2' }}</h3> <!-- CAMBIO AQUÍ: currentCartTotal -->
+      <h3>Total Carrito: ${{ currentCartTotal | number:'1.2-2' }}</h3>
 
       <div class="date-selection">
         <label for="reservationDate">Fecha de la Reserva:</label>
+
+        <!-- Implementación de Angular Material Datepicker -->
         <mat-form-field appearance="fill">
           <mat-label>Elige una fecha</mat-label>
           <input matInput [matDatepicker]="picker"
@@ -45,6 +54,8 @@
           <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
           <mat-datepicker #picker [dateClass]="dateClass"></mat-datepicker>
         </mat-form-field>
+        <!-- Fin de Angular Material Datepicker -->
+
       </div>
 
       <button class="checkout-button" (click)="proceedToCheckout()"

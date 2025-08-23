@@ -1,5 +1,6 @@
 /* src/app/carrito/carrito.component.css */
 
+/* Tus estilos existentes */
 .carrito-container {
   padding: 20px;
   max-width: 900px;
@@ -184,34 +185,48 @@ h1 {
   gap: 5px;
 }
 
-/* ¡CAMBIOS AQUÍ! Estilos para los días coloreados en el calendario */
-/* Estilo para días reservados por CUALQUIER usuario */
-.mat-calendar-table-cell.booked-by-others {
+/* --- Estilos para el calendario de NgbDatepicker (ESPECÍFICOS DEL COMPONENTE) --- */
+
+/* Estilos para días reservados por CUALQUIER usuario */
+.custom-day.booked-by-others {
   background-color: #ffcccc !important; /* Rojo claro */
-  border-radius: 50% !important;
   color: #6a0000 !important; /* Texto más oscuro para contraste */
-}
-
-/* Estilo para días reservados por el USUARIO ACTUAL */
-.mat-calendar-table-cell.booked-by-current-user {
-  background-color: #ccffcc !important; /* Verde claro */
+  font-weight: bold !important;
   border-radius: 50% !important;
+}
+
+/* Estilos para días reservados por el USUARIO ACTUAL */
+.custom-day.booked-by-current-user {
+  background-color: #ccffcc !important; /* Verde claro */
   color: #006a00 !important; /* Texto más oscuro para contraste */
+  font-weight: bold !important;
+  border-radius: 50% !important;
 }
 
-/* Opcional: Estilo para resaltar un poco el día actual si está reservado */
-.mat-calendar-table-cell.mat-calendar-body-active.booked-by-others {
-  border: 2px solid #ff0000 !important; /* Borde rojo más fuerte para el día actual reservado por otros */
-}
-.mat-calendar-table-cell.mat-calendar-body-active.booked-by-current-user {
-  border: 2px solid #00ff00 !important; /* Borde verde más fuerte para el día actual reservado por ti */
+/* Estilo para el día seleccionado en NgbDatepicker */
+.custom-day.bg-primary { /* ng-bootstrap usa .bg-primary por defecto para el seleccionado */
+  background-color: #00bcd4 !important; /* Color azul cian */
+  color: white !important;
+  font-weight: bold !important;
+  border-radius: 50% !important;
 }
 
-/* Asegura que el texto del día sea legible sobre el color de fondo */
-.mat-calendar-table-cell.booked-by-others .mat-calendar-body-cell-content,
-.mat-calendar-table-cell.booked-by-current-user .mat-calendar-body-cell-content {
-  color: inherit; /* Hereda el color del texto definido arriba */
+/* Estilos para el día de hoy (activo) en NgbDatepicker */
+.custom-day.active { /* ng-bootstrap usa .active para el día de hoy */
+  border: 2px solid #007bff !important; /* Borde azul para el día de hoy */
+  box-sizing: border-box !important;
+  border-radius: 50% !important;
 }
+
+/* Ajustes generales para los días del NgbDatepicker para que sean círculos */
+.ngb-dp-day .custom-day {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 
 /* Estilos de los botones y otros elementos... (mantener existentes) */
 .checkout-button {

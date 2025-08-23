@@ -1,10 +1,10 @@
 // src/app/agenda/agenda.component.ts
 
-import { Component, OnInit, OnDestroy, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, ViewEncapsulation, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FirebaseService } from '../firebase/firefirebase-service.service';
 import { AuthService } from '../auth/auth.service';
-import { Subscription, combineLatest, Observable, BehaviorSubject, Subject, of } from 'rxjs';
+import { Subscription, BehaviorSubject, Subject, of, combineLatest } from 'rxjs'; // Importamos combineLatest
 import { map, switchMap, filter, tap, takeUntil, distinctUntilChanged, catchError } from 'rxjs/operators';
 
 import { MatDatepickerModule } from '@angular/material/datepicker';
@@ -14,7 +14,7 @@ import { MatInputModule } from '@angular/material/input';
 import { FormsModule } from '@angular/forms';
 
 // Importar los tipos necesarios
-import { Reservation, ReservationItem, ReservationDetails, DailyAvailabilityMap } from '../models/reservation.model';
+import { Reservation, DailyAvailabilityMap } from '../models/reservation.model';
 
 @Component({
   selector: 'app-agenda',
@@ -28,11 +28,13 @@ import { Reservation, ReservationItem, ReservationDetails, DailyAvailabilityMap 
     MatFormFieldModule,
     MatInputModule,
     FormsModule
-  ]
+  ],
+  encapsulation: ViewEncapsulation.None
 })
 export class AgendaComponent implements OnInit, OnDestroy {
   private firebaseService: FirebaseService = inject(FirebaseService);
   private authService: AuthService = inject(AuthService);
+  private cdr: ChangeDetectorRef = inject(ChangeDetectorRef); // Inyecta ChangeDetectorRef
 
   private subscriptions: Subscription = new Subscription();
   private destroy$: Subject<void> = new Subject<void>();
@@ -57,7 +59,7 @@ export class AgendaComponent implements OnInit, OnDestroy {
   // (por ejemplo, una lista de todas las reservas futuras del usuario si se implementa un flujo para eso)
   myReservaciones: Reservation[] = [];
 
-  constructor() {
+  constructor() { // ChangeDetectorRef ya se inyecta arriba con `inject`
     const today = new Date();
     this.minDate = new Date(today.getFullYear(), 0, 1); // El calendario empieza a mostrar desde el 1 de enero del año actual
     this.startAt = today; // El calendario se abre mostrando el mes actual
@@ -72,87 +74,98 @@ export class AgendaComponent implements OnInit, OnDestroy {
    * @returns Una cadena con las clases CSS a aplicar.
    */
   dateClass = (date: Date) => {
-    const formattedDate = this.formatDate(date);
-    // Verifica si la fecha existe en el mapa de disponibilidad y si su estado 'available' es falso.
-    if (this.allAvailabilityMap[formattedDate] && this.allAvailabilityMap[formattedDate].available === false) {
-      return 'has-bookings'; // Aplica esta clase para días reservados/no disponibles
-    }
-    return ''; // No aplica ninguna clase especial si el día está disponible o no hay datos.
-  };
+  const formattedDate = this.formatDate(date);
+  const availabilityEntry = this.allAvailabilityMap[formattedDate];
+
+  console.log(`[dateClass DEBUG] Date: ${formattedDate}`);
+  console.log(`[dateClass DEBUG] Availability Entry for ${formattedDate}:`, availabilityEntry);
+  console.log(`[dateClass DEBUG] Condition check: ${!!availabilityEntry} && ${availabilityEntry?.available === false}`);
+
+  if (availabilityEntry && availabilityEntry.available === false) {
+    console.log(`[dateClass DEBUG] RETURNING 'has-bookings' for: ${formattedDate}`);
+    return 'has-bookings'; // Aplica esta clase para días reservados/no disponibles
+  }
+  console.log(`[dateClass DEBUG] RETURNING '' for: ${formattedDate}`);
+  return ''; // No aplica ninguna clase especial si el día está disponible o no hay datos.
+};
 
   ngOnInit(): void {
-    // Suscripción principal para obtener el UID del usuario actual.
-    // Esto se ejecuta al iniciar el componente y cada vez que el estado de autenticación cambia.
-    this.authService.user$.pipe(
-      map(user => user ? user.uid : null), // Extrae el UID del usuario, o null si no está autenticado
-      tap(uid => this.currentUserUid = uid), // Almacena el UID en la propiedad del componente
-      distinctUntilChanged(), // Solo emite si el UID realmente cambia
-      takeUntil(this.destroy$) // Asegura que esta suscripción se desuscriba cuando el componente se destruya
-    ).subscribe(uid => {
-      if (uid) {
-        // Si hay un usuario autenticado, cargar el mapa de disponibilidad global para el calendario.
-        // allReservations$ del FirebaseService devuelve un DailyAvailabilityMap
-        this.firebaseService.allReservations$().pipe(
-          takeUntil(this.destroy$)
-        ).subscribe(dailyAvailabilityMap => {
-          this.allAvailabilityMap = dailyAvailabilityMap; // Actualiza el mapa de disponibilidad
-          console.log("AgendaComponent: Mapa de disponibilidad global actualizado:", this.allAvailabilityMap);
-        });
-
-        // Configurar la fecha inicial del calendario si no hay ninguna seleccionada.
-        // Por defecto, se establece en la fecha actual.
-        if (!this.selectedDate) {
-          this._selectedDateSource.next(new Date());
-        } else {
-          // Si ya hay una fecha seleccionada (ej. por navegación o recarga), re-emitirla
-          // para asegurar que las reservas de esa fecha se carguen.
-          this._selectedDateSource.next(this.selectedDate);
-        }
-
-      } else {
-        // Si no hay usuario autenticado, limpiar todos los datos relacionados con reservas.
-        this.myReservaciones = [];
-        this.reservationsForSelectedDate = [];
-        this.allAvailabilityMap = {};
-        this._selectedDateSource.next(null); // Limpiar la fecha seleccionada o establecer a hoy si se prefiere
-        console.log("AgendaComponent: Usuario deslogueado, limpiando datos de reservas.");
-      }
+    // --- BLOQUE 1: Cargar allAvailabilityMap independientemente del UID ---
+    // Este observable se suscribe primero para asegurar que el mapa de disponibilidad global esté disponible
+    // para la función dateClass del calendario tan pronto como sea posible.
+    this.firebaseService.allReservations$().pipe(
+      takeUntil(this.destroy$)
+    ).subscribe(dailyAvailabilityMap => {
+      this.allAvailabilityMap = dailyAvailabilityMap;
+      console.log("AgendaComponent: Mapa de disponibilidad global actualizado:", this.allAvailabilityMap);
+      this.cdr.detectChanges(); // Fuerza la detección de cambios para que el calendario se refresque con los colores
     });
 
-    // Suscripción para reaccionar a los cambios de la fecha seleccionada en el calendario.
-    // Este flujo carga las reservas específicas para el usuario y la fecha seleccionada.
-    this._selectedDateSource.pipe(
-      filter(date => !!date), // Solo procesa si hay una fecha válida seleccionada
-      map(date => this.formatDate(date as Date)), // Formatea el objeto Date a la cadena "YYYY-MM-DD"
-      distinctUntilChanged(), // Solo procede si la fecha formateada es diferente a la última
-      switchMap(formattedDate => {
-        if (!this.currentUserUid) {
+    // --- BLOQUE 2: Gestionar el UID del usuario actual ---
+    // Esta suscripción actualiza el currentUserUid y limpia datos de reservas específicas si el usuario se desloguea.
+    this.authService.user$.pipe(
+      map(user => user ? user.uid : null),
+      distinctUntilChanged(), // Solo emite si el UID realmente cambia
+      takeUntil(this.destroy$)
+    ).subscribe(uid => {
+      this.currentUserUid = uid; // Actualiza el UID del componente
+      console.log("AgendaComponent: Usuario logueado (UID):", this.currentUserUid);
+
+      if (!uid) {
+        // Si no hay usuario autenticado, limpiar datos de reservas específicas.
+        this.myReservaciones = [];
+        this.reservationsForSelectedDate = [];
+        // allAvailabilityMap NO se limpia aquí, ya que es información global.
+        console.log("AgendaComponent: Usuario deslogueado, limpiando datos de reservas específicas.");
+      }
+      // Re-emitir la fecha seleccionada para forzar la recarga de reservas específicas
+      // una vez que el UID se ha actualizado. Si no hay fecha, emitirá null.
+      this._selectedDateSource.next(this.selectedDate);
+      this.cdr.detectChanges(); // Fuerza la detección de cambios
+    });
+
+    // --- BLOQUE 3: Cargar reservas específicas para el usuario y la fecha seleccionada ---
+    // Este flujo usa combineLatest para asegurar que tanto una fecha válida como el UID del usuario
+    // (o la confirmación de que no hay UID) estén disponibles antes de intentar cargar las reservas.
+    combineLatest([
+      this._selectedDateSource.pipe(filter(date => !!date)), // Solo fechas válidas
+      this.authService.user$.pipe(
+        map(user => user ? user.uid : null),
+        distinctUntilChanged()
+      )
+    ]).pipe(
+      map(([date, uid]) => ({ formattedDate: this.formatDate(date as Date), uid })),
+      distinctUntilChanged((prev, curr) => prev.formattedDate === curr.formattedDate && prev.uid === curr.uid), // Solo si fecha o UID cambian
+      switchMap(({ formattedDate, uid }) => {
+        if (!uid) {
           console.log(`AgendaComponent: No hay UID de usuario para cargar reservas de ${formattedDate}.`);
           return of([]); // Si no hay usuario, devuelve un observable que emite un array vacío
         }
-        // Llama al servicio para obtener todas las reservas para la fecha formateada.
+        console.log(`AgendaComponent: Cargando reservas para ${formattedDate} para UID: ${uid}.`);
         return this.firebaseService.getReservationsForDate(formattedDate).pipe(
-          map(reservationsMap => Object.values(reservationsMap || {})), // Convierte el mapa de reservas a un array
-          map(reservations => reservations.filter(res => res.details.userId === this.currentUserUid)), // Filtra para mostrar solo las reservas del usuario actual
+          map(reservationsMap => Object.values(reservationsMap || {})),
+          map(reservations => reservations.filter(res => res.details.userId === uid)), // Filtra por el UID actual
           tap(reservations => {
             console.log(`AgendaComponent: Mis reservas para ${formattedDate}:`, reservations);
           }),
-          catchError(error => { // Manejo de errores específico para esta llamada
+          catchError(error => {
             console.error(`AgendaComponent: Error al cargar reservas para ${formattedDate}:`, error);
-            return of([]); // En caso de error, devuelve un array vacío para no romper el flujo
+            return of([]);
           }),
-          takeUntil(this.destroy$) // Desuscribe la llamada interna cuando el componente se destruye
+          takeUntil(this.destroy$)
         );
       }),
-      takeUntil(this.destroy$) // Desuscribe esta suscripción principal cuando el componente se destruye
-    ).subscribe((reservations: Reservation[]) => { // Aquí se explicita el tipo de `reservations`
-      this.reservationsForSelectedDate = reservations; // Asigna las reservas filtradas a la propiedad
+      takeUntil(this.destroy$)
+    ).subscribe((reservations: Reservation[]) => {
+      this.reservationsForSelectedDate = reservations;
     }, error => {
-      console.error("AgendaComponent: Error en la suscripción principal del selector de fecha:", error);
-      this.reservationsForSelectedDate = []; // Limpia las reservas en caso de error
+      console.error("AgendaComponent: Error en la suscripción de carga de reservas específicas:", error);
+      this.reservationsForSelectedDate = [];
     });
 
+
     // Sincroniza la propiedad `selectedDate` (para ngModel) con el valor del BehaviorSubject.
+    // Esto se mantiene separado para que ngModel siempre refleje el valor del BehaviorSubject.
     this._selectedDateSource.pipe(
       takeUntil(this.destroy$)
     ).subscribe(date => {
@@ -161,11 +174,8 @@ export class AgendaComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    // Desuscribe todas las suscripciones agrupadas en `this.subscriptions`
     this.subscriptions.unsubscribe();
-    // Emite un valor para el Subject `destroy$` para que `takeUntil` desuscriba todos los observables
     this.destroy$.next();
-    // Completa el Subject `destroy$` para liberar recursos
     this.destroy$.complete();
   }
 
