@@ -12,7 +12,7 @@ export interface CartItem {
   cantidad: number; // La cantidad de este servicio en el carrito
   imagen?: string;    // Añadido para permitir la propiedad 'imagen', opcional
   categoria?: string; // Añadido para permitir la propiedad 'categoria', opcional
-  duracion?: number;  // Añadido para permitir la propiedad 'duracion', opcional y tipo number
+  duracion?: number | null;  // Añadido para permitir la propiedad 'duracion', opcional y tipo number
 }
 
 /**

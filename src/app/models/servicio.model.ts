@@ -7,6 +7,6 @@ export interface Servicio {
   precio: number;
   imagen: string; // URL de la imagen
   categoria: 'foto' | 'video' | 'extra' | 'sugerido'; // Tipo de categoría
-  duracion?: number; // Duración en número (ej. minutos), opcional
+  duracion?: number | null; // Duración en número (ej. minutos), opcional y ahora puede ser null
   // Puedes añadir otras propiedades específicas si las necesitas
 }
