@@ -331,6 +331,7 @@ export class CarritoComponent implements OnInit, OnDestroy {
 
     if (selectedDayAvailability && selectedDayAvailability.available === false && selectedDayAvailability.bookedBy !== this.currentUserUid) {
       console.warn('The selected date has already been reserved by another user. Please choose another date.');
+      alert ('The selected date has already been reserved by another user. Please choose another date.');
       return;
     }
 
