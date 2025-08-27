@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, inject, ViewEncapsulation, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, ViewEncapsulation, ChangeDetectionStrategy, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 import { Router } from '@angular/router';
@@ -17,6 +17,7 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { FormsModule } from '@angular/forms';
 
+declare const Swal: any;
 
 
 @Component({
@@ -57,7 +58,6 @@ export class CarritoComponent implements OnInit, OnDestroy {
   maxDate: Date;
 
   allAvailabilityMap: DailyAvailabilityMap = {};
-
   cartItemsArray: CartItem[] = [];
   currentCartTotal: number = 0;
 
@@ -314,11 +314,14 @@ export class CarritoComponent implements OnInit, OnDestroy {
 
     if (!this.cartItemsArray || this.cartItemsArray.length === 0) {
       console.warn('Your cart is empty. Add services before proceeding.');
+      Swal.fire("Your cart is empty. Add services before proceeding.");
       return;
     }
 
+
     if (!this.selectedReservationDate) {
       console.warn('Please select a date for your reservation.');
+      Swal.fire("Please select a date for your reservation.");
       return;
     }
 
@@ -328,6 +331,7 @@ export class CarritoComponent implements OnInit, OnDestroy {
     // Esta validación es un seguro adicional, pero la lógica de dateFilter ya lo evita
     if (selectedDayAvailability && selectedDayAvailability.available === false) {
       console.warn('The selected date has already been reserved by another user. Please choose another date.');
+      Swal.fire("The selected date has already been reserved by another user. Please choose another date.");
       return;
     }
 
@@ -353,9 +357,9 @@ export class CarritoComponent implements OnInit, OnDestroy {
         this.currentCartTotal
       );
 
-      console.log('CarritoComponent: Clearing Firebase cart after successful reservation...');
-      Swal.fire("SweetAlert2 is working!");
-      await this.firebaseService.guardarCarritoUsuario(this.currentUserUid, {});
+      console.log('¡Tu reserva está confirmada!');
+      Swal.fire("¡Tu reserva está confirmada!");
+      await this.firebaseService.guardarCarritoUsuario(this.currentUserUid, {});
       this.setEmptyCart();
       this.selectedReservationDate = null;
 
