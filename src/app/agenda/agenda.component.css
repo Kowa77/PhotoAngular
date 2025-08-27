@@ -79,11 +79,6 @@ h1, h2 {
   cursor: not-allowed;
 }
 
-/* Opcional: estilo para los elementos keyvalue pipe si necesitas algo más específico */
-.keyvalue-pipe-item {
-  /* Tus estilos aquí */
-}
-
 /* --- Estilos para el calendario de Angular Material --- */
 
 /* Ajustes generales para las celdas de los días en el calendario */

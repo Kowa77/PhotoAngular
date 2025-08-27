@@ -15,10 +15,10 @@
     <div class="cart-items-grid">
       @for (item of cartItemsArray; track trackByItemId($index, item)) {
         <div class="cart-item-card"
-             [class.category-fotos]="item.categoria === 'foto'"
-             [class.category-videos]="item.categoria === 'video'"
-             [class.category-extras]="item.categoria === 'extra'"
-             [class.category-sugerido]="item.categoria === 'sugerido'">
+              [class.category-fotos]="item.categoria === 'foto'"
+              [class.category-videos]="item.categoria === 'video'"
+              [class.category-extras]="item.categoria === 'extra'"
+              [class.category-sugerido]="item.categoria === 'sugerido'">
           <img [src]="item.imagen" alt="{{ item.nombre }}" id="item-image-{{item.id}}">
           <div class="item-details" id="item-details-{{item.id}}">
             <h3>{{ item.nombre }}</h3>
@@ -40,22 +40,18 @@
 
       <div class="date-selection">
         <label for="reservationDate">Fecha de la Reserva:</label>
-
-        <!-- Implementación de Angular Material Datepicker -->
         <mat-form-field appearance="fill">
-          <mat-label>Elige una fecha</mat-label>
+          <mat-label>Fecha</mat-label>
           <input matInput [matDatepicker]="picker"
                  [(ngModel)]="selectedReservationDate"
                  (dateChange)="onDateSelect($event)"
+                 [matDatepickerFilter]="dateFilter"
                  [min]="minDate"
-                 [max]="maxDate"
-                 [matDatepickerFilter]="dateFilter" name="reservationDate"
-                 required>
+                 [max]="maxDate">
+          <mat-hint>MM/DD/YYYY</mat-hint>
           <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
-          <mat-datepicker #picker [dateClass]="dateClass"></mat-datepicker>
+          <mat-datepicker #picker [dateClass]="dateClass" [startAt]="startAt"></mat-datepicker>
         </mat-form-field>
-        <!-- Fin de Angular Material Datepicker -->
-
       </div>
 
       <button class="checkout-button" (click)="proceedToCheckout()"
