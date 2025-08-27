@@ -8,6 +8,8 @@ import { AuthService } from '../auth/auth.service';
 import { FirebaseService } from '../firebase/firefirebase-service.service';
 import { Servicio } from '../models/servicio.model';
 
+declare const Swal: any;
+
 @Component({
   selector: 'app-servicios',
   templateUrl: './servicios.component.html',
@@ -122,19 +124,60 @@ export class ServiciosComponent implements OnInit, OnDestroy {
   }
 
   async toggleCart(servicio: Servicio): Promise<void> {
-    if (!this.currentUserUid) {
-      console.warn('Necesitas iniciar sesión para agregar ítems al carrito.');
-      return;
-    }
+  if (!this.currentUserUid) {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Debes iniciar sesión',
+      text: 'Para agregar o quitar servicios, por favor inicia sesión primero.',
+    });
+    return;
+  }
 
+  try {
     if (this.isInCart(servicio.id)) {
       await this.firebaseService.quitarDelCarrito(this.currentUserUid, servicio.id);
-      console.log(`ServiciosComponent: Servicio ${servicio.nombre} quitado del carrito.`);
+      console.log(`Servicio ${servicio.nombre} quitado del carrito.`);
+      Swal.fire({
+        icon: 'success',
+        title: '¡Eliminado!',
+        text: `El servicio "${servicio.nombre}" ha sido quitado de tu carrito.`,
+        showConfirmButton: false,
+        timer: 1500
+      });
     } else {
       await this.firebaseService.addToCart(this.currentUserUid, servicio);
-      console.log(`ServiciosComponent: Servicio ${servicio.nombre} agregado al carrito.`);
+      console.log(`Servicio ${servicio.nombre} agregado al carrito.`);
+      Swal.fire({
+        icon: 'success',
+        title: '¡Agregado!',
+        text: `El servicio "${servicio.nombre}" ha sido agregado a tu carrito.`,
+        showConfirmButton: false,
+        timer: 1500
+      });
     }
+  } catch (error) {
+    console.error('Error en la operación del carrito:', error);
+    Swal.fire({
+      icon: 'error',
+      title: 'Oops...',
+      text: 'Hubo un error al actualizar el carrito. Por favor, inténtalo de nuevo.',
+    });
   }
+}
+  // async toggleCart(servicio: Servicio): Promise<void> {
+  //   if (!this.currentUserUid) {
+  //     console.warn('Necesitas iniciar sesión para agregar ítems al carrito.');
+  //     return;
+  //   }
+
+  //   if (this.isInCart(servicio.id)) {
+  //     await this.firebaseService.quitarDelCarrito(this.currentUserUid, servicio.id);
+  //     console.log(`ServiciosComponent: Servicio ${servicio.nombre} quitado del carrito.`);
+  //   } else {
+  //     await this.firebaseService.addToCart(this.currentUserUid, servicio);
+  //     console.log(`ServiciosComponent: Servicio ${servicio.nombre} agregado al carrito.`);
+  //   }
+  // }
 
   calculateTotalCart(): void {
     let total = 0;
@@ -150,6 +193,7 @@ export class ServiciosComponent implements OnInit, OnDestroy {
     }
     this.totalCarrito = total;
     console.log("ServiciosComponent: Total Carrito Actualizado:", this.totalCarrito);
+
   }
 
   pagar(): void {
@@ -160,9 +204,10 @@ export class ServiciosComponent implements OnInit, OnDestroy {
   async logout(): Promise<void> {
     try {
       await this.authService.logoutUser();
-      console.log('ServiciosComponent: Sesión cerrada.');
+      console.log('Sesión cerrada.');
+      Swal.fire('Sesión cerrada.')
     } catch (error) {
-      console.error('ServiciosComponent: Error al cerrar sesión:', error);
+      console.error('Error al cerrar sesión:', error);
     }
   }
 

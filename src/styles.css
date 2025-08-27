@@ -23,8 +23,8 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
   que tiene la clase 'booked-by-others'.
 */
 .mat-calendar-body-cell.booked-by-others >.mat-calendar-body-cell-content {
-  background-color: #ffcccc!important; /* Rojo claro para días reservados por otros */
-  color: #a33b3b!important; /* Color de texto que contrasta */
+  background-color: #b10909!important; /* Rojo claro para días reservados por otros */
+  color: #ffffff!important; /* Color de texto que contrasta */
   font-weight: bold;
 }
 
@@ -34,7 +34,7 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
   que tiene la clase 'booked-by-current-user'.
 */
 .mat-calendar-body-cell.booked-by-current-user >.mat-calendar-body-cell-content {
-  background-color: #5d67f0!important; /* Verde claro para días reservados por el usuario actual */
+  background-color: #32aa38!important; /* Verde claro para días reservados por el usuario actual */
   color: #ffffff!important; /* Color de texto que contrasta */
   font-weight: bold;
 }

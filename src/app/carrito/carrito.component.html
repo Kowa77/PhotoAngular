@@ -38,6 +38,23 @@
     <div class="cart-summary">
       <h3>Total Carrito: ${{ currentCartTotal | number:'1.2-2' }}</h3>
 
+      <div class="payment-options">
+        <label>Elige una opción de pago:</label>
+        <div class="option-card" [class.selected]="paymentOption === 'full'">
+          <input type="radio" id="full-payment" name="paymentOption" value="full" [(ngModel)]="paymentOption" (change)="updateSummary()">
+          <label for="full-payment">
+            <span class="option-title">Pago Completo (con 20% de Descuento)</span>
+            <span class="option-price">${{ totalWithDiscount | number:'1.2-2' }}</span>
+          </label>
+        </div>
+        <div class="option-card" [class.selected]="paymentOption === 'partial'">
+          <input type="radio" id="partial-payment" name="paymentOption" value="partial" [(ngModel)]="paymentOption" (change)="updateSummary()">
+          <label for="partial-payment">
+            <span class="option-title">Pago de Reserva (20%)</span>
+            <span class="option-price">${{ partialTotal | number:'1.2-2' }}</span>
+          </label>
+        </div>
+      </div>
       <div class="date-selection">
         <label for="reservationDate">Fecha de la Reserva:</label>
         <mat-form-field appearance="fill">
@@ -55,7 +72,7 @@
       </div>
 
       <button class="checkout-button" (click)="proceedToCheckout()"
-              [disabled]="!currentUserUid || cartItemsArray.length === 0 || !selectedReservationDate">Proceder a tu Reserva</button>
+              [disabled]="!currentUserUid || cartItemsArray.length === 0 || !selectedReservationDate || !paymentOption">Proceder</button>
     </div>
 
     <button class="back-to-services-button" routerLink="/servicios">Seguir Explorando Servicios</button>
