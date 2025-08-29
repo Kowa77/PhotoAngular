@@ -38,13 +38,9 @@
               </ul>
 
               @if (currentUserEmail === 'admin@gmail.com') {
-                <button class="btn btn-danger" (click)="cancelReservation(reservation)">
-                  Cancelar Reserva
-                </button>
+                <button class="btn btn-danger" (click)="cancelReservation(reservation)">Cancelar Reserva</button>
               } @else if (reservation.details.status === 'pending' && currentUserEmail !== 'admin@gmail.com') {
-                <button class="btn btn-success">
-                  Pagar el 80% Restante
-                </button>
+                <button class="btn btn-success">Pagar el 80% Restante</button>
               }
             </div>
           }

@@ -13,7 +13,10 @@ import { AuthService } from '../auth/auth.service';
 export class LoginModalComponent {
   isVisible: boolean = false;
   credentials = { email: '', password: '' };
+  resetEmail: string = '';
   errorMessage: string = '';
+  successMessage: string = '';
+  showResetForm: boolean = false;
   @Output() loginSuccess = new EventEmitter<any>();
   @Output() closeModalEvent = new EventEmitter<void>();
   @Output() openRegisterModalEvent = new EventEmitter<void>(); // Nuevo evento
@@ -23,6 +26,8 @@ export class LoginModalComponent {
   openModal() {
     this.isVisible = true;
     this.errorMessage = '';
+    this.successMessage = '';
+    this.showResetForm = false;
   }
 
   closeModal() {
@@ -42,6 +47,36 @@ export class LoginModalComponent {
       this.closeModal();
     } catch (error: any) {
       this.errorMessage = this.authService.getErrorMessage(error.code);
+    }
+  }
+
+  showResetPasswordForm() {
+    this.showResetForm = true;
+    this.errorMessage = '';
+    this.successMessage = '';
+  }
+
+  hideResetPasswordForm() {
+    this.showResetForm = false;
+    this.errorMessage = '';
+    this.successMessage = '';
+  }
+
+  async resetPassword() {
+    if (!this.resetEmail) {
+      this.errorMessage = 'Por favor, ingresa tu correo electrónico.';
+      return;
+    }
+
+    try {
+      await this.authService.resetPassword(this.resetEmail);
+      this.successMessage = 'Se ha enviado un correo para restablecer tu contraseña. Revisa tu bandeja de entrada.';
+      this.errorMessage = '';
+      // Limpiar el email después de enviar
+      this.resetEmail = '';
+    } catch (error: any) {
+      this.errorMessage = this.authService.getErrorMessage(error.code);
+      this.successMessage = '';
     }
   }
 }

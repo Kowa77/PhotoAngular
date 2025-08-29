@@ -62,7 +62,8 @@
   </div>
 </section>
 
-<div id="fotoVideoDetails" class="service-details" *ngIf="isFotoVideoDetailsVisible">
+@if (isFotoVideoDetailsVisible) {
+<div id="fotoVideoDetails" class="service-details">
   <h3>Detalles de Fotografía y Video para Cumpleaños</h3>
   <p>Nuestro equipo de fotógrafos y videógrafos expertos se encargará de documentar cada detalle de tu fiesta de cumpleaños de manera creativa y profesional.</p>
   <h4>Fotografía:</h4>
@@ -81,3 +82,4 @@
   </ul>
   <p>¡Consúltanos por nuestros paquetes personalizados que se adaptan a tus necesidades y presupuesto!</p>
 </div>
+}
