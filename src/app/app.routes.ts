@@ -10,6 +10,7 @@ import { ServiciosComponent } from './servicios/servicios.component';
 import { CarritoComponent } from './carrito/carrito.component';
 import { AgendaComponent } from './agenda/agenda.component'; // Importa el nuevo componente
 import { PerfilComponent } from './perfil/perfil.component';
+import { GalleryComponent } from './paginas/gallery/gallery.component';
 
 export const routes: Routes = [
   { path: '', component: TarjetasComponent }, // Ruta por defecto
@@ -22,5 +23,6 @@ export const routes: Routes = [
   { path: 'servicios/:categoria', component: ServiciosComponent },
   { path: 'carrito', component: CarritoComponent },
   { path: 'agenda', component: AgendaComponent }, // Nueva ruta para la agenda
+  { path: 'galeria', component: GalleryComponent },
   { path: '**', redirectTo: '' } // Cualquier otra ruta redirige a la página principal
 ];

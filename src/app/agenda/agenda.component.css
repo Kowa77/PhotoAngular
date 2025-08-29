@@ -1,6 +1,3 @@
-/* src/app/agenda/agenda.component.css */
-
-/* Tus estilos existentes */
 .agenda-container {
   padding: 20px;
   max-width: 1200px;
@@ -31,12 +28,15 @@ h1, h2 {
   gap: 20px;
 }
 
+/* Modificaciones para la tarjeta de reserva (PASO 4) */
 .reservation-card {
   border: 1px solid #ddd;
   border-radius: 8px;
   padding: 20px;
   box-shadow: 0 2px 5px rgba(0,0,0,0.1);
   background-color: #fff;
+  /* Centra el contenido horizontalmente (PASO 4) */
+  text-align: center;
 }
 
 .reservation-card h4 {
@@ -49,6 +49,9 @@ h1, h2 {
   list-style-type: none;
   padding: 0;
   margin: 10px 0;
+  /* CAMBIOS PARA CENTRAR LA LISTA */
+  display: inline-block;
+  text-align: left;
 }
 
 .reservation-card ul li {
@@ -80,6 +83,53 @@ h1, h2 {
 }
 
 /* --- Estilos para el calendario de Angular Material --- */
+/* ... (el resto del código CSS se mantiene igual) ... */
+
+/* Nuevos estilos para la tarjeta de reserva */
+
+/* Estilo para el estado de "Servicio Pago" (PASO 1) */
+.paid-status {
+  font-weight: bold;
+  color: #155724; /* Verde oscuro */
+}
+
+/* Estilo para el título "Detalle de la Reserva" (PASO 2) */
+.detail-title {
+  font-size: 1.1em; /* Un poco más pequeño que el h4 por defecto */
+  margin-top: 20px;
+  margin-bottom: 5px;
+}
+
+/* Estilo para el total (PASO 3) */
+.total-amount {
+  font-size: 1.4em; /* Más grande */
+  font-weight: bold;
+  color: #c23535;
+}
+
+/* Nuevo estilo para la imagen de "pagado" */
+.paid-icon {
+    width: 50%; /* Ajusta el tamaño de la imagen */
+    height: auto;
+    margin-left: 5px; /* Crea un pequeño espacio entre el texto y la imagen */
+    vertical-align: middle; /* Alinea la imagen verticalmente con el texto */
+}
+
+/* Nuevo estilo para el texto del contador de días */
+.countdown-text {
+    color: #8b0000; /* Color rojo oscuro */
+    font-weight: bold;
+}
+
+/* Nuevo estilo para el monto restante a pagar */
+.remaining-amount {
+    font-size: 1.2em;
+    font-weight: bold;
+    color: #e27e20; /* Un verde fuerte para el monto restante */
+    margin-top: 0px;
+    margin-bottom: 15px;
+}
+/* --- Estilos para el calendario de Angular Material --- */
 
 /* Ajustes generales para las celdas de los días en el calendario */
 /* Aplicar directamente al contenido, asegurando el radio de borde */
@@ -98,9 +148,8 @@ h1, h2 {
 /* Aplicar al div que contiene el número del día, pero solo si su padre td tiene 'has-bookings' */
 /* Hacemos el selector un poco más específico para sobreescribir cualquier estilo por defecto */
 .mat-calendar-body-cell.has-bookings .mat-calendar-body-cell-content {
-  background-color: #d4edda !important; /* Un verde claro para indicar reservas */
-  color: #212529 !important; /* Un color de texto oscuro para que contraste bien con el verde claro */
-  font-weight: bold !important; /* Hace el número del día más negrita */
+  background-color: #1c8133 !important; /* Un verde claro para indicar reservas */
+  color: #ffffff !important; /* Un color de texto oscuro para que contraste bien con el verde claro */
 }
 
 /*
@@ -113,15 +162,3 @@ h1, h2 {
   background-color: #c3e6cb !important; /* Un verde ligeramente más oscuro para el seleccionado/hoy */
   color: #155724 !important; /* Aseguramos que el color de texto se aplique */
 }
-
-/*
-  Si los días no disponibles tienen una reserva,
-  puede que no quieras que el usuario pueda hacer clic en ellos.
-  Descomenta esto si quieres deshabilitar la interacción.
-*/
-/*
-.mat-calendar-table-cell.has-bookings {
-  pointer-events: none;
-  cursor: default;
-}
-*/
