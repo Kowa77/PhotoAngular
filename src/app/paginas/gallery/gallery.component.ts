@@ -1,24 +1,16 @@
-import { Component, OnInit } from '@angular/core';
-import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
+
+
 
 @Component({
   selector: 'app-gallery',
   standalone: true,
+  imports: [CommonModule], // Necesario para *ngIf, *ngFor y el pipe async
   templateUrl: './gallery.component.html',
   styleUrls: ['./gallery.component.css']
 })
-export class GalleryComponent implements OnInit {
+export class GalleryComponent {
 
-  public galleryHtml: SafeHtml | undefined;
 
-  constructor(private sanitizer: DomSanitizer) { }
-
-  ngOnInit(): void {
-    const embedCode = `
-      <div class="pa-gallery-player-widget" style="width:100%; height:480px; visibility:hidden;"
-        data-id="cQDetdQk9U4P5ttGA" data-link="https://photos.app.goo.gl/cQDetdQk9U4P5ttGA">
-      </div>
-    `;
-    this.galleryHtml = this.sanitizer.bypassSecurityTrustHtml(embedCode);
-  }
 }
