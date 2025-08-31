@@ -4,6 +4,7 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
+import axios from 'axios';
 
 // --- Configuración ---
 dotenv.config();
@@ -30,33 +31,44 @@ async function uploadPhoto() {
     const oAuth2Client = new google.auth.OAuth2(client_id, client_secret);
 
     oAuth2Client.setCredentials({ refresh_token: REFRESH_TOKEN });
+    const { token } = await oAuth2Client.getAccessToken();
 
-    // This is the corrected line
-    const photoslibrary = google.photoslibrary({
-      version: 'v1',
-      auth: oAuth2Client,
-    });
+    if (!token) {
+      throw new Error('No se pudo obtener el token de acceso.');
+    }
     console.log('Autenticación exitosa.');
 
-    // 2. Subir los bytes de la imagen para obtener un upload token
-    console.log(`Subiendo bytes de la imagen desde: ${PHOTO_TO_UPLOAD_PATH}`);
-    const { data: uploadToken } = await photoslibrary.uploads.upload({
-      requestBody: fs.createReadStream(PHOTO_TO_UPLOAD_PATH),
-      // El nombre del archivo que se usará en Google Photos.
-      'x-goog-upload-file-name': path.basename(PHOTO_TO_UPLOAD_PATH),
-      'x-goog-upload-protocol': 'raw',
-    });
+    // 2. Leer los bytes de la imagen
+    console.log(`Leyendo la imagen desde: ${PHOTO_TO_UPLOAD_PATH}`);
+    const photoBytes = await fs.readFile(PHOTO_TO_UPLOAD_PATH);
 
+    // 3. Subir los bytes de la imagen para obtener un upload token usando Axios
+    console.log('Subiendo bytes de la imagen...');
+    const uploadResponse = await axios.post(
+      'https://photoslibrary.googleapis.com/v1/uploads',
+      photoBytes,
+      {
+        headers: {
+          'Content-Type': 'application/octet-stream',
+          'Authorization': `Bearer ${token}`,
+          'X-Goog-Upload-File-Name': path.basename(PHOTO_TO_UPLOAD_PATH),
+          'X-Goog-Upload-Protocol': 'raw',
+        },
+      }
+    );
+
+    const uploadToken = uploadResponse.data;
     if (!uploadToken) {
         throw new Error('No se pudo obtener el upload token.');
     }
     console.log('Se obtuvo el upload token:', uploadToken);
 
-    // 3. Usar el upload token para crear el archivo en la librería del usuario
+    // 4. Usar el upload token para crear el archivo en la librería del usuario
     console.log('Creando el archivo en Google Photos...');
-    const { data: newMediaItem } = await photoslibrary.mediaItems.batchCreate({
-      requestBody: {
-        newItems: [
+    const createItemResponse = await axios.post(
+      'https://photoslibrary.googleapis.com/v1/mediaItems:batchCreate',
+      {
+        newMediaItems: [
           {
             description: '¡Foto de prueba subida desde mi app en Node.js!',
             simpleMediaItem: {
@@ -66,10 +78,16 @@ async function uploadPhoto() {
           },
         ],
       },
-    });
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      }
+    );
 
-    const createdItem = newMediaItem.newMediaItemResults?.[0];
-    if (createdItem?.status.message === 'OK') {
+    const createdItem = createItemResponse.data.newMediaItemResults?.[0];
+    if (createdItem?.status.message === 'Success') {
       console.log('✅ ¡Foto subida exitosamente!');
       console.log('ID del Media Item:', createdItem.mediaItem.id);
       console.log('Puedes verla aquí:', createdItem.mediaItem.productUrl);
