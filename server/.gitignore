@@ -1,0 +1,7 @@
+# Archivos de Node
+/node_modules
+
+# Archivos de credenciales sensibles
+.env
+credentials.json
+serviceAccountKey.json
