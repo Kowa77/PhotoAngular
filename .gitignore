@@ -49,3 +49,6 @@ server/.env
 nodemailer-backend/.env
 environment/environment.ts
 environment/environment.prod.ts
+
+server/credentials.json
+server/serviceAccountKey.json
