@@ -9,7 +9,12 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const CREDENTIALS_PATH = path.join(__dirname, 'credentials.json');
-const SCOPES = ['https://www.googleapis.com/auth/photoslibrary'];
+
+// Forma correcta para 2025: incluye ambos permisos
+const SCOPES = [
+  'https://www.googleapis.com/auth/photoslibrary.appendonly',
+  'https://www.googleapis.com/auth/photoslibrary.readonly.appcreateddata'
+];
 
 async function main() {
   const credentials = JSON.parse(await fs.readFile(CREDENTIALS_PATH));
@@ -22,7 +27,7 @@ async function main() {
 
   const oAuth2Client = new google.auth.OAuth2(client_id, client_secret, redirectUri);
 
-  const authUrl = oAuth2Client.generateAuthUrl({ access_type: 'offline', scope: SCOPES });
+  const authUrl = oAuth2Client.generateAuthUrl({ access_type: 'offline', scope: SCOPES.join(' ') });
   console.log('Authorize this app by visiting this url:', authUrl);
 
   const server = http.createServer(async (req, res) => {

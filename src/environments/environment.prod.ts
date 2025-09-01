@@ -16,14 +16,15 @@ declare global {
 export const environment = {
   production: true,
   firebaseConfig: { // Mantenemos firebaseConfig
-    apiKey: window['FIREBASE_API_KEY'] || "AIzaSyCmuYZFEd_5byi9usEVelfCNX7oAzdhJ7M",
-    authDomain: window['FIREBASE_AUTH_DOMAIN'] || "serviciosfotosyvideos.firebaseapp.com",
-    databaseURL: window['FIREBASE_DATABASE_URL'] || "https://serviciosfotosyvideos-default-rtdb.firebaseio.com",
-    projectId: window['FIREBASE_PROJECT_ID'] || "serviciosfotosyvideos",
-    storageBucket: window['FIREBASE_STORAGE_BUCKET'] || "serviciosfotosyvideos.firebasestorage.app",
-    messagingSenderId: window['FIREBASE_MESSAGING_SENDER_ID'] || "966333943753",
-    appId: window['FIREBASE_APP_ID'] || "1:966333943753:web:2549cd36af0df615b06218",
-    measurementId: window['FIREBASE_MEASUREMENT_ID'] || "G-VS2Y7558Y5"
+    apiKey: window['FIREBASE_API_KEY'] || "AIzaSyAattwoKL9pde1WDLtVr29KdszuX0It3E8",
+    authDomain: window['FIREBASE_AUTH_DOMAIN'] || "bsfotografia-9fc03.firebaseapp.com",
+    databaseURL: window['FIREBASE_DATABASE_URL'] || "https://bsfotografia-9fc03-default-rtdb.firebaseio.com",
+    projectId: window['FIREBASE_PROJECT_ID'] || "bsfotografia-9fc03",
+    storageBucket: window['FIREBASE_STORAGE_BUCKET'] || "bsfotografia-9fc03.firebasestorage.app",
+    messagingSenderId: window['FIREBASE_MESSAGING_SENDER_ID'] || "523548400063",
+    appId: window['FIREBASE_APP_ID'] || "1:523548400063:web:7517a9aa5874b002d1290a",
+    measurementId: window['FIREBASE_MEASUREMENT_ID'] || "G-36GLWZND8D"
   },
 
 };
+
