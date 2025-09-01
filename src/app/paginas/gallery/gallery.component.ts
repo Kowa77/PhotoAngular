@@ -4,15 +4,18 @@ import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { ActivatedRoute } from '@angular/router';
 
+import { GalleryModule } from 'ng-gallery';
+import { GalleryItem, ImageItem } from 'ng-gallery';
+
 @Component({
   selector: 'app-gallery',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, GalleryModule],
   templateUrl: './gallery.component.html',
   styleUrls: ['./gallery.component.css']
 })
 export class GalleryComponent implements OnInit {
-  photos: any[] = [];
+  photos: GalleryItem[] = [];
   userId: string | null = '';
   isLoading: boolean = true;
 
@@ -32,12 +35,13 @@ export class GalleryComponent implements OnInit {
 
   loadGallery(userId: string): void {
     this.isLoading = true;
-    // Usa la ruta y el método correctos para el backend
     const backendUrl = `http://localhost:3000/api/gallery/${userId}`;
-    this.http.get<any[]>(backendUrl).subscribe({ // <-- Cuidado: Cambiado de .post a .get
-      next: (data) => {
-        // En el backend simplificamos el objeto de respuesta, ahora `data` es directamente el array
-        this.photos = data;
+    this.http.get<any[]>(backendUrl).subscribe({
+      next: (data: any[]) => {
+        this.photos = data.map((photo) => {
+          return new ImageItem({ src: photo.baseUrl, thumb: photo.baseUrl });
+        });
+
         console.log('Fotos cargadas con éxito:', this.photos);
         this.isLoading = false;
       },
@@ -47,4 +51,16 @@ export class GalleryComponent implements OnInit {
       }
     });
   }
+
+  /**
+   * Método para descargar la imagen seleccionada.
+   * Agrega el parámetro '=d' a la URL para forzar la descarga.
+   */
+  downloadImage(imageUrl: string): void {
+    if (imageUrl) {
+      const downloadUrl = imageUrl + '=d';
+      window.open(downloadUrl, '_blank');
+    }
+  }
+
 }
