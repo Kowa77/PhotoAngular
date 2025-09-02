@@ -1,0 +1,29 @@
+<div class="carousel-container" *ngIf="images.length > 0">
+  <div class="carousel-image-wrapper">
+    <button class="carousel-button prev" (click)="prevImage()">
+      <i class="fas fa-chevron-left"></i> </button>
+
+    <img
+      [src]="images[currentIndex()]"
+      alt="Gallery Photo"
+      class="carousel-image"
+      (click)="nextImage()"
+    >
+
+    <button class="carousel-button next" (click)="nextImage()">
+      <i class="fas fa-chevron-right"></i> </button>
+  </div>
+
+  <div class="carousel-indicators">
+    <span
+      *ngFor="let image of images; let i = index"
+      [class.active]="i === currentIndex()"
+      (click)="goToImage(i)"
+      class="indicator-dot"
+    ></span>
+  </div>
+</div>
+
+<div *ngIf="images.length === 0" class="no-photos-message">
+  <p>No hay fotos disponibles para mostrar en el carrusel. 😕</p>
+</div>

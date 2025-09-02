@@ -1,12 +1,28 @@
-<div class="gallery-container">
-    <h2>Mi Galería de Fotos</h2>
-    <div *ngIf="isLoading" class="loading-message">Cargando fotos...</div>
-    <div *ngIf="!isLoading && photos.length === 0" class="no-photos-message">
-        No se encontraron fotos en tu álbum.
-    </div>
-    <div *ngIf="!isLoading && photos.length > 0" class="photo-grid">
-        <div *ngFor="let photo of photos" class="photo-item">
-            <img [src]="photo.baseUrl" alt="Foto de la galería">
+<div class="gallery-page-container">
+  <h1>Galería de Fotos del Usuario</h1>
+
+  @if (isLoading) {
+    <div class="loading-spinner">Cargando fotos... 📸</div>
+  } @else if (photos.length > 0) {
+    <app-image-carousel
+      [images]="photoUrls"
+      [initialIndex]="currentImageIndex"
+      (imageChanged)="onImageChanged($event)">
+    </app-image-carousel>
+
+    <div class="thumbnail-grid">
+      @for (photo of photos; track photo.id; let i = $index) {
+        <div
+          class="thumbnail-item"
+          [class.active]="i === currentImageIndex"
+          (click)="selectImage(i)">
+          <img [src]="photo.baseUrl" alt="{{ photo.filename }}" />
         </div>
+      }
     </div>
+  } @else {
+    <div class="no-photos-message">
+      <p>No hay fotos disponibles para este usuario. 😔</p>
+    </div>
+  }
 </div>

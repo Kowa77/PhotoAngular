@@ -1,0 +1,141 @@
+/* src/app/components/image-carousel/image-carousel.component.css */
+.carousel-container {
+  position: relative;
+  width: 100%;
+  max-width: 800px; /* Ancho máximo del carrusel */
+  margin: 40px auto; /* Centrar y agregar espacio */
+  background-color: #f8f8f8; /* Fondo suave */
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  overflow: hidden; /* Para que las imágenes no se salgan de los bordes redondeados */
+  padding: 20px;
+}
+
+.carousel-image-wrapper {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 500px; /* Altura fija para el contenedor de la imagen */
+  background-color: #e0e0e0;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+.carousel-image {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain; /* Asegura que la imagen se ajuste sin recortarse */
+  border-radius: 8px;
+  transition: transform 0.3s ease-in-out; /* Suave transición al hacer clic */
+  cursor: pointer;
+}
+
+.carousel-button {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: rgba(0, 0, 0, 0.6);
+  color: white;
+  border: none;
+  padding: 15px 20px;
+  font-size: 24px;
+  cursor: pointer;
+  z-index: 10;
+  border-radius: 50%;
+  transition: background-color 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 50px;
+  height: 50px;
+}
+
+.carousel-button:hover {
+  background-color: rgba(0, 0, 0, 0.8);
+}
+
+.carousel-button.prev {
+  left: 15px;
+}
+
+.carousel-button.next {
+  right: 15px;
+}
+
+.carousel-indicators {
+  text-align: center;
+  margin-top: 15px;
+}
+
+.indicator-dot {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  margin: 0 5px;
+  background-color: #ccc;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.indicator-dot.active {
+  background-color: #007bff; /* Color azul para el indicador activo */
+  transform: scale(1.2);
+}
+
+.no-photos-message {
+  text-align: center;
+  padding: 50px;
+  color: #666;
+  font-size: 1.2em;
+  background-color: #f0f0f0;
+  border-radius: 8px;
+  margin: 40px auto;
+  max-width: 600px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .carousel-container {
+    max-width: 95%;
+    padding: 10px;
+  }
+  .carousel-image-wrapper {
+    height: 350px;
+  }
+  .carousel-button {
+    padding: 10px 15px;
+    font-size: 20px;
+    width: 40px;
+    height: 40px;
+  }
+}
+
+@media (max-width: 480px) {
+  .carousel-container {
+    margin: 20px auto;
+  }
+  .carousel-image-wrapper {
+    height: 250px;
+  }
+  .carousel-button {
+    padding: 8px 12px;
+    font-size: 18px;
+    width: 35px;
+    height: 35px;
+    border-radius: 8px; /* Cambiar a cuadrado para pantallas pequeñas */
+  }
+  .carousel-button.prev {
+    left: 8px;
+  }
+  .carousel-button.next {
+    right: 8px;
+  }
+  .indicator-dot {
+    width: 10px;
+    height: 10px;
+  }
+}
