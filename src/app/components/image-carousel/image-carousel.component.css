@@ -1,22 +1,25 @@
 /* src/app/components/image-carousel/image-carousel.component.css */
+
+/* --- Estilos del Contenedor Principal del Carrusel --- */
 .carousel-container {
   position: relative;
   width: 100%;
-  max-width: 800px; /* Ancho máximo del carrusel */
-  margin: 40px auto; /* Centrar y agregar espacio */
-  background-color: #f8f8f8; /* Fondo suave */
+  max-width: 800px;
+  margin: 40px auto;
+  background-color: #f8f8f8;
   border-radius: 12px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
-  overflow: hidden; /* Para que las imágenes no se salgan de los bordes redondeados */
+  overflow: hidden;
   padding: 20px;
 }
 
+/* --- Estilos del Envoltorio de la Imagen Principal del Carrusel --- */
 .carousel-image-wrapper {
   position: relative;
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 500px; /* Altura fija para el contenedor de la imagen */
+  height: 500px;
   background-color: #e0e0e0;
   border-radius: 8px;
   overflow: hidden;
@@ -26,12 +29,13 @@
 .carousel-image {
   max-width: 100%;
   max-height: 100%;
-  object-fit: contain; /* Asegura que la imagen se ajuste sin recortarse */
+  object-fit: contain;
   border-radius: 8px;
-  transition: transform 0.3s ease-in-out; /* Suave transición al hacer clic */
+  transition: transform 0.3s ease-in-out;
   cursor: pointer;
 }
 
+/* --- Estilos de los Botones de Navegación del Carrusel --- */
 .carousel-button {
   position: absolute;
   top: 50%;
@@ -64,6 +68,7 @@
   right: 15px;
 }
 
+/* --- Estilos de los Indicadores de Puntos del Carrusel --- */
 .carousel-indicators {
   text-align: center;
   margin-top: 15px;
@@ -81,10 +86,11 @@
 }
 
 .indicator-dot.active {
-  background-color: #007bff; /* Color azul para el indicador activo */
+  background-color: #007bff;
   transform: scale(1.2);
 }
 
+/* --- Estilos para cuando no hay fotos --- */
 .no-photos-message {
   text-align: center;
   padding: 50px;
@@ -97,7 +103,135 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
-/* Responsive adjustments */
+/* --- Estilos del Botón de Descarga --- */
+.download-button {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  font-size: 16px;
+  cursor: pointer;
+  z-index: 15;
+  border-radius: 8px;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.download-button:hover {
+  background-color: #218838;
+  transform: translateY(-2px);
+}
+
+.download-button i {
+    margin-right: 5px;
+}
+
+/* --- Estilos del Botón de Zoom --- */
+.zoom-button {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  background-color: rgba(0, 123, 255, 0.7);
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  font-size: 16px;
+  cursor: pointer;
+  z-index: 15;
+  border-radius: 8px;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+}
+
+.zoom-button:hover {
+  background-color: rgba(0, 123, 255, 0.9);
+  transform: translateY(-2px);
+}
+
+/* --- Estilos del Overlay de Zoom (Lightbox) --- */
+.zoom-overlay {
+  position: fixed; /* Cubre toda la ventana */
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.85); /* Fondo oscuro semitransparente */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000; /* Asegura que esté por encima de todo */
+  backdrop-filter: blur(5px);
+  user-select: none; /* Evitar selección de texto */
+  touch-action: none; /* Evitar comportamientos táctiles por defecto, importante para móviles */
+}
+
+.zoom-content {
+  position: relative;
+  max-width: 90%; /* Máximo ancho del contenedor del zoom */
+  max-height: 90%; /* Máxima altura del contenedor del zoom */
+  /* NO poner background-color blanco aquí, la imagen debe ser el foco */
+  /* NO poner overflow: hidden; para permitir que la imagen se desborde al hacer zoom */
+  display: flex; /* Para centrar la imagen */
+  justify-content: center;
+  align-items: center;
+  cursor: default; /* Cursor por defecto */
+}
+
+.zoomed-image {
+  max-width: 100%; /* La imagen se ajusta inicialmente al 100% del contenedor */
+  max-height: 100%; /* La imagen se ajusta inicialmente al 100% del contenedor */
+  object-fit: contain; /* Ajusta la imagen sin recortar dentro de su espacio inicial */
+  display: block;
+
+  /* Aplicamos las transformaciones de escala y traslación desde el componente TS */
+  /* Esto permite que la imagen se "desborde" visualmente de zoom-content */
+  transform-origin: center center; /* El punto de origen para la escala y traslación */
+  transition: transform 0.05s ease-out; /* Suavizar el movimiento y la escala */
+}
+
+/* Cursores para el arrastre y zoom */
+.zoom-content .zoomed-image[style*='scale']:not([style*='scale(1)']) {
+  cursor: grab; /* Cuando hay zoom y se puede arrastrar */
+}
+.zoom-content.dragging .zoomed-image {
+  cursor: grabbing !important; /* Cuando se está arrastrando activamente */
+}
+
+/* Botón de cerrar del overlay */
+.close-zoom-button {
+  position: absolute;
+  top: 15px; /* Ajusta la posición para que no se pegue tanto */
+  right: 15px; /* Ajusta la posición */
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 45px; /* Un poco más grande para facilitar el clic */
+  height: 45px;
+  font-size: 22px; /* Tamaño del icono */
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: background-color 0.3s ease;
+  z-index: 1001; /* Asegura que esté por encima de la imagen con zoom */
+}
+
+.close-zoom-button:hover {
+  background-color: #c82333;
+}
+
+
+/* --- Responsive Adjustments --- */
 @media (max-width: 768px) {
   .carousel-container {
     max-width: 95%;
@@ -111,6 +245,27 @@
     font-size: 20px;
     width: 40px;
     height: 40px;
+  }
+  .download-button {
+    padding: 6px 12px;
+    font-size: 14px;
+    top: 10px;
+    right: 10px;
+  }
+  .zoom-button {
+    padding: 6px 10px;
+    font-size: 14px;
+    top: 10px;
+    left: 10px;
+    width: 35px;
+    height: 35px;
+  }
+  .close-zoom-button {
+    width: 35px;
+    height: 35px;
+    font-size: 18px;
+    top: 8px; /* Ajuste para pantallas más pequeñas */
+    right: 8px;
   }
 }
 
@@ -126,7 +281,7 @@
     font-size: 18px;
     width: 35px;
     height: 35px;
-    border-radius: 8px; /* Cambiar a cuadrado para pantallas pequeñas */
+    border-radius: 8px;
   }
   .carousel-button.prev {
     left: 8px;
@@ -137,5 +292,25 @@
   .indicator-dot {
     width: 10px;
     height: 10px;
+  }
+  .download-button {
+    padding: 5px 10px;
+    font-size: 12px;
+    top: 8px;
+    right: 8px;
+    gap: 3px;
+  }
+  .zoom-button {
+    padding: 5px 8px;
+    font-size: 12px;
+    top: 8px;
+    left: 8px;
+    width: 30px;
+    height: 30px;
+  }
+  .close-zoom-button {
+    width: 30px;
+    height: 30px;
+    font-size: 16px;
   }
 }

@@ -12,6 +12,14 @@
 
     <button class="carousel-button next" (click)="nextImage()">
       <i class="fas fa-chevron-right"></i> </button>
+
+    <button class="download-button" (click)="downloadImage()">
+      <i class="fas fa-download"></i> Descargar
+    </button>
+
+    <button class="zoom-button" (click)="openZoom()">
+      <i class="fas fa-search-plus"></i>
+    </button>
   </div>
 
   <div class="carousel-indicators">
@@ -22,6 +30,32 @@
       class="indicator-dot"
     ></span>
   </div>
+
+  @if (showZoomOverlay()) {
+    <div class="zoom-overlay" (click)="closeZoom()">
+      <div
+        class="zoom-content"
+        (click)="$event.stopPropagation()"
+        (wheel)="onWheelZoom($event)"
+        (mousedown)="onMouseDown($event)"
+        (mousemove)="onMouseMove($event)"
+        (mouseup)="onMouseUp()"
+        (mouseleave)="onMouseLeave()"
+        [ngClass]="{'dragging': isDragging()}"
+      >
+        <img
+          [src]="images[currentIndex()]"
+          alt="Zoomed Photo"
+          class="zoomed-image"
+          [style.transform]="'scale(' + scale() + ') translate(' + translateX() + 'px, ' + translateY() + 'px)'"
+          [style.cursor]="scale() > 1 ? (isDragging() ? 'grabbing' : 'grab') : 'default'"
+        >
+        <button class="close-zoom-button" (click)="closeZoom()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+    </div>
+  }
 </div>
 
 <div *ngIf="images.length === 0" class="no-photos-message">
