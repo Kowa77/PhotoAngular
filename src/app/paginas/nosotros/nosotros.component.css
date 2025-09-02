@@ -1,0 +1,10 @@
+/*
+      Custom CSS for background gradient to complement Tailwind classes.
+      Este es un detalle de estilo para un toque más elegante.
+    */
+    .bg-gray-100 {
+      background-image: linear-gradient(to bottom right, #f8fafc, #eef1f5);
+    }
+    .dark:bg-gray-900 {
+      background-image: linear-gradient(to bottom right, #1f2937, #111827);
+    }

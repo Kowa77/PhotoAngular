@@ -1,51 +1,86 @@
-// src/app/paginas/admin/upload-form/upload-form.component.ts
-import { Component, OnInit } from '@angular/core';
-import { HttpClient, HttpClientModule } from '@angular/common/http';
+import { Component, OnInit, signal, WritableSignal, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { HttpClient, HttpClientModule } from '@angular/common/http';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
+import { AuthService } from '../../../auth/auth.service';
 
 @Component({
   selector: 'app-upload-form',
   standalone: true,
   imports: [CommonModule, FormsModule, HttpClientModule],
   templateUrl: './upload-form.component.html',
-  styleUrls: ['./upload-form.component.css']
+  styleUrl: './upload-form.component.css'
 })
-export class UploadFormComponent {
-  selectedFile: File | null = null;
-  userId: string = ''; // ID del usuario al que se subirá la foto
-  uploadStatus: string = '';
-  isUploading: boolean = false;
+export class UploadFormComponent implements OnInit, OnDestroy {
+  // Signals for component state
+  selectedFiles = signal<FileList | null>(null);
+  uploadStatus = signal<string>('');
+  isUploading = signal<boolean>(false);
+  targetUserEmail = signal<string>(''); // Nuevo signal para el correo del usuario objetivo
 
-  constructor(private http: HttpClient) {}
+  private authService: AuthService = inject(AuthService);
+  private http: HttpClient = inject(HttpClient);
+  private destroy$ = new Subject<void>();
+
+  isUserAuthenticated = signal<boolean>(false);
+  private currentUserUid: string | null = null;
+
+  ngOnInit(): void {
+    this.authService.getCurrentUserUid().pipe(
+      takeUntil(this.destroy$)
+    ).subscribe(uid => {
+      this.currentUserUid = uid;
+      this.isUserAuthenticated.set(!!uid);
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
 
   onFileSelected(event: any): void {
-    this.selectedFile = event.target.files[0];
+    this.selectedFiles.set(event.target.files);
+    this.uploadStatus.set('');
   }
 
   onUpload(): void {
-    if (!this.selectedFile || !this.userId) {
-      this.uploadStatus = 'Por favor, selecciona un archivo y escribe un ID de usuario.';
+    // Validar que se ha seleccionado un archivo y se ha ingresado un email
+    if (!this.selectedFiles() || this.selectedFiles()!.length === 0 || !this.targetUserEmail()) {
+      this.uploadStatus.set('Por favor, selecciona al menos un archivo e ingresa el correo del usuario.');
       return;
     }
 
-    this.isUploading = true;
-    this.uploadStatus = 'Subiendo...';
+    this.isUploading.set(true);
+    this.uploadStatus.set('Subiendo...');
 
     const formData = new FormData();
-    formData.append('photo', this.selectedFile, this.selectedFile.name);
+    for (let i = 0; i < this.selectedFiles()!.length; i++) {
+      formData.append('photos', this.selectedFiles()![i], this.selectedFiles()![i].name);
+    }
 
-    this.http.post(`http://localhost:3000/api/upload-photo/${this.userId}`, formData)
-      .subscribe({
-        next: (response: any) => {
-          this.uploadStatus = `¡Foto subida con éxito! URL: ${response.photo.baseUrl}`;
-          this.isUploading = false;
-        },
-        error: (error) => {
-          console.error('Error al subir la foto:', error);
-          this.uploadStatus = 'Error al subir la foto. Revisa la consola para más detalles.';
-          this.isUploading = false;
+    // Pasar el correo electrónico del usuario objetivo en lugar del UID del usuario actual
+    formData.append('targetUserEmail', this.targetUserEmail());
+
+    // Make the POST request to the server
+    this.http.post('http://localhost:3000/api/upload-photos', formData).subscribe({
+      next: (response: any) => {
+        this.uploadStatus.set('¡Fotos subidas con éxito!');
+        this.isUploading.set(false);
+        this.selectedFiles.set(null);
+        this.targetUserEmail.set(''); // Limpiar el campo de email
+        const fileInput = document.getElementById('fileInput') as HTMLInputElement;
+        if (fileInput) {
+            fileInput.value = '';
         }
-      });
+      },
+      error: (err) => {
+        console.error('Error uploading photos:', err);
+        this.uploadStatus.set('Error al subir fotos. Por favor, inténtalo de nuevo.');
+        this.isUploading.set(false);
+      }
+    });
   }
 }

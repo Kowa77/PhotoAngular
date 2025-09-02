@@ -1,4 +1,3 @@
-// src/app/navbar/navbar.component.ts
 import { Component, ViewChild, AfterViewInit, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { RouterLink, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -21,7 +20,8 @@ export class NavbarComponent implements OnInit, OnDestroy {
   @ViewChild('registerModal') registerModal!: RegisterModalComponent;
   isLoggedIn: boolean = false;
   loggedIn: string | null = null;
-  userId: string | null = null; // <-- ¡Nueva variable para el ID del usuario!
+  userId: string | null = null;
+  isAdmin: boolean = false; // <-- Nueva variable para verificar si es administrador
   private authSubscription: Subscription | undefined;
 
   constructor(private router: Router, private authService: AuthService, private changeDetectorRef: ChangeDetectorRef) { }
@@ -30,14 +30,17 @@ export class NavbarComponent implements OnInit, OnDestroy {
     this.authSubscription = this.authService.getAuthState().subscribe(user => {
       this.isLoggedIn = !!user;
       this.loggedIn = user?.email || null;
-      this.userId = user?.uid || null; // <-- Guardamos el UID aquí
+      this.userId = user?.uid || null;
+
+      // Verificación de usuario administrador
+      this.isAdmin = this.loggedIn === 'admin@gmail.com';
 
       // Abre el modal de login solo en la inicialización si no hay usuario
       if (!this.isLoggedIn && this.loginModal && !this.hasOpenedLoginModal) {
         setTimeout(() => {
           this.loginModal.openModal();
           this.changeDetectorRef.detectChanges();
-          this.hasOpenedLoginModal = true; // Evita que se abra de nuevo innecesariamente
+          this.hasOpenedLoginModal = true;
         }, 0);
       }
     });

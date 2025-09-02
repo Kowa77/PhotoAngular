@@ -25,6 +25,6 @@ export const routes: Routes = [
   { path: 'carrito', component: CarritoComponent },
   { path: 'agenda', component: AgendaComponent },
   { path: 'admin/upload', component: UploadFormComponent },
-  { path: 'galeria/:userId', component: GalleryComponent }, // RUTA ACTUALIZADA
+  { path: 'galeria/:userId', component: GalleryComponent },
   { path: '**', redirectTo: '' }
 ];

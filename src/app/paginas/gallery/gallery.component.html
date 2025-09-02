@@ -1,31 +1,12 @@
 <div class="gallery-container">
-  <h2>Mi Galería de Fotos</h2>
-
-  @if (isLoading) {
-    <div class="loading-message">Cargando fotos...</div>
-  } @else if (photos.length === 0) {
-    <div class="no-photos-message">
-      No se encontraron fotos en tu álbum.
+    <h2>Mi Galería de Fotos</h2>
+    <div *ngIf="isLoading" class="loading-message">Cargando fotos...</div>
+    <div *ngIf="!isLoading && photos.length === 0" class="no-photos-message">
+        No se encontraron fotos en tu álbum.
     </div>
-  } @else {
-    <div class="photo-grid">
-      @for (photo of photos; track photo.id) {
-        <div class="photo-item" (click)="openImage(photo.baseUrl)">
-          <img [src]="photo.baseUrl" alt="Foto de la galería" class="gallery-image">
+    <div *ngIf="!isLoading && photos.length > 0" class="photo-grid">
+        <div *ngFor="let photo of photos" class="photo-item">
+            <img [src]="photo.baseUrl" alt="Foto de la galería">
         </div>
-      }
     </div>
-  }
 </div>
-
-@if (selectedImage) {
-  <div class="lightbox-overlay" (click)="closeImage()">
-    <div class="lightbox-content" (click)="$event.stopPropagation()">
-      <img [src]="selectedImage" alt="Imagen en tamaño completo" class="lightbox-image">
-      <div class="lightbox-buttons">
-        <button class="close-button" (click)="closeImage()">Cerrar</button>
-        <button class="download-button" (click)="downloadImage(selectedImage)">Descargar</button>
-      </div>
-    </div>
-  </div>
-}
