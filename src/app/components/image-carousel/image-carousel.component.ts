@@ -12,6 +12,7 @@ export class ImageCarouselComponent implements OnChanges, OnDestroy {
   @Input() images: string[] = [];
   @Input() initialIndex: number = 0;
   @Output() imageChanged = new EventEmitter<number>();
+  @Output() deletePhotoRequest = new EventEmitter<void>(); // Nuevo: Evento para la eliminación
 
   currentIndex = signal<number>(0);
   showZoomOverlay = signal<boolean>(false);
@@ -139,5 +140,9 @@ export class ImageCarouselComponent implements OnChanges, OnDestroy {
 
   onMouseLeave(): void {
     this.isDragging.set(false);
+  }
+
+  onDeletePhoto(): void {
+      this.deletePhotoRequest.emit();
   }
 }

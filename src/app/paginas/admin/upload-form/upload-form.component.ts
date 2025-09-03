@@ -46,12 +46,22 @@ export class UploadFormComponent implements OnInit, OnDestroy {
     this.uploadStatus.set('');
   }
 
+  private isValidEmail(email: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
   onUpload(): void {
     // Validar que se ha seleccionado un archivo y se ha ingresado un email
-    if (!this.selectedFiles() || this.selectedFiles()!.length === 0 || !this.targetUserEmail()) {
-      this.uploadStatus.set('Por favor, selecciona al menos un archivo e ingresa el correo del usuario.');
-      return;
-    }
+    // if (!this.selectedFiles() || this.selectedFiles()!.length === 0 || !this.targetUserEmail()) {
+    //   this.uploadStatus.set('Por favor, selecciona al menos un archivo e ingresa el correo del usuario.');
+    //   return;
+    // }
+
+    if (!this.selectedFiles() || this.selectedFiles()!.length === 0 || !this.isValidEmail(this.targetUserEmail())) {
+    this.uploadStatus.set('Por favor, selecciona archivos y escribe un correo válido.');
+    return;
+  }
+
 
     this.isUploading.set(true);
     this.uploadStatus.set('Subiendo...');

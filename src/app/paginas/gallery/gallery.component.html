@@ -3,12 +3,14 @@
 
   @if (isLoading) {
     <div class="loading-spinner">Cargando fotos... 📸</div>
-  } @else if (photos.length > 0) {
-    <app-image-carousel
-      [images]="photoUrls"
-      [initialIndex]="currentImageIndex"
-      (imageChanged)="onImageChanged($event)">
-    </app-image-carousel>
+  }  @else if (photos.length > 0) {
+        <div class="carousel-container">
+            <app-image-carousel
+                [images]="photoUrls"
+                [initialIndex]="currentImageIndex"
+                (imageChanged)="onImageChanged($event)"
+                (deletePhotoRequest)="deletePhoto()"> </app-image-carousel>
+        </div>
 
     <div class="thumbnail-grid">
       @for (photo of photos; track photo.id; let i = $index) {

@@ -51,6 +51,38 @@ export class GalleryComponent implements OnInit {
     });
   }
 
+  // Función para eliminar la foto actualmente seleccionada
+  deletePhoto(): void {
+    if (this.photos.length === 0 || this.currentImageIndex < 0 || !this.userId) {
+      console.warn('⚠️ No hay foto seleccionada para eliminar o el ID de usuario no está disponible.');
+      return;
+    }
+
+    const photoToDelete = this.photos[this.currentImageIndex];
+    const photoId = photoToDelete.id;
+
+    if (!confirm(`¿Estás seguro de que deseas eliminar la foto: ${photoToDelete.filename}?`)) {
+      return; // El usuario canceló la eliminación
+    }
+
+    const backendUrl = `http://localhost:3000/api/delete-photo/${photoId}`;
+
+    // Cambiamos el método de la solicitud a POST y enviamos el userId en el cuerpo
+    this.http.post(backendUrl, { userId: this.userId }).subscribe({
+      next: () => {
+        console.log(`✅ Foto con ID ${photoId} eliminada correctamente.`);
+        // Recarga la galería para actualizar la vista
+        if (this.userId) {
+          this.loadGallery(this.userId);
+        }
+      },
+      error: (err) => {
+        console.error('❌ Error al eliminar la foto:', err);
+        alert('Hubo un error al eliminar la foto. Por favor, inténtalo de nuevo.');
+      }
+    });
+  }
+
   // Función para establecer la imagen principal al hacer clic en una miniatura
   selectImage(index: number): void {
     this.currentImageIndex = index;

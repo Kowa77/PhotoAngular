@@ -2,8 +2,10 @@
 import { Injectable, inject, NgZone } from '@angular/core';
 import { Auth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
          signOut, user, User, setPersistence, browserLocalPersistence, sendPasswordResetEmail } from '@angular/fire/auth';
+import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators'; // Asegúrate de que 'map' esté importado aquí
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
@@ -12,6 +14,7 @@ export class AuthService {
   public user$: Observable<User | null>;
   private auth: Auth = inject(Auth);
   private ngZone: NgZone = inject(NgZone);
+    private http: HttpClient = inject(HttpClient);
 
   private readonly SESSION_EXPIRATION_KEY = 'sessionExpirationTime';
   private readonly SESSION_DURATION_MS = 60 * 60 * 1000; // 1 hora en milisegundos
@@ -24,18 +27,33 @@ export class AuthService {
     this.checkSessionExpiration();
   }
 
-  async registerUser(email: string, password: string): Promise<User> {
+  // Nuevo: registrar usuario llamando al backend
+  async registerUser(email: string, password: string): Promise<any> {
     try {
-      // createUserWithEmailAndPassword y signInWithEmailAndPassword devuelven Promises.
-      // Angular maneja bien las Promises con Zone.js, por lo que no es necesario
-      // envolver estas llamadas en ngZone.run() explícitamente.
-      const userCredential = await createUserWithEmailAndPassword(this.auth, email, password);
-      return userCredential.user;
+      const response = await this.http.post<any>(
+        `${environment.apiUrl}/register-with-album`,
+        { email, password }
+      ).toPromise();
+
+      return response; // { message, userId, albumId }
     } catch (error: any) {
       console.error('Error al registrar usuario:', error);
       return Promise.reject(error);
     }
   }
+
+  // async registerUser(email: string, password: string): Promise<User> {
+  //   try {
+  //     // createUserWithEmailAndPassword y signInWithEmailAndPassword devuelven Promises.
+  //     // Angular maneja bien las Promises con Zone.js, por lo que no es necesario
+  //     // envolver estas llamadas en ngZone.run() explícitamente.
+  //     const userCredential = await createUserWithEmailAndPassword(this.auth, email, password);
+  //     return userCredential.user;
+  //   } catch (error: any) {
+  //     console.error('Error al registrar usuario:', error);
+  //     return Promise.reject(error);
+  //   }
+  // }
 
   async loginUser(email: string, password: string): Promise<User> {
     try {

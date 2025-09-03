@@ -1,5 +1,6 @@
 export const environment = {
   production: false,
+  apiUrl: 'http://localhost:3000/api',
   firebaseConfig:{
     apiKey: "AIzaSyAattwoKL9pde1WDLtVr29KdszuX0It3E8",
     authDomain: "bsfotografia-9fc03.firebaseapp.com",

@@ -1,25 +1,24 @@
 <div class="carousel-container" *ngIf="images.length > 0">
   <div class="carousel-image-wrapper">
     <button class="carousel-button prev" (click)="prevImage()">
-      <i class="fas fa-chevron-left"></i> </button>
-
-    <img
-      [src]="images[currentIndex()]"
-      alt="Gallery Photo"
-      class="carousel-image"
-      (click)="nextImage()"
-    >
-
+      <i class="fas fa-chevron-left"></i>
+    </button>
+    <img [src]="images[currentIndex()]" alt="Gallery Photo" class="carousel-image" (click)="nextImage()">
     <button class="carousel-button next" (click)="nextImage()">
-      <i class="fas fa-chevron-right"></i> </button>
-
-    <button class="download-button" (click)="downloadImage()">
-      <i class="fas fa-download"></i> Descargar
+      <i class="fas fa-chevron-right"></i>
     </button>
+  </div>
 
-    <button class="zoom-button" (click)="openZoom()">
-      <i class="fas fa-search-plus"></i>
-    </button>
+  <div class="carousel-actions">
+      <button class="action-button download-button" (click)="downloadImage()">
+          <i class="fas fa-download"></i>
+      </button>
+      <button class="action-button delete-button" (click)="onDeletePhoto()">
+          <i class="fas fa-trash-alt"></i>
+      </button>
+      <button class="action-button zoom-button" (click)="openZoom()">
+          <i class="fas fa-search-plus"></i>
+      </button>
   </div>
 
   <div class="carousel-indicators">
@@ -27,37 +26,27 @@
       *ngFor="let image of images; let i = index"
       [class.active]="i === currentIndex()"
       (click)="goToImage(i)"
-      class="indicator-dot"
-    ></span>
+      class="indicator-dot">
+    </span>
   </div>
-
-  @if (showZoomOverlay()) {
-    <div class="zoom-overlay" (click)="closeZoom()">
-      <div
-        class="zoom-content"
-        (click)="$event.stopPropagation()"
-        (wheel)="onWheelZoom($event)"
-        (mousedown)="onMouseDown($event)"
-        (mousemove)="onMouseMove($event)"
-        (mouseup)="onMouseUp()"
-        (mouseleave)="onMouseLeave()"
-        [ngClass]="{'dragging': isDragging()}"
-      >
-        <img
+</div>
+@if (showZoomOverlay()) {
+  <div class="zoom-overlay" (click)="closeZoom()">
+      <img
           [src]="images[currentIndex()]"
           alt="Zoomed Photo"
           class="zoomed-image"
           [style.transform]="'scale(' + scale() + ') translate(' + translateX() + 'px, ' + translateY() + 'px)'"
           [style.cursor]="scale() > 1 ? (isDragging() ? 'grabbing' : 'grab') : 'default'"
-        >
-        <button class="close-zoom-button" (click)="closeZoom()">
-          <i class="fas fa-times"></i>
-        </button>
-      </div>
-    </div>
-  }
-</div>
-
-<div *ngIf="images.length === 0" class="no-photos-message">
-  <p>No hay fotos disponibles para mostrar en el carrusel. 😕</p>
-</div>
+          (click)="$event.stopPropagation()"
+          (wheel)="onWheelZoom($event)"
+          (mousedown)="onMouseDown($event)"
+          (mousemove)="onMouseMove($event)"
+          (mouseup)="onMouseUp()"
+          (mouseleave)="onMouseLeave()"
+      />
+      <button class="close-zoom-button" (click)="closeZoom()">
+          &times;
+      </button>
+  </div>
+}

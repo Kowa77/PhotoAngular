@@ -5,18 +5,16 @@
       }
       <div class="form-group">
         <label for="emailInput">Email del usuario:</label>
-        <input type="email" id="emailInput" [(ngModel)]="targetUserEmail" placeholder="ejemplo@correo.com" />
+        <!-- <input type="email" id="emailInput" [(ngModel)]="targetUserEmail" placeholder="ejemplo@correo.com" /> -->
+        <input type="email" id="emailInput" [ngModel]="targetUserEmail()" (ngModelChange)="targetUserEmail.set($event)" placeholder="ejemplo@correo.com"/>
       </div>
       <div class="form-group">
         <label for="fileInput">Selecciona fotos:</label>
         <input type="file" id="fileInput" (change)="onFileSelected($event)" multiple />
       </div>
-      <button (click)="onUpload()" [disabled]="isUploading() || !selectedFiles() || selectedFiles()!.length === 0 || !targetUserEmail">
-        @if (isUploading()) {
-          Subiendo...
-        } @else {
-          Subir Fotos
-        }
+      <!-- <button (click)="onUpload()" [disabled]="isUploading() || !selectedFiles() || selectedFiles()!.length === 0 || !targetUserEmail"> -->
+      <button (click)="onUpload()"[disabled]="isUploading() || !selectedFiles() || selectedFiles()!.length === 0 || !targetUserEmail()">
+        @if (isUploading()) { Subiendo... } @else { Subir Fotos }
       </button>
       <p class="login-prompt">Por favor, asegúrate de que el email sea de un usuario registrado.</p>
     </div>

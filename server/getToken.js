@@ -13,7 +13,8 @@ const CREDENTIALS_PATH = path.join(__dirname, 'credentials.json');
 // Forma correcta para 2025: incluye ambos permisos
 const SCOPES = [
   'https://www.googleapis.com/auth/photoslibrary.appendonly',
-  'https://www.googleapis.com/auth/photoslibrary.readonly.appcreateddata'
+  'https://www.googleapis.com/auth/photoslibrary.readonly.appcreateddata',
+  'https://www.googleapis.com/auth/photoslibrary.edit.appcreateddata'
 ];
 
 async function main() {

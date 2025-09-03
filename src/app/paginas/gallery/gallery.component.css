@@ -51,3 +51,34 @@
 .thumbnail-grid::-webkit-scrollbar-thumb:hover {
   background-color: #999;
 }
+
+/* Estilos para el contenedor del carrusel */
+.carousel-container {
+  position: relative; /* Clave para posicionar el botón de forma absoluta */
+  width: 100%;
+  max-width: 800px;
+  margin: 20px auto;
+}
+
+/* Estilos para el botón de eliminación */
+.delete-button {
+  position: absolute; /* Permite posicionar el botón dentro de su contenedor relativo */
+  top: 10px; /* Distancia desde la parte superior */
+  right: 10px; /* Distancia desde la parte derecha */
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 8px 12px; /* Reducido para que sea más pequeño */
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 0.9em; /* Fuente más pequeña */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  z-index: 10; /* Asegura que el botón esté sobre el carrusel */
+}
+
+.delete-button:hover {
+  background-color: #c82333;
+  transform: translateY(-2px);
+}
