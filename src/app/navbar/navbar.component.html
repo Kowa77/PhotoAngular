@@ -18,7 +18,7 @@
         <li><a [routerLink]="['/galeria', userId]">Galería</a></li>
       }
       @if (isAdmin) {
-        <li><a [routerLink]="'/admin/upload'" (click)="closeMenu()">Subir Imágenes</a></li>
+        <li><a [routerLink]="'/admin/upload'" (click)="closeMenu()">ADMIN</a></li>
       }
       <ul class="grupo_btn">
         @if (loggedIn) {
