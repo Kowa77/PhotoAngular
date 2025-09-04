@@ -1,0 +1,13 @@
+{
+"name": "photoangular-backend",
+"version": "1.0.0",
+"description": "Servidor para manejar la lógica de negocio de la aplicación PhotoAngular.",
+"main": "server.js",
+"scripts": {
+"start": "node server.js"
+},
+"dependencies": {
+"express": "^4.17.1",
+"firebase-admin": "^11.11.0"
+}
+}

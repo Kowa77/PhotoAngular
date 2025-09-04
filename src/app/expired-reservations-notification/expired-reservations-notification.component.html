@@ -1,0 +1,22 @@
+<div class="notification-container" (click)="toggleDropdown()">
+  <i class="fas fa-exclamation-circle notification-icon"></i>
+
+  @if (isDropdownOpen) {
+    <div class="notification-dropdown">
+      @if (expiredReservations.length > 0) {
+        <h4>Reservas Vencidas</h4>
+        <ul>
+          @for (reservation of expiredReservations; track reservation.id) {
+            <li>
+              Reserva para el {{ reservation.details.date | date: 'dd/MM/yyyy' }}
+              <br>
+              <a [routerLink]="['/agenda']">Ir a mi agenda</a>
+            </li>
+          }
+        </ul>
+      } @else {
+        <p>No tienes reservas vencidas.</p>
+      }
+    </div>
+  }
+</div>

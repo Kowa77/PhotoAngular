@@ -46,9 +46,39 @@ Thumbs.db
 
 # Environment variables and sensitive files
 server/.env
+server/credentials.json
+server/serviceAccountKey.json
 nodemailer-backend/.env
 environment/environment.ts
 environment/environment.prod.ts
 
-server/credentials.json
-server/serviceAccountKey.json
+
+
+render-server/.env
+render-server/serviceAccountKey.json
+render-server/credentials.json
+render-server/serviceAccountKey.json
+render-server/src/environments/environment.ts
+render-server/src/environments/environment.prod.ts
+
+# Firebase
+.firebase/
+.firebase/*
+.firebaserc
+.gitignores
+.gitignores/*
+firebase-debug.log
+functions/.env
+functions/node_modules
+functions/.firebase/
+functions/.firebaserc
+functions/firebase-debug.log
+functions/firebase-debug.*.log
+functions/.chrome
+functions/.chromium
+functions/.local-chromium
+functions/lib
+functions/src/environments/environment.ts
+functions/src/environments/environment.prod.ts
+functions/src/credentials.json
+functions/src/serviceAccountKey.json

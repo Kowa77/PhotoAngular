@@ -1,5 +1,8 @@
 {
   "projects": {
-    "default": "prueba-b4e16"
-  }
+    "default": "bsfotografia-9fc03",
+    "fireFunBs": "bsfotografia-9fc03"
+  },
+  "targets": {},
+  "etags": {}
 }

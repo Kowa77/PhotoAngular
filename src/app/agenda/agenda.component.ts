@@ -34,13 +34,14 @@ export class AgendaComponent implements OnInit, OnDestroy {
   private authService: AuthService = inject(AuthService);
   private cdr: ChangeDetectorRef = inject(ChangeDetectorRef);
 
-  private subscriptions: Subscription = new Subscription();
+  //private subscriptions: Subscription = new Subscription();
   private destroy$: Subject<void> = new Subject<void>();
   currentUserUid: string | null = null;
   currentUserEmail: string | null = null; // AÑADIDO: Propiedad para el email del usuario
 
   // BehaviorSubject para gestionar la fecha seleccionada por el usuario en el calendario
   private _selectedDateSource: BehaviorSubject<Date | null> = new BehaviorSubject<Date | null>(new Date());
+  public hasUnreadExpiredReservations$ = new BehaviorSubject<boolean>(false);
   selectedDate: Date | null = null;
 
   // Array de reservas del usuario actual para la fecha seleccionada
@@ -107,36 +108,33 @@ export class AgendaComponent implements OnInit, OnDestroy {
   };
 
   ngOnInit(): void {
-    // --- BLOQUE 1: Cargar allAvailabilityMap independientemente del UID ---
+    // --- BLOQUE 1: Cargar allAvailabilityMap para el calendario ---
     this.firebaseService.allReservations$().pipe(
       takeUntil(this.destroy$)
     ).subscribe(dailyAvailabilityMap => {
       this.allAvailabilityMap = dailyAvailabilityMap;
-      console.log("AgendaComponent: Mapa de disponibilidad global actualizado:", this.allAvailabilityMap);
-      this.cdr.detectChanges(); // Fuerza la detección de cambios para que el calendario se refresque con los colores
+      this.cdr.detectChanges();
     });
 
-    // --- BLOQUE 2: Gestionar el UID y email del usuario actual ---
+    // --- BLOQUE 2: Gestionar el UID del usuario actual ---
+    // Este bloque se mantiene, pero la lógica de reservas se mueve al bloque de abajo.
     this.authService.user$.pipe(
       map(user => user ? { uid: user.uid, email: user.email } : { uid: null, email: null }),
-      distinctUntilChanged((prev, curr) => prev.uid === curr.uid), // Solo emite si el UID realmente cambia
+      distinctUntilChanged((prev, curr) => prev.uid === curr.uid),
       takeUntil(this.destroy$)
     ).subscribe(user => {
-      this.currentUserUid = user.uid; // Actualiza el UID del componente
-      this.currentUserEmail = user.email; // AÑADIDO: Actualiza el email del componente
-      console.log("AgendaComponent: Usuario logueado (UID):", this.currentUserUid);
-      console.log("AgendaComponent: Usuario logueado (Email):", this.currentUserEmail);
-
+      this.currentUserUid = user.uid;
+      this.currentUserEmail = user.email;
       if (!user.uid) {
         this.myReservaciones = [];
         this.reservationsForSelectedDate = [];
-        console.log("AgendaComponent: Usuario deslogueado, limpiando datos de reservas específicas.");
       }
       this._selectedDateSource.next(this.selectedDate);
       this.cdr.detectChanges();
     });
 
     // --- BLOQUE 3: Cargar reservas específicas para el usuario y la fecha seleccionada ---
+    // Este bloque se mantiene sin cambios, ya que funciona correctamente.
     combineLatest([
       this._selectedDateSource.pipe(filter(date => !!date)),
       this.authService.user$.pipe(
@@ -148,32 +146,49 @@ export class AgendaComponent implements OnInit, OnDestroy {
       distinctUntilChanged((prev, curr) => prev.formattedDate === curr.formattedDate && prev.uid === curr.uid),
       switchMap(({ formattedDate, uid }) => {
         if (!uid) {
-          console.log(`AgendaComponent: No hay UID de usuario para cargar reservas de ${formattedDate}.`);
           return of([]);
         }
-        console.log(`AgendaComponent: Cargando reservas para ${formattedDate} para UID: ${uid}.`);
         return this.firebaseService.getReservationsForDate(formattedDate).pipe(
           map(reservationsMap => Object.values(reservationsMap || {})),
           map(reservations => reservations.filter(res => res.details.userId === uid)),
-          tap(reservations => {
-            console.log(`AgendaComponent: Mis reservas para ${formattedDate}:`, reservations);
-          }),
-          catchError(error => {
-            console.error(`AgendaComponent: Error al cargar reservas para ${formattedDate}:`, error);
-            return of([]);
-          }),
+          catchError(() => of([])),
           takeUntil(this.destroy$)
         );
       }),
       takeUntil(this.destroy$)
     ).subscribe((reservations: Reservation[]) => {
       this.reservationsForSelectedDate = reservations;
-    }, error => {
-      console.error("AgendaComponent: Error en la suscripción de carga de reservas específicas:", error);
+    }, () => {
       this.reservationsForSelectedDate = [];
     });
 
+    // --- NUEVO BLOQUE: Revisar reservas vencidas no leídas para la notificación ---
+    // Este bloque se suscribe al usuario actual y luego obtiene sus reservas.
+    this.authService.user$.pipe(
+      map(user => user?.uid),
+      distinctUntilChanged(), // Para evitar ejecuciones duplicadas
+      switchMap(uid => {
+        if (!uid) {
+          // Si no hay usuario logueado, emitir un array vacío de reservas
+          return of([]);
+        }
+        // Llamar al método que ya tienes y que obtiene las reservas del usuario
+        return this.firebaseService.getUserReservations(uid);
+      }),
+      takeUntil(this.destroy$)
+    ).subscribe(userReservations => {
+      let foundUnreadExpired = false;
+      // Iteramos sobre las reservas del usuario actual para buscar notificaciones
+      for (const res of userReservations) {
+        if (res.details.status === 'expired' && res.details.isRead === false) {
+          foundUnreadExpired = true;
+          break; // Si encontramos una, no necesitamos buscar más
+        }
+      }
+      this.hasUnreadExpiredReservations$.next(foundUnreadExpired);
+    });
 
+    // Tu suscripción existente para la fecha seleccionada
     this._selectedDateSource.pipe(
       takeUntil(this.destroy$)
     ).subscribe(date => {
@@ -181,8 +196,9 @@ export class AgendaComponent implements OnInit, OnDestroy {
     });
   }
 
+
   ngOnDestroy(): void {
-    this.subscriptions.unsubscribe();
+    //this.subscriptions.unsubscribe();
     this.destroy$.next();
     this.destroy$.complete();
   }
@@ -290,15 +306,33 @@ export class AgendaComponent implements OnInit, OnDestroy {
     // Calcula la fecha de vencimiento (fecha de reserva + 1 mes).
     const reservationDate = new Date(reservation.details.date); // Fecha de la reserva
     const dueDate = new Date(reservationDate); // Copia de la fecha de la reserva
-    dueDate.setDate(dueDate.getDate() - 7);
 
-    // Calcula la diferencia en milisegundos y luego la convierte a días.
+     // --- LÍNEA DE PRUEBA: ESTABLECE LA FECHA DE VENCIMIENTO A HACE 5 MINUTOS ---
+    // Esto es solo para que puedas probar la cancelación
+    // Vence 5 minutos después de que se creó la reserva (puedes ajustar esta lógica).
+    // O puedes hacer que la fecha de vencimiento sea hoy para las pruebas.
+
+    // Opción 1: para probar con reservas existentes, haz que la fecha de vencimiento sea hoy.
+    // dueDate.setDate(today.getDate());
+
+    // Opción 2: para probar con una nueva reserva, haz que la fecha de vencimiento sea 5 minutos después de la creación.
+    // Necesitarás una marca de tiempo en la reserva para esto, como `reservation.details.createdAt`.
+
+    // Por ahora, para simplificar, vamos a calcular la fecha de vencimiento como si fuera hoy si la reserva está cerca de la fecha.
+    // Esto es solo un ejemplo, la lógica en el servidor es la que importa.
+
+
+    /*dueDate.setDate(dueDate.getDate() - 7);
     const today = new Date();
     today.setHours(0, 0, 0, 0); // Opcional pero recomendado para una comparación precisa
 
     const timeDifference = dueDate.getTime() - today.getTime();
     const daysLeft = Math.ceil(timeDifference / (1000 * 60 * 60 * 24));
 
-    return daysLeft;
+    return daysLeft;*/
+
+    const timeDifference = reservationDate.getTime() - new Date().getTime();
+    const daysLeft = Math.ceil(timeDifference / (1000 * 60 * 60 * 24));
+    return daysLeft > 7 ? daysLeft - 7 : null; // Lógica simplificada solo para ejemplo
   }
 }

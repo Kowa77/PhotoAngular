@@ -4,13 +4,14 @@ import { CommonModule } from '@angular/common';
 import { LoginModalComponent } from '../login-modal/login-modal.component';
 import { RegisterModalComponent } from '../register-modal/register-modal.component';
 import { AuthService } from '../auth/auth.service';
-//import { User } from '@angular/fire/auth';
+import { FirebaseService } from '../firebase/firefirebase-service.service'; // <-- AÑADE ESTA LÍNEA
 import { Subscription } from 'rxjs';
+import { ExpiredReservationsNotificationComponent } from '../expired-reservations-notification/expired-reservations-notification.component';
 
 @Component({
   selector: 'app-navbar',
   standalone: true,
-  imports: [RouterLink, CommonModule, LoginModalComponent, RegisterModalComponent],
+  imports: [RouterLink, CommonModule, LoginModalComponent, RegisterModalComponent,ExpiredReservationsNotificationComponent ],
   templateUrl: './navbar.component.html',
   styleUrl: './navbar.component.css'
 })
@@ -21,10 +22,12 @@ export class NavbarComponent implements OnInit, OnDestroy {
   isLoggedIn: boolean = false;
   loggedIn: string | null = null;
   userId: string | null = null;
-  isAdmin: boolean = false; // <-- Nueva variable para verificar si es administrador
-  private authSubscription: Subscription | undefined;
+  isAdmin: boolean = false;
 
-  constructor(private router: Router, private authService: AuthService, private changeDetectorRef: ChangeDetectorRef) { }
+  hasExpiredReservation: boolean = false; // <-- AÑADE ESTA NUEVA PROPIEDAD
+  private authSubscription: Subscription | undefined;
+  private reservationsSubscription: Subscription | undefined; // <-- AÑADE ESTA NUEVA SUSCRIPCIÓN
+  constructor(private router: Router, private authService: AuthService, private changeDetectorRef: ChangeDetectorRef, private firebaseService: FirebaseService) { }
 
   ngOnInit(): void {
     this.authSubscription = this.authService.getAuthState().subscribe(user => {
@@ -34,6 +37,17 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
       // Verificación de usuario administrador
       this.isAdmin = this.loggedIn === 'admin@gmail.com';
+
+      // Llama a la lógica de reservas solo si el usuario está logueado
+      if (this.isLoggedIn && this.userId) {
+        this.checkUserReservations(this.userId);
+      } else {
+        // Limpiamos la suscripción y el estado si no hay usuario
+        if (this.reservationsSubscription) {
+          this.reservationsSubscription.unsubscribe();
+        }
+        this.hasExpiredReservation = false;
+      }
 
       // Abre el modal de login solo en la inicialización si no hay usuario
       if (!this.isLoggedIn && this.loginModal && !this.hasOpenedLoginModal) {
@@ -46,10 +60,26 @@ export class NavbarComponent implements OnInit, OnDestroy {
     });
   }
 
+
+  private checkUserReservations(userId: string): void {
+    // Si ya existe una suscripción, la limpiamos primero para evitar duplicados
+    if (this.reservationsSubscription) {
+      this.reservationsSubscription.unsubscribe();
+    }
+      // Nos suscribimos al observable de reservas del usuario
+      this.reservationsSubscription = this.firebaseService.getUserReservations(userId).subscribe(reservations => {
+      // Verificamos si alguna de las reservas tiene el estado 'expired'
+      this.hasExpiredReservation = reservations.some(res => res.details.status === 'expired');
+    });
+  }
+
   ngOnDestroy(): void {
     if (this.authSubscription) {
       this.authSubscription.unsubscribe();
     }
+    if (this.reservationsSubscription) { // <-- LIMPIAMOS LA NUEVA SUSCRIPCIÓN
+          this.reservationsSubscription.unsubscribe();
+        }
   }
 
   toggleMenu(): void {

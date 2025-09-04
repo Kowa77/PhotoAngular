@@ -10,7 +10,8 @@ export interface ReservationDetails {
   userId: string;
   totalAmount: number;
   timestamp: number; // Marca de tiempo de creación
-  status: 'pending' | 'confirmed' | 'cancelled';
+  status: 'pending' | 'confirmed' | 'cancelled' | 'expired'; // Estado de la reserva
+  isRead?: boolean; // <-- ¡Añade esta línea!
 }
 export interface ReservationItem {
   id: string;

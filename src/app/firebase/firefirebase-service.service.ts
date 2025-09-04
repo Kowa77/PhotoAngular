@@ -228,76 +228,6 @@ export class FirebaseService {
     console.log(`FirebaseService: Servicio ${serviceIdToRemove} quitado de Realtime DB para ${userId}.`);
   }
 
-  // --- Métodos para Reservas y Agenda ---
-
-  // async saveReservation(userId: string, reservationDate: string, cartItems: ReservationItem[], total: number): Promise<string> {
-  //   const availabilityRef = ref(this.database, `availability/${reservationDate}`);
-  //   let reservationId: string | null = null;
-
-  //   try {
-  //     const transactionResult = await runTransaction(availabilityRef, (currentData) => {
-  //       console.log(`FirebaseService: runTransaction - currentData para ${reservationDate}:`, currentData);
-
-  //       if (currentData === null || currentData.available === true) {
-  //         console.log(`FirebaseService: Día ${reservationDate} disponible. Marcando como no disponible.`);
-  //         return { available: false, maxBookings: 1, bookedBy: userId };
-  //       } else {
-  //         console.warn(`FirebaseService: El día ${reservationDate} ya está ocupado, transacción abortada.`);
-  //         return undefined;
-  //       }
-  //     });
-
-  //     if (transactionResult.committed) { // commited significa que la transacción se aplicó correctamente
-  //       console.log(`FirebaseService: Transacción de disponibilidad para ${reservationDate} exitosa.`);
-
-  //       const reservationsForDateRef = ref(this.database, `reservations/${reservationDate}`); // Referencia al nodo de reservas para la fecha específica
-  //       const newReservationRef = push(reservationsForDateRef); // Crear una nueva referencia con ID único generado por Firebase push()
-  //       reservationId = newReservationRef.key;   // Obtener el ID generado
-  //       if (!reservationId) {
-  //         throw new Error("No se pudo generar un ID para la reserva.");
-  //       }
-
-  //       // Construir el objeto Reservation a guardar en la base de datos y asegurarse de que 'duracion' no sea undefined en los items
-  //       // Es importante que 'duracion' sea number o null, nunca undefined, para evitar problemas en Firebase (no permite undefined)
-  //       const reservationDetails: ReservationDetails = {
-  //         date: reservationDate,
-  //         userId: userId,
-  //         totalAmount: total,
-  //         timestamp: Date.now(),
-  //         status: 'pending'  // Estado inicial de la reserva, luego puede cambiar a 'confirmed' o 'cancelled' (hay que implementar esa lógica)
-  //       };
-
-  //       const cleanedReservationItems: { [serviceId: string]: ReservationItem } = {}; // Mapa limpio de items de reserva a guardar en Firebase
-
-  //       cartItems.forEach(item => { // Iterar sobre los items del carrito proporcionados por el usuario y limpiarlos si es necesario
-  //         const cleanItem = { ...item }; // Clonar el item para no modificar el original del carrito
-  //         if (cleanItem.duracion === undefined) {
-  //           cleanItem.duracion = null; // Convertir undefined a null para Firebase
-  //         }
-  //         cleanedReservationItems[item.id] = cleanItem;
-  //       });
-
-  //       //Reservation se define en el modelo reservation.model
-  //       const reservationToSave: Reservation = {
-  //         id: reservationId,
-  //         details: reservationDetails,
-  //         items: cleanedReservationItems // Usar los ítems ya limpiados
-  //       };
-
-  //       console.log(`FirebaseService: Guardando nueva reserva (ID: ${reservationId}) para ${userId} en ${reservationDate}:`, reservationToSave);
-  //       await set(newReservationRef, reservationToSave);
-  //       console.log(`FirebaseService: Reserva ${reservationId} guardada exitosamente.`);
-  //       return reservationId;
-
-  //     } else {
-  //       throw new Error(`El día ${reservationDate} ya ha sido reservado. Por favor, elige otra fecha.`);
-  //     }
-
-  //   } catch (error: any) {
-  //     console.error('FirebaseService: Error al procesar la reserva transaccional:', error);
-  //     throw error;
-  //   }
-  // }
 
   // --- Módulo para guardar la reserva con la lógica de pago flexible ---
   async saveReservation(
@@ -441,6 +371,7 @@ export class FirebaseService {
     });
   }
 
+
   getReservationsForDate(date: string): Observable<ReservationsByDateMap[string]> {
     const reservationsDateRef = ref(this.database, `reservations/${date}`);
     console.log(`FirebaseService: Obteniendo reservas para la fecha: ${date}`);
@@ -480,4 +411,61 @@ export class FirebaseService {
       return { unsubscribe };
     });
   }
+
+
+  /**
+   * Obtiene todas las reservas de un usuario específico.
+   * La estructura de la base de datos es por fecha, así que debemos buscar en todo el nodo de 'reservations'.
+   * @param userId El ID del usuario actual.
+   * @returns Un Observable que emite un array de todas las reservas del usuario.
+   */
+  getUserReservations(userId: string): Observable<Reservation[]> {
+    const allReservationsRef = ref(this.database, `reservations`);
+    console.log(`FirebaseService: Buscando todas las reservas para el usuario: ${userId}`);
+
+    return new Observable(observer => {
+      const unsubscribe = onValue(allReservationsRef, (snapshot) => {
+        const allData = snapshot.val();
+        const userReservations: Reservation[] = [];
+
+        if (allData) {
+          // Firebase devuelve un objeto, debemos iterar sobre él
+          for (const dateKey in allData) {
+            if (Object.prototype.hasOwnProperty.call(allData, dateKey)) {
+              const reservationsForDate = allData[dateKey];
+              for (const reservationId in reservationsForDate) {
+                if (Object.prototype.hasOwnProperty.call(reservationsForDate, reservationId)) {
+                  const reservation = reservationsForDate[reservationId];
+                  // Filtramos por el ID del usuario
+                  if (reservation.details && reservation.details.userId === userId) {
+                    // Aseguramos que los items de la reserva no tengan undefined en duracion al leer
+                    if (reservation.items) {
+                      for (const itemId in reservation.items) {
+                        if (Object.prototype.hasOwnProperty.call(reservation.items, itemId)) {
+                          if (reservation.items[itemId].duracion === undefined) {
+                            reservation.items[itemId].duracion = null;
+                          }
+                        }
+                      }
+                    }
+                    userReservations.push(reservation as Reservation);
+                  }
+                }
+              }
+            }
+          }
+        }
+
+        console.log(`FirebaseService: Encontradas ${userReservations.length} reservas para el usuario ${userId}.`);
+        observer.next(userReservations);
+      }, (error) => {
+        console.error(`FirebaseService: Error al obtener reservas del usuario ${userId}:`, error);
+        observer.error(error);
+      });
+
+      return { unsubscribe };
+    });
+  }
+
+
 }
