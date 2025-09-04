@@ -1,14 +1,14 @@
 export const environment = {
   production: false,
-  firebaseConfig: { // Cambia firebase a firebaseConfig
-    apiKey: "AIzaSyCmuYZFEd_5byi9usEVelfCNX7oAzdhJ7M",
-    authDomain: "serviciosfotosyvideos.firebaseapp.com",
-    databaseURL: "https://serviciosfotosyvideos-default-rtdb.firebaseio.com",
-    projectId: "serviciosfotosyvideos",
-    storageBucket: "serviciosfotosyvideos.firebasestorage.app",
-    messagingSenderId: "966333943753",
-    appId: "1:966333943753:web:2549cd36af0df615b06218",
-    measurementId: "G-VS2Y7558Y5"
+  apiUrl: 'http://localhost:3000/api',
+  firebaseConfig:{
+    apiKey: "AIzaSyAattwoKL9pde1WDLtVr29KdszuX0It3E8",
+    authDomain: "bsfotografia-9fc03.firebaseapp.com",
+    databaseURL: "https://bsfotografia-9fc03-default-rtdb.firebaseio.com",
+    projectId: "bsfotografia-9fc03",
+    storageBucket: "bsfotografia-9fc03.firebasestorage.app",
+    messagingSenderId: "523548400063",
+    appId: "1:523548400063:web:7517a9aa5874b002d1290a",
+    measurementId: "G-36GLWZND8D"
   },
 }
-

@@ -261,3 +261,18 @@ h1 {
 .back-to-services-button:hover {
   background-color: #5a6268;
 }
+
+/* --- Estilos para el calendario de Angular Material --- */
+
+/* Ajustes generales para las celdas de los días en el calendario */
+/* Aplicar directamente al contenido, asegurando el radio de borde */
+/* Esto se aplica a todas las celdas de contenido, para los bordes redondeados */
+.mat-calendar-body-cell-content {
+  border-radius: 50% !important;
+  transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+  height: 36px; /* Asegura un tamaño consistente para el círculo */
+  width: 36px;  /* Asegura un tamaño consistente para el círculo */
+  display: flex; /* Centra el contenido */
+  align-items: center; /* Centra el contenido verticalmente */
+  justify-content: center; /* Centra el contenido horizontalmente */
+}

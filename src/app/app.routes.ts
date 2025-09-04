@@ -8,11 +8,13 @@ import { ContactoComponent } from './paginas/contacto/contacto.component';
 import { NosotrosComponent } from './paginas/nosotros/nosotros.component';
 import { ServiciosComponent } from './servicios/servicios.component';
 import { CarritoComponent } from './carrito/carrito.component';
-import { AgendaComponent } from './agenda/agenda.component'; // Importa el nuevo componente
+import { AgendaComponent } from './agenda/agenda.component';
 import { PerfilComponent } from './perfil/perfil.component';
+import { GalleryComponent } from './paginas/gallery/gallery.component';
+import { UploadFormComponent } from './paginas/admin/upload-form/upload-form.component';
 
 export const routes: Routes = [
-  { path: '', component: TarjetasComponent }, // Ruta por defecto
+  { path: '', component: TarjetasComponent },
   { path: 'cumpleanos', component: CumpleanosComponent },
   { path: 'casamientos', component: CasamientosComponent },
   { path: 'extras', component: ExtrasComponent },
@@ -21,6 +23,8 @@ export const routes: Routes = [
   { path: 'perfil', component: PerfilComponent },
   { path: 'servicios/:categoria', component: ServiciosComponent },
   { path: 'carrito', component: CarritoComponent },
-  { path: 'agenda', component: AgendaComponent }, // Nueva ruta para la agenda
-  { path: '**', redirectTo: '' } // Cualquier otra ruta redirige a la página principal
+  { path: 'agenda', component: AgendaComponent },
+  { path: 'admin/upload', component: UploadFormComponent },
+  { path: 'galeria/:userId', component: GalleryComponent },
+  { path: '**', redirectTo: '' }
 ];

@@ -1,4 +1,5 @@
-<div class="modal fade show" *ngIf="isVisible" tabindex="-1" aria-labelledby="registerModalLabel" aria-modal="true" role="dialog" style="display: block;">
+@if (isVisible) {
+<div class="modal fade show" tabindex="-1" aria-labelledby="registerModalLabel" aria-modal="true" role="dialog" style="display: block;">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
@@ -6,7 +7,9 @@
         <button type="button" class="btn-close" (click)="closeModal()" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        <div *ngIf="errorMessage" class="alert alert-danger">{{ errorMessage }}</div>
+        @if (errorMessage) {
+        <div class="alert alert-danger">{{ errorMessage }}</div>
+        }
         <form (ngSubmit)="register()">
           <div class="mb-3">
             <label for="email" class="form-label">Email</label>
@@ -22,4 +25,5 @@
     </div>
   </div>
 </div>
-<div class="modal-backdrop fade show" *ngIf="isVisible"></div>
+<div class="modal-backdrop fade show"></div>
+}

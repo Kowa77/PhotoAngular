@@ -1,0 +1,37 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Caprasimo&family=Chewy&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Comic+Relief:wght@400;700&display=swap');
+    /*
+      Custom CSS for background gradient to complement Tailwind classes.
+      Este es un detalle de estilo para un toque más elegante.
+    */
+
+
+    .bg-gray-100 {
+      background-image: linear-gradient(to bottom right, #f8fafc, #eef1f5);
+    }
+    .dark:bg-gray-900 {
+      background-image: linear-gradient(to bottom right, #1f2937, #111827);
+    }
+
+    .img-thumbnail{
+      width: 200px;
+      height: 200px;
+      object-fit: cover;
+      border-radius: 50%;
+   }
+
+   .chewy-regular {
+      font-family: "Chewy", system-ui;
+      font-weight: 400;
+      font-style: normal;
+      font-size: 25px;
+    }
+
+    .comic-relief-regular {
+      font-family: "Comic Relief", system-ui;
+      font-weight: 400;
+      font-style: normal;
+      font-size: 25px;
+      color: #082949;
+    }

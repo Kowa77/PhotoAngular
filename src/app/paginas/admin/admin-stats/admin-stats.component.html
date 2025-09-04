@@ -1,0 +1,15 @@
+<div class="stats-container">
+  <h3>Estadísticas de Google Photos</h3>
+  @if (isLoading()) {
+    <p>Cargando estadísticas...</p>
+  } @else if (errorMessage()) {
+    <p class="error-message">{{ errorMessage() }}</p>
+  } @else if (totalPhotos() !== null) {
+    <div class="stats-box">
+      <h4>Total de Fotos Subidas</h4>
+      <p class="stats-number">{{ totalPhotos() }}</p>
+    </div>
+  } @else {
+    <p>No se encontraron estadísticas.</p>
+  }
+</div>

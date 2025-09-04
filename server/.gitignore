@@ -1,0 +1,55 @@
+# Archivos de Node
+/node_modules
+
+# Package lock
+/package-lock.json
+/yarn.lock
+/pnpm-lock.yaml
+/.yarn/cache
+/.yarn/unplugged
+/.yarn/build-state.yml
+/.yarn/install-state.gz
+/.pnp.*
+/.pnp.js
+/.pnp.cjs
+/.pnp.loader.mjs
+
+# Archivos de compilación
+/dist
+/build
+/lib
+/out
+/.next
+/.nuxt
+/.output
+/.vercel
+
+# Archivos de credenciales sensibles
+.env
+credentials.json
+serviceAccountKey.json
+
+
+
+# Archivos de Tests
+/tests
+/tests/__mocks__
+/tests/__snapshots__
+/tests/unit
+/tests/integration
+/tests/e2e
+/tests/coverage
+/tests/reports
+/tests/temp
+/tests/logs
+/tests/tmp
+/tests/results
+/tests/.nyc_output
+/tests/.eslintcache
+/tests/.mocha_cache
+/tests/.jest_cache
+/tests/.tscache
+/tests/.cache
+
+
+

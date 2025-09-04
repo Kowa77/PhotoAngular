@@ -1,0 +1,30 @@
+<div class="gallery-page-container">
+  <h1>Galería de Fotos del Usuario</h1>
+
+  @if (isLoading) {
+    <div class="loading-spinner">Cargando fotos... 📸</div>
+  }  @else if (photos.length > 0) {
+        <div class="carousel-container">
+            <app-image-carousel
+                [images]="photoUrls"
+                [initialIndex]="currentImageIndex"
+                (imageChanged)="onImageChanged($event)"
+                (deletePhotoRequest)="deletePhoto()"> </app-image-carousel>
+        </div>
+
+    <div class="thumbnail-grid">
+      @for (photo of photos; track photo.id; let i = $index) {
+        <div
+          class="thumbnail-item"
+          [class.active]="i === currentImageIndex"
+          (click)="selectImage(i)">
+          <img [src]="photo.baseUrl" alt="{{ photo.filename }}" />
+        </div>
+      }
+    </div>
+  } @else {
+    <div class="no-photos-message">
+      <p>No hay fotos disponibles para este usuario. 😔</p>
+    </div>
+  }
+</div>

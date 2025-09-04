@@ -79,13 +79,14 @@
   max-width: 100%;
   width: 100px;
   height: auto; /* Ajusta esta altura para que las imágenes sean más pequeñas */
-  object-fit: cover; /* Recorta la imagen para llenar el espacio */
+  object-fit: contain; /* Recorta la imagen para llenar el espacio */
   border-radius: 4px;
   margin-bottom: 10px;
+  zoom: 1;
 }
 
 .servicio-card h3 {
-  font-size: 1.1rem; /* Título un poco más pequeño */
+  font-size: 1.5rem; /* Título un poco más pequeño */
   margin-bottom: 8px;
   color: #333;
 }
@@ -98,9 +99,10 @@
 }
 
 .servicio-card .precio-texto {
-    font-weight: bold;
+    font-weight: 400;
     color: #007bff; /* Un color distintivo para el precio */
-    font-size: 1rem;
+    box-shadow: #333;
+    font-size: 1.5rem;
     margin-top: auto; /* Empuja el precio y el botón hacia abajo */
     margin-bottom: 15px; /* Espacio antes del botón */
 }

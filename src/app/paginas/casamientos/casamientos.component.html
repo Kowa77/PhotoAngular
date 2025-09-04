@@ -1,7 +1,8 @@
 <div class="container mt-5">
   <h2 class="mb-4 text-center">Nuestros Momentos Especiales</h2>
   <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-    <div *ngFor="let foto of fotosCasamiento" class="col">
+    @for (foto of fotosCasamiento; track foto) {
+    <div class="col">
       <div class="card h-100">
         <img [src]="foto" class="card-img-top" alt="Foto de Casamiento">
         <div class="card-body">
@@ -14,6 +15,7 @@
         </div>
       </div>
     </div>
+    }
   </div>
 
   <div class="mt-5 text-center">

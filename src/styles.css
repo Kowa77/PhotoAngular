@@ -1,9 +1,49 @@
-/* styles.css */
-@import '@angular/material/prebuilt-themes/indigo-pink.css';
-@import 'bootstrap/dist/css/bootstrap.min.css';
-@import 'bootstrap-icons/font/bootstrap-icons.css';
+
+/*@import '@angular/material/prebuilt-themes/indigo-pink.css';
+ Puedes elegir otro tema si lo prefieres, por ejemplo:
+   @import '@angular/material/prebuilt-themes/deeppurple-amber.css';
+   @import '@angular/material/prebuilt-themes/pink-bluegrey.css';
+   @import '@angular/material/prebuilt-themes/purple-green.css';
+*/
+
+/* Tus imports existentes de Bootstrap */
+/*@import 'bootstrap/dist/css/bootstrap.min.css';
+@import 'bootstrap-icons/font/bootstrap-icons.css';*/
 
 
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 
+html, body { height: 100%; }
+body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+/*
+  Estilos para los días reservados por otros usuarios.
+  El selector busca el <span> que contiene el número del día dentro de la celda del calendario
+  que tiene la clase 'booked-by-others'.
+*/
+.mat-calendar-body-cell.booked-by-others >.mat-calendar-body-cell-content {
+  background-color: #b10909!important; /* Rojo claro para días reservados por otros */
+  color: #ffffff!important; /* Color de texto que contrasta */
+  font-weight: bold;
+}
+
+/*
+  Estilos para los días reservados por el usuario actual.
+  El selector busca el <span> que contiene el número del día dentro de la celda del calendario
+  que tiene la clase 'booked-by-current-user'.
+*/
+.mat-calendar-body-cell.booked-by-current-user >.mat-calendar-body-cell-content {
+  background-color: #32aa38!important; /* Verde claro para días reservados por el usuario actual */
+  color: #ffffff!important; /* Color de texto que contrasta */
+  font-weight: bold;
+}
+
+
+/* .mat-calendar-body-cell-content{
+  background-color: #ffcccc !important; /* Un color para días reservados por otros
+  color: #a33b3b !important;
+  font-weight: bold !important;
+} */
+
+/* <span class="mat-calendar-body-cell-content mat-focus-indicator mat-calendar-body-today"> 27 </span> */

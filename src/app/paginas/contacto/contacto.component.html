@@ -23,9 +23,11 @@
           [class.is-invalid]="!emailData.from && responseMessage"
         >
         <small class="form-text text-muted">Este es tu email con el que estás logueado.</small>
-        <div *ngIf="!emailData.from && responseMessage" class="invalid-feedback">
+        @if (!emailData.from && responseMessage) {
+        <div class="invalid-feedback">
           El email del remitente es requerido. Por favor, inicia sesión.
         </div>
+        }
       </div>
 
       <div class="mb-3">
@@ -40,9 +42,11 @@
           placeholder="Asunto de tu consulta"
           [class.is-invalid]="!emailData.subject && responseMessage"
         >
-        <div *ngIf="!emailData.subject && responseMessage" class="invalid-feedback">
+        @if (!emailData.subject && responseMessage) {
+        <div class="invalid-feedback">
           El asunto es requerido.
         </div>
+        }
       </div>
 
       <div class="mb-3">
@@ -57,9 +61,11 @@
           placeholder="Escribe tu mensaje aquí..."
           [class.is-invalid]="!emailData.text && responseMessage"
         ></textarea>
-        <div *ngIf="!emailData.text && responseMessage" class="invalid-feedback">
+        @if (!emailData.text && responseMessage) {
+        <div class="invalid-feedback">
           El mensaje es requerido.
         </div>
+        }
       </div>
 
       <div class="d-grid mt-4">
@@ -73,10 +79,14 @@
       </div>
     </form>
 
-    <div *ngIf="responseMessage" class="alert mt-3 text-center" [ngClass]="{'alert-success': emailStatus === 'success', 'alert-danger': emailStatus === 'error'}" role="alert">
+    @if (responseMessage) {
+    <div class="alert mt-3 text-center" [class.alert-success]="emailStatus === 'success'" [class.alert-danger]="emailStatus === 'error'" role="alert">
       <p>{{ responseMessage }}</p>
-      <p *ngIf="previewUrl">Previsualizar: <a [href]="previewUrl" target="_blank" class="alert-link">{{ previewUrl }}</a></p>
+      @if (previewUrl) {
+      <p>Previsualizar: <a [href]="previewUrl" target="_blank" class="alert-link">{{ previewUrl }}</a></p>
+      }
     </div>
+    }
 
   </section>
 

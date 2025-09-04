@@ -15,10 +15,10 @@
     <div class="cart-items-grid">
       @for (item of cartItemsArray; track trackByItemId($index, item)) {
         <div class="cart-item-card"
-             [class.category-fotos]="item.categoria === 'foto'"
-             [class.category-videos]="item.categoria === 'video'"
-             [class.category-extras]="item.categoria === 'extra'"
-             [class.category-sugerido]="item.categoria === 'sugerido'">
+              [class.category-fotos]="item.categoria === 'foto'"
+              [class.category-videos]="item.categoria === 'video'"
+              [class.category-extras]="item.categoria === 'extra'"
+              [class.category-sugerido]="item.categoria === 'sugerido'">
           <img [src]="item.imagen" alt="{{ item.nombre }}" id="item-image-{{item.id}}">
           <div class="item-details" id="item-details-{{item.id}}">
             <h3>{{ item.nombre }}</h3>
@@ -38,28 +38,41 @@
     <div class="cart-summary">
       <h3>Total Carrito: ${{ currentCartTotal | number:'1.2-2' }}</h3>
 
+      <div class="payment-options">
+        <label>Elige una opción de pago:</label>
+        <div class="option-card" [class.selected]="paymentOption === 'full'">
+          <input type="radio" id="full-payment" name="paymentOption" value="full" [(ngModel)]="paymentOption" (change)="updateSummary()">
+          <label for="full-payment">
+            <span class="option-title">Pago Completo (con 20% de Descuento)</span>
+            <span class="option-price">${{ totalWithDiscount | number:'1.2-2' }}</span>
+          </label>
+        </div>
+        <div class="option-card" [class.selected]="paymentOption === 'partial'">
+          <input type="radio" id="partial-payment" name="paymentOption" value="partial" [(ngModel)]="paymentOption" (change)="updateSummary()">
+          <label for="partial-payment">
+            <span class="option-title">Pago de Reserva (20%)</span>
+            <span class="option-price">${{ partialTotal | number:'1.2-2' }}</span>
+          </label>
+        </div>
+      </div>
       <div class="date-selection">
         <label for="reservationDate">Fecha de la Reserva:</label>
-
-        <!-- Implementación de Angular Material Datepicker -->
         <mat-form-field appearance="fill">
-          <mat-label>Elige una fecha</mat-label>
+          <mat-label>Fecha</mat-label>
           <input matInput [matDatepicker]="picker"
                  [(ngModel)]="selectedReservationDate"
                  (dateChange)="onDateSelect($event)"
+                 [matDatepickerFilter]="dateFilter"
                  [min]="minDate"
-                 [max]="maxDate"
-                 [matDatepickerFilter]="dateFilter" name="reservationDate"
-                 required>
+                 [max]="maxDate">
+          <mat-hint>MM/DD/YYYY</mat-hint>
           <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
-          <mat-datepicker #picker [dateClass]="dateClass"></mat-datepicker>
+          <mat-datepicker #picker [dateClass]="dateClass" [startAt]="startAt"></mat-datepicker>
         </mat-form-field>
-        <!-- Fin de Angular Material Datepicker -->
-
       </div>
 
       <button class="checkout-button" (click)="proceedToCheckout()"
-              [disabled]="!currentUserUid || cartItemsArray.length === 0 || !selectedReservationDate">Proceder al Pago</button>
+              [disabled]="!currentUserUid || cartItemsArray.length === 0 || !selectedReservationDate || !paymentOption">Proceder</button>
     </div>
 
     <button class="back-to-services-button" routerLink="/servicios">Seguir Explorando Servicios</button>

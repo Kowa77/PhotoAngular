@@ -1,0 +1,296 @@
+/* src/app/components/image-carousel/image-carousel.component.css */
+
+/* --- Estilos del Contenedor Principal del Carrusel --- */
+.carousel-container {
+  position: relative;
+  width: 100%;
+  max-width: 800px;
+  margin: 40px auto;
+  background-color: #f8f8f8;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  padding: 20px;
+}
+
+/* Contenedor para los botones de acción (Eliminar, Descargar, Zoom) */
+.carousel-actions {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  gap: 8px; /* Espacio entre los botones */
+  z-index: 10;
+}
+
+/* --- Estilos del Envoltorio de la Imagen Principal del Carrusel --- */
+.carousel-image-wrapper {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 500px;
+  background-color: #e0e0e0;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+.carousel-image {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border-radius: 8px;
+  transition: transform 0.3s ease-in-out;
+  cursor: pointer;
+}
+
+/* --- Estilos de los Botones de Navegación del Carrusel --- */
+.carousel-button {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: rgba(0, 0, 0, 0.6);
+  color: white;
+  border: none;
+  padding: 15px 20px;
+  font-size: 24px;
+  cursor: pointer;
+  z-index: 10;
+  border-radius: 50%;
+  transition: background-color 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 50px;
+  height: 50px;
+}
+
+.carousel-button:hover {
+  background-color: rgba(0, 0, 0, 0.8);
+}
+
+.carousel-button.prev {
+  left: 15px;
+}
+
+.carousel-button.next {
+  right: 15px;
+}
+
+/* --- Estilos de los Indicadores de Puntos del Carrusel --- */
+.carousel-indicators {
+  text-align: center;
+  margin-top: 15px;
+}
+
+.indicator-dot {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  margin: 0 5px;
+  background-color: #ccc;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.indicator-dot.active {
+  background-color: #007bff;
+  transform: scale(1.2);
+}
+
+/* --- Estilos de los Botones de Acción (Eliminar, Descargar, Zoom) --- */
+.action-button {
+  border: none;
+  color: white;
+  border-radius: 50px; /* Hacemos los botones circulares */
+  padding: 10px;
+  width: 40px; /* Tamaño unificado */
+  height: 40px;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 14px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.action-button:hover {
+  transform: scale(1.05);
+}
+
+.delete-button {
+  background-color: #dc3545; /* Rojo */
+}
+
+.delete-button:hover {
+  background-color: #c82333;
+}
+
+.download-button {
+  background-color: #007bff; /* Azul */
+}
+
+.download-button:hover {
+  background-color: #0056b3;
+}
+
+.zoom-button {
+  background-color: #6c757d; /* Gris */
+}
+
+.zoom-button:hover {
+  background-color: #5a6268;
+}
+
+/* --- Estilos del Overlay de Zoom (Lightbox) --- */
+.zoom-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  /* El fondo oscuro se lo aplicamos aquí */
+  background-color: rgba(0, 0, 0, 0.85);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(5px);
+  user-select: none;
+  touch-action: none;
+}
+
+.zoomed-image {
+  /* La imagen se ajustará al 90% del ancho y alto de la ventana */
+  max-width: 90vw;
+  max-height: 90vh;
+  object-fit: contain;
+  display: block;
+  transform-origin: center center;
+  transition: transform 0.05s ease-out;
+  /* El cursor se gestiona en el componente TS */
+  cursor: grab;
+  z-index: 1001; /* Asegura que la imagen esté sobre el fondo */
+}
+
+/* Cursores para el arrastre y zoom */
+.zoomed-image[style*='scale']:not([style*='scale(1)']) {
+  cursor: grab;
+}
+.zoomed-image.dragging {
+  cursor: grabbing !important;
+}
+
+.close-zoom-button {
+  position: fixed; /* Usamos fixed para que se posicione con respecto a la ventana */
+  top: 15px;
+  right: 15px;
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 45px;
+  height: 45px;
+  font-size: 22px;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: background-color 0.3s ease;
+  z-index: 1002; /* Asegura que esté por encima de la imagen */
+}
+
+.close-zoom-button:hover {
+  background-color: #c82333;
+}
+
+/* --- Estilos para cuando no hay fotos (debes mantener esto en gallery.component.css si lo usas ahí) --- */
+.no-photos-message {
+  text-align: center;
+  padding: 50px;
+  color: #666;
+  font-size: 1.2em;
+  background-color: #f0f0f0;
+  border-radius: 8px;
+  margin: 40px auto;
+  max-width: 600px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* --- Responsive Adjustments --- */
+@media (max-width: 768px) {
+  .carousel-container {
+    max-width: 95%;
+    padding: 10px;
+  }
+  .carousel-image-wrapper {
+    height: 350px;
+  }
+  .carousel-button {
+    padding: 10px 15px;
+    font-size: 20px;
+    width: 40px;
+    height: 40px;
+  }
+  .carousel-actions {
+    top: 5px;
+    right: 5px;
+    gap: 5px;
+  }
+  .action-button {
+    width: 35px;
+    height: 35px;
+    font-size: 12px;
+  }
+  .close-zoom-button {
+    width: 35px;
+    height: 35px;
+    font-size: 18px;
+    top: 8px;
+    right: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .carousel-container {
+    margin: 20px auto;
+  }
+  .carousel-image-wrapper {
+    height: 250px;
+  }
+  .carousel-button {
+    padding: 8px 12px;
+    font-size: 18px;
+    width: 35px;
+    height: 35px;
+    border-radius: 8px;
+  }
+  .carousel-button.prev {
+    left: 8px;
+  }
+  .carousel-button.next {
+    right: 8px;
+  }
+  .indicator-dot {
+    width: 10px;
+    height: 10px;
+  }
+  .carousel-actions {
+    top: 8px;
+    right: 8px;
+    gap: 5px;
+  }
+  .action-button {
+    width: 30px;
+    height: 30px;
+    font-size: 10px;
+  }
+  .close-zoom-button {
+    width: 30px;
+    height: 30px;
+    font-size: 16px;
+  }
+}

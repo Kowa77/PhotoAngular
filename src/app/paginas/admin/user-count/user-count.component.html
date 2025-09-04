@@ -1,0 +1,14 @@
+<div class="stats-container">
+  <h3>Usuarios Registrados</h3>
+  @if (isLoading()) {
+    <p>Cargando conteo...</p>
+  } @else if (errorMessage()) {
+    <p class="error-message">{{ errorMessage() }}</p>
+  } @else if (totalUsers() !== null) {
+    <div class="stats-box">
+      <p class="stats-number">{{ totalUsers() }}</p>
+    </div>
+  } @else {
+    <p>No se encontró el conteo de usuarios.</p>
+  }
+</div>

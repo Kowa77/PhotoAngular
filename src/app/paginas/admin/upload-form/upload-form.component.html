@@ -1,0 +1,28 @@
+<div class="upload-container">
+      <h2>Sube tus fotos</h2>
+      @if (uploadStatus()) {
+        <p [ngClass]="{'status-success': uploadStatus() === '¡Fotos subidas con éxito!', 'status-error': uploadStatus().includes('Error')}">{{ uploadStatus() }}</p>
+      }
+      <div class="form-group">
+        <label for="emailInput">Email del usuario:</label>
+        <input type="email" id="emailInput" [ngModel]="targetUserEmail()" (ngModelChange)="targetUserEmail.set($event)" placeholder="ejemplo@correo.com"/>
+      </div>
+      <div class="form-group">
+        <label for="fileInput">Selecciona fotos:</label>
+        <input type="file" id="fileInput" (change)="onFileSelected($event)" multiple />
+      </div>
+      <button (click)="onUpload()" [disabled]="isUploading() || !selectedFiles() || selectedFiles()!.length === 0 || !targetUserEmail()">
+        @if (isUploading()) { Subiendo... } @else { Subir Fotos }
+      </button>
+      <p class="login-prompt">Por favor, asegúrate de que el email sea de un usuario registrado.</p>
+</div>
+
+<div class="stats-container">
+  <div class="stats-section">
+    <app-admin-stats #statsComponent></app-admin-stats>
+  </div>
+  <div  class="stats-section">
+    <app-user-count></app-user-count>
+  </div>
+</div>
+

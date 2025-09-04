@@ -1,29 +1,27 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { NavbarComponent } from './navbar/navbar.component';
-import { FooterComponent } from './paginas/footer/footer.component'; // Importa el nuevo componente
-import { AuthService } from './auth/auth.service'; // Importa el AuthService
-import { CommonModule } from '@angular/common'; // Importa CommonModule si lo vas a usar en el template
+import { FooterComponent } from './paginas/footer/footer.component';
+import { CommonModule } from '@angular/common';
+//import { authConfig } from './app.config';
+
+// Note: SweetAlert2 is loaded via CDN in the main HTML file,
+// so it is not imported here. It is accessed as a global variable `Swal`.
+declare const Swal: any;
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, NavbarComponent, FooterComponent], // AuthModalComponent eliminado
+  imports: [CommonModule, RouterOutlet, NavbarComponent, FooterComponent],
   templateUrl: './app.component.html',
-  styleUrls: ['./app.component.css']
+  styleUrls: ['./app.component.css'],
 })
-export class AppComponent implements OnInit {
+export class AppComponent {
   title = 'servicephoto-angular';
-  isLoggedIn: boolean = false; // Variable para rastrear el estado de login
 
-  constructor(private authService: AuthService) {} // Inyecta el AuthService
+  constructor() {
 
-  ngOnInit(): void {
-    this.authService.getAuthState().subscribe(user => {
-      this.isLoggedIn = !!user; // Si hay un usuario, está logueado (true), sino null (false)
-      //console.log('Estado de autenticación en AppComponent:', this.isLoggedIn, user);
-      // Aquí puedes realizar otras acciones basadas en el estado de login,
-      // como mostrar/ocultar elementos de la UI.
-    });
   }
+
+
 }

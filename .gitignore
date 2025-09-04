@@ -20,6 +20,9 @@ yarn-error.log
 .settings/
 *.sublime-workspace
 
+# Kilocode
+.kilocode/
+
 # Visual Studio Code
 .vscode/*
 !.vscode/settings.json
@@ -46,3 +49,6 @@ server/.env
 nodemailer-backend/.env
 environment/environment.ts
 environment/environment.prod.ts
+
+server/credentials.json
+server/serviceAccountKey.json

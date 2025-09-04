@@ -1,0 +1,411 @@
+{
+  "availability": {
+    "2025-08-28": {
+      "available": false,
+      "bookedBy": "RIBXlMMrPJb4YDvrk3sRR3QWZfo1",
+      "maxBookings": 1
+    },
+    "2025-08-29": {
+      "available": false,
+      "bookedBy": "RIBXlMMrPJb4YDvrk3sRR3QWZfo1",
+      "maxBookings": 1
+    },
+    "2025-08-30": {
+      "available": false,
+      "bookedBy": "513W4gk08dRj3diEWMqtGWgh92j2",
+      "maxBookings": 1
+    },
+    "2025-08-31": {
+      "available": false,
+      "bookedBy": "RIBXlMMrPJb4YDvrk3sRR3QWZfo1",
+      "maxBookings": 1
+    },
+    "2025-09-17": {
+      "available": false,
+      "bookedBy": "RIBXlMMrPJb4YDvrk3sRR3QWZfo1",
+      "maxBookings": 1
+    }
+  },
+  "carritos": {
+    "513W4gk08dRj3diEWMqtGWgh92j2": {
+      "boda_exteriores_f": 1,
+      "boda_fiesta_f": 1
+    },
+    "RIBXlMMrPJb4YDvrk3sRR3QWZfo1": {
+      "cumple_fiesta_f": 1
+    }
+  },
+  "reservations": {
+    "2025-08-28": {
+      "-OYecOtMa5KW45-relJp": {
+        "details": {
+          "date": "2025-08-28",
+          "status": "pending",
+          "timestamp": 1756283115414,
+          "totalAmount": 3,
+          "userId": "RIBXlMMrPJb4YDvrk3sRR3QWZfo1"
+        },
+        "id": "-OYecOtMa5KW45-relJp",
+        "items": {
+          "boda_exteriores_f": {
+            "cantidad": 1,
+            "categoria": "foto",
+            "descripcion": "Servicio de fotografía en locaciones al aire libre",
+            "id": "boda_exteriores_f",
+            "imagen": "https://static.thenounproject.com/png/34294-200.png",
+            "nombre": "Sesión de Exteriores",
+            "precio": 1
+          },
+          "boda_getting_f": {
+            "cantidad": 1,
+            "categoria": "foto",
+            "descripcion": "Servicio de fotografía de los momentos previos al evento",
+            "id": "boda_getting_f",
+            "imagen": "https://static.thenounproject.com/png/34294-200.png",
+            "nombre": "Fotos (Preparativos)",
+            "precio": 1
+          },
+          "boda_iglesia_f": {
+            "cantidad": 1,
+            "categoria": "foto",
+            "descripcion": "Servicio de fotografía de la ceremonia religiosa",
+            "id": "boda_iglesia_f",
+            "imagen": "https://static.thenounproject.com/png/34294-200.png",
+            "nombre": "Cobertura de Iglesia",
+            "precio": 1
+          }
+        }
+      }
+    },
+    "2025-08-29": {
+      "-OYebsZPgP94DD66ljPO": {
+        "details": {
+          "date": "2025-08-29",
+          "status": "pending",
+          "timestamp": 1756282978908,
+          "totalAmount": 1,
+          "userId": "RIBXlMMrPJb4YDvrk3sRR3QWZfo1"
+        },
+        "id": "-OYebsZPgP94DD66ljPO",
+        "items": {
+          "cumple_exteriores_f": {
+            "cantidad": 1,
+            "categoria": "foto",
+            "descripcion": "Servicio de fotografía en locaciones al aire libre",
+            "id": "cumple_exteriores_f",
+            "imagen": "https://i.ibb.co/Vphqq02b/mis15.png",
+            "nombre": "Sesión de Exteriores",
+            "precio": 1
+          }
+        }
+      }
+    },
+    "2025-08-30": {
+      "-OYL75aP0XZhXXlYu8YL": {
+        "details": {
+          "date": "2025-08-30",
+          "status": "pending",
+          "timestamp": 1755939104408,
+          "totalAmount": 1,
+          "userId": "513W4gk08dRj3diEWMqtGWgh92j2"
+        },
+        "id": "-OYL75aP0XZhXXlYu8YL",
+        "items": {
+          "cumple_fiesta_f": {
+            "cantidad": 1,
+            "categoria": "foto",
+            "descripcion": "Servicio de fotografía durante toda la celebración de la fiesta",
+            "id": "cumple_fiesta_f",
+            "imagen": "https://i.ibb.co/Vphqq02b/mis15.png",
+            "nombre": "Cobertura de Fiesta",
+            "precio": 1
+          }
+        }
+      }
+    },
+    "2025-08-31": {
+      "-OYg-C_q8CJAhLoh1I_2": {
+        "details": {
+          "date": "2025-08-31",
+          "status": "confirmed",
+          "timestamp": 1756306133605,
+          "totalAmount": 0.8,
+          "userId": "RIBXlMMrPJb4YDvrk3sRR3QWZfo1"
+        },
+        "id": "-OYg-C_q8CJAhLoh1I_2",
+        "items": {
+          "boda_exteriores_f": {
+            "cantidad": 1,
+            "categoria": "foto",
+            "descripcion": "Servicio de fotografía en locaciones al aire libre",
+            "id": "boda_exteriores_f",
+            "imagen": "https://static.thenounproject.com/png/34294-200.png",
+            "nombre": "Sesión de Exteriores",
+            "precio": 1
+          }
+        }
+      }
+    },
+    "2025-09-17": {
+      "-OYg5BgVi5_8SRuUnukg": {
+        "details": {
+          "date": "2025-09-17",
+          "status": "pending",
+          "timestamp": 1756307702799,
+          "totalAmount": 1,
+          "userId": "RIBXlMMrPJb4YDvrk3sRR3QWZfo1"
+        },
+        "id": "-OYg5BgVi5_8SRuUnukg",
+        "items": {
+          "boda_civil_v": {
+            "cantidad": 1,
+            "categoria": "video",
+            "descripcion": "Video completo del evento civil.",
+            "id": "boda_civil_v",
+            "imagen": "https://static.thenounproject.com/png/34294-200.png",
+            "nombre": "Video Civil",
+            "precio": 1
+          },
+          "boda_exteriores_v": {
+            "cantidad": 1,
+            "categoria": "video",
+            "descripcion": "Grabación de video en locaciones al aire libre.",
+            "id": "boda_exteriores_v",
+            "imagen": "https://static.thenounproject.com/png/34294-200.png",
+            "nombre": "Video Exteriores",
+            "precio": 1
+          },
+          "boda_fiesta_v": {
+            "cantidad": 1,
+            "categoria": "video",
+            "descripcion": "Grabación de video durante toda la celebración de la fiesta.",
+            "id": "boda_fiesta_v",
+            "imagen": "https://static.thenounproject.com/png/34294-200.png",
+            "nombre": "Video Fiesta",
+            "precio": 1
+          },
+          "boda_getting_v": {
+            "cantidad": 1,
+            "categoria": "video",
+            "descripcion": "Grabación de video de los momentos previos al evento.",
+            "id": "boda_getting_v",
+            "imagen": "https://static.thenounproject.com/png/34294-200.png",
+            "nombre": "Videos (Preparativos)",
+            "precio": 1
+          },
+          "cumple_getting_v": {
+            "cantidad": 1,
+            "categoria": "video",
+            "descripcion": "Grabación de video de los momentos previos al evento.",
+            "id": "cumple_getting_v",
+            "imagen": "https://i.ibb.co/Vphqq02b/mis15.png",
+            "nombre": "Videos (Preparativos)",
+            "precio": 1
+          }
+        }
+      }
+    }
+  },
+  "servicios": {
+    "casamientos": {
+      "fotos": {
+        "boda_civil_f": {
+          "descripcion_f": "Servicio de fotografía para ceremonia civil",
+          "imagen_f": "https://static.thenounproject.com/png/34294-200.png",
+          "nombre_f": "Cobertura Civil",
+          "precio_f": 1
+        },
+        "boda_exteriores_f": {
+          "descripcion_f": "Servicio de fotografía en locaciones al aire libre",
+          "imagen_f": "https://static.thenounproject.com/png/34294-200.png",
+          "nombre_f": "Sesión de Exteriores",
+          "precio_f": 1
+        },
+        "boda_fiesta_f": {
+          "descripcion_f": "Servicio de fotografía durante toda la celebración de la fiesta",
+          "imagen_f": "https://static.thenounproject.com/png/34294-200.png",
+          "nombre_f": "Cobertura de Fiesta",
+          "precio_f": 1
+        },
+        "boda_getting_f": {
+          "descripcion_f": "Servicio de fotografía de los momentos previos al evento",
+          "imagen_f": "https://static.thenounproject.com/png/34294-200.png",
+          "nombre_f": "Fotos (Preparativos)",
+          "precio_f": 1
+        },
+        "boda_iglesia_f": {
+          "descripcion_f": "Servicio de fotografía de la ceremonia religiosa",
+          "imagen_f": "https://static.thenounproject.com/png/34294-200.png",
+          "nombre_f": "Cobertura de Iglesia",
+          "precio_f": 1
+        }
+      },
+      "videos": {
+        "boda_civil_v": {
+          "descripcion_v": "Video completo del evento civil.",
+          "imagen_v": "https://static.thenounproject.com/png/34294-200.png",
+          "nombre_v": "Video Civil",
+          "precio_v": 1
+        },
+        "boda_exteriores_v": {
+          "descripcion_v": "Grabación de video en locaciones al aire libre.",
+          "imagen_v": "https://static.thenounproject.com/png/34294-200.png",
+          "nombre_v": "Video Exteriores",
+          "precio_v": 1
+        },
+        "boda_fiesta_v": {
+          "descripcion_v": "Grabación de video durante toda la celebración de la fiesta.",
+          "imagen_v": "https://static.thenounproject.com/png/34294-200.png",
+          "nombre_v": "Video Fiesta",
+          "precio_v": 1
+        },
+        "boda_getting_v": {
+          "descripcion_v": "Grabación de video de los momentos previos al evento.",
+          "imagen_v": "https://static.thenounproject.com/png/34294-200.png",
+          "nombre_v": "Videos (Preparativos)",
+          "precio_v": 1
+        },
+        "boda_iglesia_v": {
+          "descripcion_v": "Grabación de video de la ceremonia religiosa.",
+          "imagen_v": "https://static.thenounproject.com/png/34294-200.png",
+          "nombre_v": "Video Iglesia",
+          "precio_v": 1
+        },
+        "boda_video_novios_v": {
+          "descripcion_v": "Video especial con la historia o momentos de la pareja.",
+          "imagen_v": "https://static.thenounproject.com/png/34294-200.png",
+          "nombre_v": "Video de Novios",
+          "precio_v": 1
+        }
+      }
+    },
+    "cumpleaños": {
+      "fotos": {
+        "cumple_exteriores_f": {
+          "descripcion_f": "Servicio de fotografía en locaciones al aire libre",
+          "imagen_f": "https://i.ibb.co/qFVx38rB/mis-15.png",
+          "nombre_f": "Sesión de Exteriores",
+          "precio_f": 1
+        },
+        "cumple_fiesta_f": {
+          "descripcion_f": "Servicio de fotografía durante toda la celebración de la fiesta",
+          "imagen_f": "https://i.ibb.co/qFVx38rB/mis-15.png",
+          "nombre_f": "Cobertura de Fiesta",
+          "precio_f": 1
+        },
+        "cumple_getting_f": {
+          "descripcion_f": "Servicio de fotografía de los momentos previos al evento",
+          "imagen_f": "https://i.ibb.co/qFVx38rB/mis-15.png",
+          "nombre_f": "Fotos (Preparativos)",
+          "precio_f": 1
+        }
+      },
+      "sugeridos": {
+        "Servicio de Transporte": {
+          "descripcion_e": "24/7 a tu disposición con chofer privado.",
+          "imagen_e": "https://static.thenounproject.com/png/34294-200.png",
+          "nombre_e": "Transporte Privado",
+          "precio_e": 1
+        },
+        "Servicio de audio DJ": {
+          "descripcion_e": "Música y sonido de alta calidad para tu evento.",
+          "duracion_e": "toda la fiesta",
+          "imagen_e": "https://static.thenounproject.com/png/34294-200.png",
+          "nombre_e": "Audio DJ",
+          "precio_e": 1
+        }
+      },
+      "videos": {
+        "cumple_fiesta_v": {
+          "descripcion_v": "Grabación de video durante toda la celebración de la fiesta.",
+          "imagen_v": "https://i.ibb.co/Vphqq02b/mis15.png",
+          "nombre_v": "Video Fiesta",
+          "precio_v": 1
+        },
+        "cumple_getting_v": {
+          "descripcion_v": "Grabación de video de los momentos previos al evento.",
+          "imagen_v": "https://i.ibb.co/Vphqq02b/mis15.png",
+          "nombre_v": "Videos (Preparativos)",
+          "precio_v": 1
+        },
+        "video_de_vida": {
+          "descripcion_v": "Video de vida.",
+          "imagen_v": "https://i.ibb.co/Vphqq02b/mis15.png",
+          "nombre_v": "Video de Vida",
+          "precio_v": 1
+        },
+        "video_exteriores_v": {
+          "descripcion_v": "Video especial con exteriores e interiores.",
+          "imagen_v": "https://i.ibb.co/Vphqq02b/mis15.png",
+          "nombre_v": "Video de 15",
+          "precio_v": 1
+        }
+      }
+    },
+    "extras": {
+      "360_vip_e": {
+        "descripcion_e": "Experiencia interactiva de video 360° para invitados (2 horas).",
+        "duracion_e": "2 hs",
+        "imagen_e": "https://i.ibb.co/ksFZ9KZ7/extras.png",
+        "nombre_e": "Plataforma 360° VIP",
+        "precio_e": 1
+      },
+      "banners_e": {
+        "descripcion_e": "Diseño e impresión de banners para decorar tu evento.",
+        "imagen_e": "https://i.ibb.co/ksFZ9KZ7/extras.png",
+        "nombre_e": "Banners Personalizados",
+        "precio_e": 1
+      },
+      "candy_bar_e": {
+        "descripcion_e": "Delicioso algodón de azúcar recién hecho.",
+        "imagen_e": "https://i.ibb.co/ksFZ9KZ7/extras.png",
+        "nombre_e": "Candy Bar (Algodón de Azúcar)",
+        "precio_e": 1
+      },
+      "castillo_inflable_e": {
+        "descripcion_e": "Diversión garantizada para los más pequeños (y no tan pequeños).",
+        "imagen_e": "https://i.ibb.co/ksFZ9KZ7/extras.png",
+        "nombre_e": "Castillo Inflable",
+        "precio_e": 1
+      },
+      "cuadro_firmas_e": {
+        "descripcion_e": "Un recuerdo único con las firmas y mensajes de tus invitados.",
+        "imagen_e": "https://i.ibb.co/ksFZ9KZ7/extras.png",
+        "nombre_e": "Cuadro de Firmas",
+        "precio_e": 1
+      },
+      "dron_e": {
+        "descripcion_e": "Tomas aéreas espectaculares de tu evento.",
+        "imagen_e": "https://static.thenounproject.com/png/34294-200.png",
+        "nombre_e": "Drone Ilimitado",
+        "precio_e": 1
+      },
+      "fotolibros_e": {
+        "descripcion_e": "Álbum de fotos profesional impreso de alta calidad.",
+        "imagen_e": "https://static.thenounproject.com/png/34294-200.png",
+        "nombre_e": "Fotolibros",
+        "precio_e": 1
+      },
+      "pendrive_laser_e": {
+        "descripcion_e": "Tus recuerdos digitales en un pendrive personalizado.",
+        "imagen_e": "https://static.thenounproject.com/png/34294-200.png",
+        "nombre_e": "Pendrive Grabado Láser",
+        "precio_e": 1
+      },
+      "promo_toro_360_e": {
+        "descripcion_e": "Combina ambos servicios por un precio especial (2 horas de ambos).",
+        "duracion_e": "2 hs",
+        "imagen_e": "https://i.ibb.co/ksFZ9KZ7/extras.png",
+        "nombre_e": "Toro mec + Plat 360°",
+        "precio_e": 1
+      },
+      "toro_mecanico_e": {
+        "descripcion_e": "Entretenimiento interactivo y divertido (2 horas).",
+        "duracion_e": "2 horas",
+        "imagen_e": "https://i.ibb.co/ksFZ9KZ7/extras.png",
+        "nombre_e": "Toro Mecánico",
+        "precio_e": 1
+      }
+    }
+  }
+}

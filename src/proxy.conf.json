@@ -1,0 +1,7 @@
+{
+  "/v1": {
+    "target": "https://www.publicalbum.org",
+    "secure": true,
+    "changeOrigin": true
+  }
+}
