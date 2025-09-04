@@ -2,18 +2,20 @@
 const express = require('express');
 const admin = require('firebase-admin');
 
+// Carga las variables de entorno del archivo .env solo si no estamos en producción.
+if (process.env.NODE_ENV !== 'production') {
+  require('dotenv').config();
+}
+
 // Inicializa Express.
 const app = express();
 
 // --- Configuración de Firebase Admin ---
-// En lugar de un archivo de credenciales, Render.com usa variables de entorno
-// por seguridad. 'FIREBASE_SERVICE_ACCOUNT' será una variable que configurarás
-// en la plataforma de Render.
 const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
-  databaseURL: "https://bsfotografia-9fc03-default-rtdb.firebaseio.com", // Reemplaza con la URL de tu base de datos
+  databaseURL: "https://bsfotografia-9fc03-default-rtdb.firebaseio.com",
 });
 
 // Esta es tu función principal, adaptada para ser llamada como una tarea.
@@ -78,11 +80,10 @@ app.get('/expire-reservations', async (req, res) => {
 
 // Ruta principal para verificar que el servidor está funcionando.
 app.get('/', (req, res) => {
-    res.send('El servidor de PhotoAngular está en funcionamiento.');
+  res.send('El servidor de PhotoAngular está en funcionamiento.');
 });
 
 // --- Inicia el servidor ---
-
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Servidor escuchando en el puerto ${PORT}`);
