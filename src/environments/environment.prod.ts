@@ -15,6 +15,7 @@ declare global {
 
 export const environment = {
   production: true,
+  apiUrl: 'https://servidor-bsfotografia.onrender.com',
   firebaseConfig: { // Mantenemos firebaseConfig
     apiKey: window['FIREBASE_API_KEY'] || "AIzaSyAattwoKL9pde1WDLtVr29KdszuX0It3E8",
     authDomain: window['FIREBASE_AUTH_DOMAIN'] || "bsfotografia-9fc03.firebaseapp.com",
