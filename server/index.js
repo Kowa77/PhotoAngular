@@ -10,8 +10,6 @@ import { promises as fs } from 'fs';
 import axios from 'axios';
 import multer from 'multer';
 
-import { cancelExpiredReservations } from './scheduled-jobs.js'; // Importa la función programada
-
 dotenv.config();
 
 // Configuración de Firebase Admin SDK
@@ -57,13 +55,6 @@ const transporter = nodemailer.createTransport({
         pass: process.env.EMAIL_PASS
     }
 });
-
-// ---------------------------------------------
-// JOB PROGRAMADO PARA CANCELAR RESERVAS VENCIDAS
-// ---------------------------------------------
-cancelExpiredReservations(); // Asegúrate de llamar a la función para que se registre el job
-// ---------------------------------------------
-
 
 
 // ---------------------------------------------

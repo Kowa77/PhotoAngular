@@ -25,7 +25,7 @@ async function expirePendingReservations() {
   try {
     const db = admin.database();
     const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0); //  Establece la hora a medianoche para comparar solo fechas.
 
     const reservationsRef = db.ref("reservations");
     const snapshot = await reservationsRef.once("value");
