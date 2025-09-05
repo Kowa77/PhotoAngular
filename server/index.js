@@ -107,6 +107,13 @@ async function createAlbum(token, albumTitle) {
 }
 
 // ---------------------------------------------
+// RUTA PARA SABER SI EL SERVIDOR ESTÁ ACTIVO
+// ---------------------------------------------
+app.get('/', (req, res) => {
+    res.send('✅ Servidor de Photo-Angular está en funcionamiento.');
+});
+
+// ---------------------------------------------
 // RUTA DE ENVÍO DE CORREO
 // ---------------------------------------------
 app.post('/api/send-email', async (req, res) => {
