@@ -5,29 +5,41 @@ import nodemailer from 'nodemailer';
 import { google } from 'googleapis';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import dotenv from 'dotenv';
 import { promises as fs } from 'fs';
 import axios from 'axios';
 import multer from 'multer';
 
-dotenv.config();
+// Importa dotenv para la configuración local
+import * as dotenv from 'dotenv';
+
+// Carga las variables de entorno del archivo .env solo si no estamos en producción.
+if (process.env.NODE_ENV !== 'production') {
+    dotenv.config();
+}
 
 // Configuración de Firebase Admin SDK
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const serviceAccountPathEnv = process.env.FIREBASE_SERVICE_ACCOUNT_PATH;
-
-if (!serviceAccountPathEnv) {
-    console.error('❌ Error: FIREBASE_SERVICE_ACCOUNT_PATH no está definido en el archivo .env.');
-    process.exit(1);
-}
-
 let serviceAccount;
+
 try {
-    const serviceAccountPath = path.join(__dirname, serviceAccountPathEnv);
-    serviceAccount = JSON.parse(await fs.readFile(serviceAccountPath, 'utf8'));
+    // Intenta cargar la configuración de Firebase desde una variable de entorno (para producción)
+    if (process.env.FIREBASE_SERVICE_ACCOUNT_JSON) {
+        serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_JSON);
+        console.log('✅ [Firebase] Configuración cargada desde variable de entorno.');
+    } else {
+        // Si no está en una variable de entorno, intenta leer el archivo local (para desarrollo)
+        const serviceAccountPathEnv = process.env.FIREBASE_SERVICE_ACCOUNT_PATH;
+        if (!serviceAccountPathEnv) {
+            console.error('❌ Error: FIREBASE_SERVICE_ACCOUNT_PATH no está definido en el archivo .env.');
+            process.exit(1);
+        }
+        const serviceAccountPath = path.join(__dirname, serviceAccountPathEnv);
+        serviceAccount = JSON.parse(await fs.readFile(serviceAccountPath, 'utf8'));
+        console.log('✅ [Firebase] Configuración cargada desde archivo local.');
+    }
 } catch (err) {
-    console.error(`❌ Error al cargar serviceAccountKey.json:`, err);
+    console.error(`❌ Error al cargar la clave de servicio de Firebase:`, err);
     process.exit(1);
 }
 
