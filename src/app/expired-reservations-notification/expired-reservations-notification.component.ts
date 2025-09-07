@@ -6,6 +6,7 @@ import { Reservation } from '../models/reservation.model';
 import { Subscription } from 'rxjs';
 import { RouterLink } from '@angular/router';
 
+
 @Component({
   selector: 'app-expired-reservations-notification',
   standalone: true,
@@ -27,17 +28,19 @@ export class ExpiredReservationsNotificationComponent implements OnInit, OnDestr
 
 
   // Suscribimos al observable para obtener las reservas del usuario
-  ngOnInit(): void {
-    if (this.userId) {
-      //  Suscribimos al observable para obtener las reservas del usuario
-      this.reservationsSubscription = this.firebaseService.getUserReservations(this.userId).subscribe(reservations => {
-        //filtramos las vencidas ( status: 'expired' ).
-        this.expiredReservations = reservations.filter(res => res.details.status === 'expired');
+ngOnInit(): void {
+  if (this.userId) {
+    // Suscribimos al observable para obtener las reservas del usuario
+    this.reservationsSubscription = this.firebaseService
+      .getUserReservations(this.userId)
+      .subscribe((reservations: Reservation[]) => {
+        // filtramos las vencidas (status: 'expired')
+        this.expiredReservations = reservations.filter(
+          (res: Reservation) => res.details.status === 'expired'
+        );
       });
-
-
-    }
   }
+}
 
   // --- Lógica temporal para la prueba --- permite a las reservas caducadas mostrarse en el componente
   //  ngOnInit(): void {

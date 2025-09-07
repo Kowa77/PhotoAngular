@@ -1,115 +1,122 @@
-<div class="agenda-container">
-  <h1>Mis Próximas Reservas</h1>
+<div class="quick-summary d-flex gap-3 flex-wrap">
+  @for (reservation of myReservaciones; track reservation.id) {
+    <div
+      class="quick-card"
+      (click)="goToReservation(reservation)"
+      [class.expired]="reservation.details.status === 'pending' && calculateDaysLeft(reservation)! <= 0"
+    >
+      <div class="date">📅 Evento: {{ reservation.details.date | date:'dd/MM/yyyy' }}</div>
 
-  <div class="my-reservations-section mt-4">
-    <h2>Tus Reservas Pendientes</h2>
-    @if (myReservaciones.length === 0) {
-      <p class="text-muted">No tienes reservas pendientes.</p>
-      <p>Puedes reservar servicios desde la página de <a routerLink="/servicios">Servicios</a>.</p>
-    } @else {
-      <div class="reservations-grid">
+      <div class="purchase-date text-muted">
+        🛒 Compra: {{ reservation.details.timestamp | date:'dd/MM/yyyy HH:mm' }}
+      </div>
 
-        @for (reservation of myReservaciones; track reservation.id) {
-          @if (isReservationUpcoming(reservation)) {
-            <div class="reservation-card" [class.highlighted]="isReservationHighlighted(reservation.details.date)">
-              <p>Fecha: {{ reservation.details.date | date:'dd/MM/yyyy' }}</p>
-
-              @if (reservation.details.status === 'confirmed') { <p class="paid-status">Servicio Pago</p> }
-              @else if (reservation.details.status === 'pending') { <p><b>Reservado</b></p> }
-              @else { <p>Estado: {{ reservation.details.status }}</p> }
-
-
-                <p class="total-amount">
-                  Total: {{ reservation.details.totalAmount | currency:'USD':'symbol':'1.2-2' }}
-                  @if (reservation.details.status === 'confirmed') { <img src="https://i.ibb.co/Kcmc33mQ/pagado.png" alt="Pagado" class="paid-icon"> }
-                </p>
-
-               @if (reservation.details.status === 'pending') {
-                @if (calculateDaysLeft(reservation) && calculateDaysLeft(reservation)! > 0) {
-                  <p class="countdown-text">RESTAN {{ calculateDaysLeft(reservation) }} DIAS PARA PAGAR (80%)</p>
-                  <hr>
-                } @else { <p class="text-danger">**El plazo para el pago ha expirado.**</p> }
-              }
-
-              <ul>
-                @for (item of (reservation.items | keyvalue); track item.key) {
-                  <li>{{ item.value.nombre }} (x{{ item.value.cantidad }}) - ${{ item.value.precio * item.value.cantidad | number:'1.2-2' }}</li>
-                }
-              </ul>
-
-              @if (currentUserEmail === 'admin@gmail.com') {
-                <button class="btn btn-danger" (click)="cancelReservation(reservation)">Cancelar Reserva</button>
-              } @else if (reservation.details.status === 'pending' && currentUserEmail !== 'admin@gmail.com') {
-                <button class="btn btn-success">Pagar el 80% Restante</button>
-              }
-            </div>
-          }
+      <div class="status">
+        @if (reservation.details.status === 'confirmed') {
+          <span class="badge bg-success fs-6">✅ Pago completo</span>
+        } @else if (reservation.details.status === 'pending') {
+          <span class="badge bg-warning fs-6 text-primary">⏳ Pendiente (80%)</span>
+        } @else if (reservation.details.status === 'expired') {
+          <span class="badge bg-danger fs-6">❌ Expirada</span>
         }
       </div>
-    }
-  </div>
+    </div>
+  }
+</div>
 
+  <hr class="my-5" />
 
-  <hr class="my-5">
-
-  <div class="calendar-section">
-    <h2>Ver Reservas por Fecha</h2>
-    <mat-form-field appearance="fill">
+  <!-- 🔹 Calendario -->
+  <div class="calendar-section container">
+    <h2 class="section-title">📅 Ver reservas por fecha</h2>
+    <mat-form-field appearance="outline" class="date-field">
       <mat-label>Elige una fecha</mat-label>
-      <input matInput [matDatepicker]="picker" [(ngModel)]="selectedDate" (dateChange)="onDateSelect($event)"
-             [min]="minDate"
-             [max]="maxDate">
-      <mat-hint>MM/DD/YYYY</mat-hint>
+      <input
+        matInput
+        [matDatepicker]="picker"
+        [(ngModel)]="selectedDate"
+        (dateChange)="onDateSelect($event)"
+        [min]="minDate"
+        [max]="maxDate"
+      />
+      <mat-hint>dd/MM/yyyy</mat-hint>
       <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
-      <mat-datepicker #picker [dateClass]="dateClass" [startAt]="startAt"></mat-datepicker>
+      <mat-datepicker
+        #picker
+        [dateClass]="dateClass"
+        [startAt]="startAt"
+      ></mat-datepicker>
     </mat-form-field>
   </div>
 
+  <!-- 🔹 Lista de reservas -->
+  <div class="reservations-list-section mt-5">
 
-  <div class="reservations-list-section mt-4">
-    <h2>Reservas para el día seleccionado: {{ selectedDate | date:'dd/MM/yyyy' }}</h2>
 
     @if (reservationsForSelectedDate.length === 0) {
-      <p class="text-muted">No hay reservas para este día seleccionadas por ti.</p>
+      <p class="text-muted text-center mt-3">
+        No hay reservas para este día seleccionadas por ti.
+      </p>
     } @else {
       <div class="reservations-grid">
         @for (reservation of reservationsForSelectedDate; track reservation.id) {
           <div class="reservation-card">
-            <h5 style="color:#007bff">{{ currentUserEmail }}</h5>
-
-            @if (reservation.details.status === 'confirmed') {
-                <p class="paid-status">SERVICIO PAGO</p>
-            } @else if (reservation.details.status === 'pending') { <p class="text-danger"><b>RESERVADO</b></p>
-              @if (calculateDaysLeft(reservation) && calculateDaysLeft(reservation)! > 0) {
-                  <p class="countdown-text"> Plazo pago máximo {{ calculateDaysLeft(reservation) }} días más</p>
-                }@else { <p class="text-danger">**El plazo para el pago ha expirado.**</p> }
-              <hr>
-              <p class="total-amount"> Resto: {{ reservation.details.totalAmount -  reservation.details.totalAmount * 0.20 | currency:'USD':'symbol':'1.2-2' }} </p>
-              <p>{{ reservation.details.totalAmount | currency:'USD':'symbol':'1.2-2' }} - {{ reservation.details.totalAmount * 0.20 | currency:'USD':'symbol':'1.2-2' }} = {{ reservation.details.totalAmount * 0.80 | currency:'USD':'symbol':'1.2-2' }}</p> }
-              <hr>
-            <p>
+            <div class="card-header">
+              <h5 class="mb-1">{{ currentUserEmail }}</h5>
               @if (reservation.details.status === 'confirmed') {
-
-                <img src="https://i.ibb.co/Kcmc33mQ/pagado.png" alt="Pagado" class="paid-icon">
+                <span class="badge bg-success">✅ Pago completo</span>
+              } @else if (reservation.details.status === 'pending') {
+                <span class="badge bg-warning">⏳ Pendiente</span>
+              } @else if (reservation.details.status === 'expired') {
+                <span class="badge bg-danger">❌ Expirada</span>
               }
-            </p>
+            </div>
 
-            <ul>
-              @for (item of (reservation.items | keyvalue); track item.key) {
-                <li>{{ item.value.nombre }} (x{{ item.value.cantidad }}) - ${{ item.value.precio * item.value.cantidad | number:'1.2-2' }}</li>
+            <div class="card-body">
+              @if (reservation.details.status === 'pending') {
+                @if (calculateDaysLeft(reservation)! > 0) {
+                  <p class="countdown">
+                    ⏱️ Plazo de pago: {{ calculateDaysLeft(reservation) }} días restantes
+                  </p>
+                } @else {
+                  <p class="text-danger">⚠️ El plazo de pago ha expirado.</p>
+                }
+                <p class="mt-2">
+                  Total: <strong>{{ reservation.details.totalAmount | currency:'USD' }}</strong>
+                </p>
+                <p>
+                  Pagado (20%):
+                  <strong>{{ reservation.details.totalAmount * 0.20 | currency:'USD' }}</strong>
+                </p>
+                <p>
+                  Restante (80%):
+                  <strong>{{ reservation.details.totalAmount * 0.80 | currency:'USD' }}</strong>
+                </p>
               }
-            </ul>
+              <ul class="mt-3">
+                @for (item of (reservation.items | keyvalue); track item.key) {
+                  <li>
+                    {{ item.value.nombre }} (x{{ item.value.cantidad }}) -
+                    {{ item.value.precio * item.value.cantidad | currency:'USD' }}
+                  </li>
+                }
+              </ul>
+            </div>
 
-            @if (currentUserEmail === 'admin@gmail.com') {
-              <button class="btn btn-danger" (click)="cancelReservation(reservation)">Cancelar Reserva</button>
-            } @else if (reservation.details.status === 'pending' && currentUserEmail !== 'admin@gmail.com') {
-              <button class="btn btn-success">
-                Pagar el 80% Restante
-              </button>
-            }
+            <div class="card-footer text-end">
+              @if (currentUserEmail === 'admin@gmail.com') {
+                <button class="btn btn-danger btn-sm" (click)="cancelReservation(reservation)">
+                  ❌ Cancelar
+                </button>
+              } @else if (reservation.details.status === 'pending' && currentUserEmail !== 'admin@gmail.com') {
+                <button class="btn btn-success btn-sm">
+                  💳 Pagar 80% restante
+                </button>
+              }
+            </div>
           </div>
         }
       </div>
     }
   </div>
-</div>
+  <hr class="my-5" />

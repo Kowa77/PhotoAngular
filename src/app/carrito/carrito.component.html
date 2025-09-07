@@ -1,7 +1,7 @@
 <div class="carrito-container">
   <h1>Tu Carrito de Compras</h1>
 
-  @if (isLoading) {
+   @if (isLoading) {
     <div class="loading-spinner">
       <div class="spinner-border text-primary" role="status">
         <span class="visually-hidden">Cargando...</span>
@@ -14,11 +14,14 @@
   } @else {
     <div class="cart-items-grid">
       @for (item of cartItemsArray; track trackByItemId($index, item)) {
-        <div class="cart-item-card"
-              [class.category-fotos]="item.categoria === 'foto'"
-              [class.category-videos]="item.categoria === 'video'"
-              [class.category-extras]="item.categoria === 'extra'"
-              [class.category-sugerido]="item.categoria === 'sugerido'">
+        <div
+          class="cart-item-card"
+          [class.category-fotos]="item.categoria === 'foto'"
+          [class.category-videos]="item.categoria === 'video'"
+          [class.category-extras]="item.categoria === 'extra'"
+          [class.category-sugerido]="item.categoria === 'sugerido'"
+          @fadeInOut
+        >
           <img [src]="item.imagen" alt="{{ item.nombre }}" id="item-image-{{item.id}}">
           <div class="item-details" id="item-details-{{item.id}}">
             <h3>{{ item.nombre }}</h3>

@@ -8,6 +8,7 @@ import { takeUntil } from 'rxjs/operators';
 import { AuthService } from '../../../auth/auth.service';
 import { AdminStatsComponent } from '../admin-stats/admin-stats.component';
 import { UserCountComponent } from '../user-count/user-count.component';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-upload-form',
@@ -64,7 +65,7 @@ export class UploadFormComponent implements OnInit, OnDestroy {
     }
     formData.append('targetUserEmail', this.targetUserEmail());
 
-    this.http.post('http://localhost:3000/api/upload-photos', formData).subscribe({
+    this.http.post(`${environment.apiUrl}/upload-photos`, formData).subscribe({
       next: (response: any) => {
         this.uploadStatus.set('¡Fotos subidas con éxito!');
         this.isUploading.set(false);

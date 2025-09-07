@@ -1,7 +1,7 @@
 export const environment = {
   production: false,
-  apiUrl: 'http://localhost:3000/api',
-  firebaseConfig:{
+  apiUrl: 'http://localhost:5001/bsfotografia-9fc03/us-central1/api',
+  firebaseConfig: {
     apiKey: "AIzaSyAattwoKL9pde1WDLtVr29KdszuX0It3E8",
     authDomain: "bsfotografia-9fc03.firebaseapp.com",
     databaseURL: "https://bsfotografia-9fc03-default-rtdb.firebaseio.com",
@@ -10,5 +10,5 @@ export const environment = {
     messagingSenderId: "523548400063",
     appId: "1:523548400063:web:7517a9aa5874b002d1290a",
     measurementId: "G-36GLWZND8D"
-  },
+  }
 }

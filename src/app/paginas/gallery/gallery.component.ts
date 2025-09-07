@@ -16,7 +16,7 @@ export class GalleryComponent implements OnInit {
   photoUrls: string[] = [];
   userId: string | null = '';
   isLoading: boolean = true;
-  currentImageIndex: number = 0; // Nuevo: Para el índice de la foto seleccionada
+  currentImageIndex: number = 0; // índice de la foto seleccionada
 
   constructor(private http: HttpClient, private route: ActivatedRoute) {}
 
@@ -34,7 +34,7 @@ export class GalleryComponent implements OnInit {
 
   loadGallery(userId: string): void {
     this.isLoading = true;
-    const backendUrl = `http://localhost:3000/api/gallery/${userId}`;
+    const backendUrl = `/api/gallery/${userId}`;
     this.http.get<any[]>(backendUrl).subscribe({
       next: (data) => {
         this.photos = data;
@@ -51,7 +51,7 @@ export class GalleryComponent implements OnInit {
     });
   }
 
-  // Función para eliminar la foto actualmente seleccionada
+  // Eliminar la foto actualmente seleccionada
   deletePhoto(): void {
     if (this.photos.length === 0 || this.currentImageIndex < 0 || !this.userId) {
       console.warn('⚠️ No hay foto seleccionada para eliminar o el ID de usuario no está disponible.');
@@ -62,16 +62,15 @@ export class GalleryComponent implements OnInit {
     const photoId = photoToDelete.id;
 
     if (!confirm(`¿Estás seguro de que deseas eliminar la foto: ${photoToDelete.filename}?`)) {
-      return; // El usuario canceló la eliminación
+      return; // El usuario canceló
     }
 
-    const backendUrl = `http://localhost:3000/api/delete-photo/${photoId}`;
+    const backendUrl = `/api/delete-photo/${photoId}`;
 
-    // Cambiamos el método de la solicitud a POST y enviamos el userId en el cuerpo
     this.http.post(backendUrl, { userId: this.userId }).subscribe({
       next: () => {
         console.log(`✅ Foto con ID ${photoId} eliminada correctamente.`);
-        // Recarga la galería para actualizar la vista
+        // Recargar galería
         if (this.userId) {
           this.loadGallery(this.userId);
         }
@@ -83,12 +82,12 @@ export class GalleryComponent implements OnInit {
     });
   }
 
-  // Función para establecer la imagen principal al hacer clic en una miniatura
+  // Cambiar imagen principal
   selectImage(index: number): void {
     this.currentImageIndex = index;
   }
 
-  // Función para sincronizar el índice cuando el carrusel cambia de imagen
+  // Sincronizar índice con el carrusel
   onImageChanged(index: number): void {
     this.currentImageIndex = index;
   }

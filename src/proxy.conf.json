@@ -1,7 +1,8 @@
 {
-  "/v1": {
-    "target": "https://www.publicalbum.org",
-    "secure": true,
-    "changeOrigin": true
+  "/api": {
+    "target": "http://127.0.0.1:5001/bsfotografia-9fc03/us-central1/api",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug"
   }
 }

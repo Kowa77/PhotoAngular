@@ -1,164 +1,113 @@
-.agenda-container {
-  padding: 20px;
-  max-width: 1200px;
-  margin: 0 auto;
+.agenda-wrapper {
+  padding: 1rem;
 }
 
-h1, h2 {
-  text-align: center;
+.section-title {
+  font-size: 1.4rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
   color: #333;
-  margin-bottom: 20px;
 }
 
-.calendar-section {
+/* 🔹 Resumen rápido */
+.quick-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.quick-card {
+  flex: 1 1 160px;
+  padding: 1rem;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  text-align: center;
+}
+
+.quick-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.quick-card.expired {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.quick-card .date {
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+.quick-card .status {
+  margin-top: 0.5rem;
+}
+
+/* 🔹 Lista de reservas */
+.reservations-grid {
+  display: flex;              /* 🔥 cambiamos grid por flex */
+  flex-wrap: wrap;            /* permite varias filas */
+  gap: 1.5rem;
+  justify-content: center;    /* 🔥 centra horizontalmente */
+  align-items: flex-start;    /* las alinea arriba */
+}
+
+.reservation-card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
   display: flex;
   flex-direction: column;
+  width: 100%;
+  max-width: 450px;           /* 🔥 ancho máximo centrado */
+  margin: 0 auto;             /* 🔥 asegura el centrado */
+}
+
+.reservation-card .card-header {
+  background: #f7f7f7;
+  padding: 0.8rem 1rem;
+  display: flex;
+  justify-content: space-between;
   align-items: center;
-  margin-bottom: 30px;
 }
 
-.reservations-list-section {
-  border-top: 1px solid #eee;
-  padding-top: 20px;
+.reservation-card .card-body {
+  padding: 1rem;
 }
 
-.reservations-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 20px;
+.reservation-card .card-footer {
+  background: #f7f7f7;
+  padding: 0.6rem 1rem;
 }
 
-/* Modificaciones para la tarjeta de reserva (PASO 4) */
-.reservation-card {
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  padding: 20px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-  background-color: #fff;
-  /* Centra el contenido horizontalmente (PASO 4) */
-  text-align: center;
-}
-
-.reservation-card h4 {
-  color: #007bff;
-  margin-top: 0;
-  margin-bottom: 10px;
-}
-
-.reservation-card ul {
-  list-style-type: none;
-  padding: 0;
-  margin: 10px 0;
-  /* CAMBIOS PARA CENTRAR LA LISTA */
-  display: inline-block;
-  text-align: left;
-}
-
-.reservation-card ul li {
-  margin-bottom: 5px;
-  font-size: 0.95em;
-  color: #555;
-}
-
-.btn {
-  padding: 8px 15px;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-}
-
-.btn-danger {
-  background-color: #dc3545;
-  color: white;
-  border: none;
-}
-
-.btn-danger:hover {
-  background-color: #c82333;
-}
-
-.btn:disabled {
-  background-color: #cccccc;
-  cursor: not-allowed;
-}
-
-/* --- Estilos para el calendario de Angular Material --- */
-/* ... (el resto del código CSS se mantiene igual) ... */
-
-/* Nuevos estilos para la tarjeta de reserva */
-
-/* Estilo para el estado de "Servicio Pago" (PASO 1) */
-.paid-status {
+/* 🔹 Countdown */
+.countdown {
   font-weight: bold;
-  color: #155724; /* Verde oscuro */
+  color: #d39e00;
 }
 
-/* Estilo para el título "Detalle de la Reserva" (PASO 2) */
-.detail-title {
-  font-size: 1.1em; /* Un poco más pequeño que el h4 por defecto */
-  margin-top: 20px;
-  margin-bottom: 5px;
+/* 🔹 Mat datepicker */
+.date-field {
+  width: 100%;
+  max-width: 350px;
 }
 
-/* Estilo para el total (PASO 3) */
-.total-amount {
-  font-size: 1.4em; /* Más grande */
-  font-weight: bold;
-  color: #c23535;
-}
-
-/* Nuevo estilo para la imagen de "pagado" */
-.paid-icon {
-    width: 50%; /* Ajusta el tamaño de la imagen */
-    height: auto;
-    margin-left: 5px; /* Crea un pequeño espacio entre el texto y la imagen */
-    vertical-align: middle; /* Alinea la imagen verticalmente con el texto */
-}
-
-/* Nuevo estilo para el texto del contador de días */
-.countdown-text {
-    color: #8b0000; /* Color rojo oscuro */
-    font-weight: bold;
-}
-
-/* Nuevo estilo para el monto restante a pagar */
-.remaining-amount {
-    font-size: 1.2em;
-    font-weight: bold;
-    color: #e27e20; /* Un verde fuerte para el monto restante */
-    margin-top: 0px;
-    margin-bottom: 15px;
-}
-/* --- Estilos para el calendario de Angular Material --- */
-
-/* Ajustes generales para las celdas de los días en el calendario */
-/* Aplicar directamente al contenido, asegurando el radio de borde */
-/* Esto se aplica a todas las celdas de contenido, para los bordes redondeados */
-.mat-calendar-body-cell-content {
-  border-radius: 50% !important;
-  transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
-  height: 36px; /* Asegura un tamaño consistente para el círculo */
-  width: 36px;  /* Asegura un tamaño consistente para el círculo */
-  display: flex; /* Centra el contenido */
-  align-items: center; /* Centra el contenido verticalmente */
-  justify-content: center; /* Centra el contenido horizontalmente */
-}
-
-/* ESTILO PRINCIPAL PARA LOS DÍAS RESERVADOS (con la clase 'has-bookings') */
-/* Aplicar al div que contiene el número del día, pero solo si su padre td tiene 'has-bookings' */
-/* Hacemos el selector un poco más específico para sobreescribir cualquier estilo por defecto */
+/* ✅ Mantener tus estilos de calendario */
 .mat-calendar-body-cell.has-bookings .mat-calendar-body-cell-content {
-  background-color: #1c8133 !important; /* Un verde claro para indicar reservas */
-  color: #ffffff !important; /* Un color de texto oscuro para que contraste bien con el verde claro */
+  background-color: #1c8133 !important;
+  color: #ffffff !important;
 }
 
-/*
-  Opcional: Estilos para cuando un día reservado también es el día seleccionado o el día de hoy.
-  Esto evita que el color de "reservado" se anule por los estilos por defecto de Angular Material
-  para días seleccionados o el día actual, o permite darles un tono diferente.
-*/
 .mat-calendar-body-cell.mat-calendar-body-selected.has-bookings .mat-calendar-body-cell-content,
 .mat-calendar-body-cell.mat-calendar-body-today.has-bookings .mat-calendar-body-cell-content {
-  background-color: #c3e6cb !important; /* Un verde ligeramente más oscuro para el seleccionado/hoy */
-  color: #155724 !important; /* Aseguramos que el color de texto se aplique */
+  background-color: #c3e6cb !important;
+  color: #155724 !important;
+}
+.mat-calendar-body-cell.has-bookings .mat-calendar-body-cell-content:hover {
+  background-color: #155724 !important;
+  color: #ffffff !important;
 }

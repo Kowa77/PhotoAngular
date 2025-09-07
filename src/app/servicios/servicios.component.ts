@@ -24,6 +24,8 @@ export class ServiciosComponent implements OnInit, OnDestroy {
   private router: Router = inject(Router);
   private route: ActivatedRoute = inject(ActivatedRoute);
 
+  selectedDurations: { [serviceId: string]: number } = {};
+
   currentUserUid: string | null = null;
   currentCategory: string = '';
 
@@ -33,6 +35,7 @@ export class ServiciosComponent implements OnInit, OnDestroy {
   extras: Servicio[] = [];
   sugeridos: Servicio[] = []; // Si tienes una sección para "sugeridos" en tu HTML
 
+  servicios: Servicio[] = []; // Todos los servicios cargados
   serviciosEnCarrito: Set<string> = new Set();
   totalCarrito: number = 0;
 
@@ -42,14 +45,14 @@ export class ServiciosComponent implements OnInit, OnDestroy {
     this.subscriptions.add(
       this.authService.user$.subscribe(user => {
         this.currentUserUid = user ? user.uid : null;
-        console.log("ServiciosComponent: Usuario logueado:", this.currentUserUid);
+        //console.log("ServiciosComponent: Usuario logueado:", this.currentUserUid);
 
         if (this.currentUserUid) {
           this.subscriptions.add(
             this.firebaseService.obtenerCarritoUsuario(this.currentUserUid).subscribe(carrito => {
               this.serviciosEnCarrito = new Set(Object.keys(carrito || {}));
               this.calculateTotalCart();
-              console.log("ServiciosComponent: Carrito del usuario actualizado:", this.serviciosEnCarrito);
+              //console.log("ServiciosComponent: Carrito del usuario actualizado:", this.serviciosEnCarrito);
             })
           );
         } else {
@@ -74,50 +77,64 @@ export class ServiciosComponent implements OnInit, OnDestroy {
     this.subscriptions.unsubscribe();
   }
 
-  private fetchServicesByCategory(categoria: string) {
-    let servicesObservable;
+fetchServicesByCategory(category: string): void {
+  //console.log(`fetchServicesByCategory: iniciando carga para categoría =>`, category);
 
-    switch (categoria) {
-      case 'casamientos':
-        servicesObservable = this.firebaseService.getServiciosCasamientos();
-        break;
-      case 'cumpleanos':
-        servicesObservable = this.firebaseService.getServiciosCumpleanos();
-        break;
-      case 'extras':
-        servicesObservable = this.firebaseService.getExtras();
-        break;
-      case 'sugeridos':
-        servicesObservable = this.firebaseService.getServiciosSugeridos();
-        break;
-      default:
-        console.error(`Categoría desconocida: ${categoria}`);
-        // Limpiar todos los arrays si la categoría no es válida
-        this.fotos = [];
-        this.videos = [];
-        this.extras = [];
-        this.sugeridos = [];
-        return;
-    }
+  // 🔧 Normalizamos la categoría (sin tildes, todo en minúscula)
+  const normalize = (str: string) =>
+    str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 
+  const cat = normalize(category);
+
+  if (cat === 'casamientos') {
     this.subscriptions.add(
-      servicesObservable.subscribe(services => {
-        // Asignar los servicios a sus respectivos arrays
-        this.fotos = services.filter(s => s.categoria === 'foto');
-        this.videos = services.filter(s => s.categoria === 'video');
-        this.extras = services.filter(s => s.categoria === 'extra');
-        this.sugeridos = services.filter(s => s.categoria === 'sugerido'); // Si lo usas
+      this.firebaseService.getServiciosCasamientos().subscribe(data => {
+        this.servicios = data;
+        this.fotos = data.filter(s => s.categoria === 'foto');
+        this.videos = data.filter(s => s.categoria === 'video');
 
-        console.log(`ServiciosComponent: Servicios para la categoría "${categoria}" cargados y filtrados.`);
-        console.log('Fotos:', this.fotos.length);
-        console.log('Videos:', this.videos.length);
-        console.log('Extras:', this.extras.length);
-        this.calculateTotalCart();
-      }, error => {
-        console.error("ServiciosComponent: Error al cargar los servicios:", error);
+        //console.log(`fetchServicesByCategory: servicios casamientos cargados =>`, data);
+        //console.log(`fetchServicesByCategory: total recibidos =>`, data.length);
       })
     );
+  } else if (cat === 'cumpleanos') {
+    this.subscriptions.add(
+      this.firebaseService.getServiciosCumpleanos().subscribe(data => {
+        this.servicios = data;
+        this.fotos = data.filter(s => s.categoria === 'foto');
+        this.videos = data.filter(s => s.categoria === 'video');
+
+        //console.log(`fetchServicesByCategory: servicios cumpleaños cargados =>`, data);
+        //console.log(`fetchServicesByCategory: total recibidos =>`, data.length);
+      })
+    );
+  } else if (cat === 'sugeridos') {
+    this.subscriptions.add(
+      this.firebaseService.getServiciosSugeridos().subscribe(data => {
+        this.servicios = data;
+
+        //console.log(`fetchServicesByCategory: servicios sugeridos cargados =>`, data);
+        //console.log(`fetchServicesByCategory: total recibidos =>`, data.length);
+      })
+    );
+  } else if (cat === 'extras') {
+    this.subscriptions.add(
+      this.firebaseService.getExtras().subscribe(data => {
+        this.servicios = data;
+        this.extras = data.filter(s => s.categoria === 'extra');
+
+        //console.log(`fetchServicesByCategory: servicios extras cargados =>`, data);
+        //console.log(`fetchServicesByCategory: total recibidos =>`, data.length);
+      })
+    );
+  } else {
+    console.warn(`fetchServicesByCategory: categoría no reconocida =>`, category);
   }
+}
+
+
+
+
 
   isInCart(serviceId: string): boolean {
     return this.serviciosEnCarrito.has(serviceId);
@@ -163,26 +180,12 @@ export class ServiciosComponent implements OnInit, OnDestroy {
       text: 'Hubo un error al actualizar el carrito. Por favor, inténtalo de nuevo.',
     });
   }
-}
-  // async toggleCart(servicio: Servicio): Promise<void> {
-  //   if (!this.currentUserUid) {
-  //     console.warn('Necesitas iniciar sesión para agregar ítems al carrito.');
-  //     return;
-  //   }
-
-  //   if (this.isInCart(servicio.id)) {
-  //     await this.firebaseService.quitarDelCarrito(this.currentUserUid, servicio.id);
-  //     console.log(`ServiciosComponent: Servicio ${servicio.nombre} quitado del carrito.`);
-  //   } else {
-  //     await this.firebaseService.addToCart(this.currentUserUid, servicio);
-  //     console.log(`ServiciosComponent: Servicio ${servicio.nombre} agregado al carrito.`);
-  //   }
-  // }
+  }
 
   calculateTotalCart(): void {
     let total = 0;
     // Debes sumar los precios de todos los servicios, no solo de una categoría
-    const allServices = [...this.fotos, ...this.videos, ...this.extras, ...this.sugeridos];
+    const allServices = this.servicios;
     if (allServices.length > 0 && this.serviciosEnCarrito.size > 0) {
       this.serviciosEnCarrito.forEach(serviceId => {
         const servicio = allServices.find(s => s.id === serviceId);
@@ -214,4 +217,21 @@ export class ServiciosComponent implements OnInit, OnDestroy {
   verCarrito(): void {
     this.router.navigate(['/carrito']);
   }
+
+  onDurationChange(serviceId: string, hours: number): void {
+    this.selectedDurations[serviceId] = hours;
+    console.log(`Duración seleccionada para ${serviceId}: ${hours} horas`);
+  }
+
+  async addToCart(servicio: Servicio): Promise<void> {
+  const duration = this.selectedDurations[servicio.id] ?? 1;
+
+  if (this.currentUserUid) {
+    await this.firebaseService.addToCart(this.currentUserUid, servicio, duration);
+    console.log(`Servicio ${servicio.id} agregado al carrito con duración ${duration} horas`);
+  }
+}
+
+
+
 }

@@ -7,6 +7,7 @@ import { AuthService } from '../auth/auth.service';
 import { FirebaseService } from '../firebase/firefirebase-service.service'; // <-- AÑADE ESTA LÍNEA
 import { Subscription } from 'rxjs';
 import { ExpiredReservationsNotificationComponent } from '../expired-reservations-notification/expired-reservations-notification.component';
+import { Reservation } from '../models/reservation.model';
 
 @Component({
   selector: 'app-navbar',
@@ -62,16 +63,18 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
 
   private checkUserReservations(userId: string): void {
-    // Si ya existe una suscripción, la limpiamos primero para evitar duplicados
-    if (this.reservationsSubscription) {
-      this.reservationsSubscription.unsubscribe();
-    }
-      // Nos suscribimos al observable de reservas del usuario
-      this.reservationsSubscription = this.firebaseService.getUserReservations(userId).subscribe(reservations => {
-      // Verificamos si alguna de las reservas tiene el estado 'expired'
-      this.hasExpiredReservation = reservations.some(res => res.details.status === 'expired');
-    });
+  // Si ya existe una suscripción, la limpiamos primero para evitar duplicados
+  if (this.reservationsSubscription) {
+    this.reservationsSubscription.unsubscribe();
   }
+
+  // Nos suscribimos al observable de reservas del usuario
+  this.reservationsSubscription = this.firebaseService.getUserReservations(userId)
+    .subscribe((reservations: Reservation[]) => {
+      // Verificamos si alguna de las reservas tiene el estado 'expired'
+      this.hasExpiredReservation = reservations.some((res: Reservation) => res.details.status === 'expired');
+    });
+}
 
   ngOnDestroy(): void {
     if (this.authSubscription) {

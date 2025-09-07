@@ -9,14 +9,13 @@ declare global {
     FIREBASE_APP_ID?: string;
     FIREBASE_MEASUREMENT_ID?: string;
     VEXOR_PAY_PUBLIC_KEY?: string;
-    // Agrega aquí cualquier otra variable de entorno que uses
   }
 }
 
 export const environment = {
   production: true,
-  apiUrl: 'https://servidor-bsfotografia.onrender.com',
-  firebaseConfig: { // Mantenemos firebaseConfig
+  apiUrl: '/api',
+  firebaseConfig: {
     apiKey: window['FIREBASE_API_KEY'] || "AIzaSyAattwoKL9pde1WDLtVr29KdszuX0It3E8",
     authDomain: window['FIREBASE_AUTH_DOMAIN'] || "bsfotografia-9fc03.firebaseapp.com",
     databaseURL: window['FIREBASE_DATABASE_URL'] || "https://bsfotografia-9fc03-default-rtdb.firebaseio.com",
@@ -25,7 +24,5 @@ export const environment = {
     messagingSenderId: window['FIREBASE_MESSAGING_SENDER_ID'] || "523548400063",
     appId: window['FIREBASE_APP_ID'] || "1:523548400063:web:7517a9aa5874b002d1290a",
     measurementId: window['FIREBASE_MEASUREMENT_ID'] || "G-36GLWZND8D"
-  },
-
+  }
 };
-
