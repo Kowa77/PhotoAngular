@@ -13,6 +13,10 @@
     @if (userId) {
       <a [routerLink]="['/galeria', userId]">Galería</a>
     }
+   @if (isAdmin()) {
+    <a routerLink="/admin/upload">Admin</a>
+   }
+
 
   </div>
 

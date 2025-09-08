@@ -1,4 +1,4 @@
-import { Component, ViewChild, AfterViewInit, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { Component, ViewChild, AfterViewInit, OnInit, OnDestroy, ChangeDetectorRef, signal  } from '@angular/core';
 import { RouterLink, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { LoginModalComponent } from '../login-modal/login-modal.component';
@@ -29,7 +29,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
   isLoggedIn: boolean = false;
   loggedIn: string | null = null;
   userId: string | null = null;
-  isAdmin: boolean = false;
+  isAdmin = signal(false);
   menuOpen: boolean = false;
   userPhotoURL: string | null = null;
 
@@ -46,7 +46,9 @@ export class NavbarComponent implements OnInit, OnDestroy {
     this.userId = user?.uid || null;
     this.userPhotoURL = user?.photoURL || null;
 
-    this.isAdmin = this.loggedIn === 'admin@gmail.com';
+    this.isAdmin.set(user?.email === 'admin@gmail.com');
+
+
 
     if (this.isLoggedIn && this.userId) {
       this.checkUserReservations(this.userId);

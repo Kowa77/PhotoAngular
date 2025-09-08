@@ -1,4 +1,4 @@
-<div class="upload-container">
+<div class="upload-container mt-5">
       <h2>Sube tus fotos</h2>
       @if (uploadStatus()) {
         <p [ngClass]="{'status-success': uploadStatus() === '¡Fotos subidas con éxito!', 'status-error': uploadStatus().includes('Error')}">{{ uploadStatus() }}</p>

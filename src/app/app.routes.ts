@@ -12,6 +12,7 @@ import { AgendaComponent } from './agenda/agenda.component';
 import { PerfilComponent } from './perfil/perfil.component';
 import { GalleryComponent } from './paginas/gallery/gallery.component';
 import { UploadFormComponent } from './paginas/admin/upload-form/upload-form.component';
+import { adminGuard } from './auth/admin.guard';
 
 export const routes: Routes = [
   { path: '', component: TarjetasComponent },
@@ -24,7 +25,7 @@ export const routes: Routes = [
   { path: 'servicios/:categoria', component: ServiciosComponent },
   { path: 'carrito', component: CarritoComponent },
   { path: 'agenda', component: AgendaComponent },
-  { path: 'admin/upload', component: UploadFormComponent },
+  { path: 'admin/upload', component: UploadFormComponent, canActivate: [adminGuard]  }, // Protegida por adminGuard
   { path: 'galeria/:userId', component: GalleryComponent },
   { path: '**', redirectTo: '' }
 ];

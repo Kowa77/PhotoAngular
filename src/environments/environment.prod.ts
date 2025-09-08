@@ -14,7 +14,8 @@ declare global {
 
 export const environment = {
   production: true,
-  apiUrl: '/api',
+  // apiUrl: '/api',
+  apiUrl: 'https://us-central1-bsfotografia-9fc03.cloudfunctions.net/api',
   firebaseConfig: {
     apiKey: window['FIREBASE_API_KEY'] || "AIzaSyAattwoKL9pde1WDLtVr29KdszuX0It3E8",
     authDomain: window['FIREBASE_AUTH_DOMAIN'] || "bsfotografia-9fc03.firebaseapp.com",
