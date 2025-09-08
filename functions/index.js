@@ -1,3 +1,4 @@
+// functions/index.js
 import admin from "firebase-admin";
 import express from "express";
 import cors from "cors";
@@ -8,12 +9,8 @@ import multer from "multer";
 
 // Firebase Functions V2
 import { onRequest } from "firebase-functions/v2/https";
-import { onSchedule } from "firebase-functions/v2/scheduler";
 import { logger } from "firebase-functions";
 import { defineSecret } from "firebase-functions/params";
-
-// Importar la función getDatabase
-import { getDatabase } from "firebase-admin/database";
 
 // ---------------- SECRETS ----------------
 const EMAIL_HOST = defineSecret("EMAIL_HOST");
@@ -32,149 +29,12 @@ try {
 }
 
 const app = express();
-
-// Middleware global (solo para JSON, no multipart)
 app.use(cors({ origin: true }));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-// Multer: para manejar uploads
+// Multer: para uploads en memoria
 const upload = multer({ storage: multer.memoryStorage() });
-
-// ---------------- RUTAS ----------------
-
-// 📸 SUBIDA DE FOTOS (multipart)
-app.post("/upload-photos", upload.array("photos"), async (req, res) => {
-  try {
-    const { targetUserEmail } = req.body;
-    const files = req.files;
-
-    if (!targetUserEmail || !files || files.length === 0) {
-      return res.status(400).json({ error: "Se requieren email y archivos." });
-    }
-
-    logger.log("✅ Archivos recibidos:", files.length, "para:", targetUserEmail);
-
-    // TODO: subir a Google Photos aquí
-    res.json({ message: "Fotos subidas correctamente.", count: files.length });
-  } catch (error) {
-    logger.error("❌ Error en upload-photos:", error);
-    res.status(500).json({ error: "Error al subir fotos." });
-  }
-});
-
-// 📧 ENVIAR EMAIL (usa JSON)
-app.post("/send-email", express.json(), async (req, res) => {
-  const { from, to, subject, text } = req.body;
-  if (!from || !to || !subject || !text) {
-    return res.status(400).json({ error: "Faltan campos requeridos." });
-  }
-  try {
-    const transporter = nodemailer.createTransport({
-      host: EMAIL_HOST.value(),
-      port: Number(EMAIL_PORT.value()),
-      secure: Number(EMAIL_PORT.value()) === 465,
-      auth: { user: EMAIL_USER.value(), pass: EMAIL_PASS.value() },
-    });
-    await transporter.sendMail({ from, to, subject, text });
-    res.json({ message: "Correo enviado con éxito." });
-  } catch (err) {
-    logger.error("❌ Error al enviar correo:", err.message);
-    res.status(500).json({ error: "Hubo un error al enviar el correo." });
-  }
-});
-
-// 👤 REGISTRO + ÁLBUM (usa JSON)
-app.post("/register-with-album", express.json(), async (req, res) => {
-  try {
-    const { email, password } = req.body;
-    if (!email || !password)
-      return res.status(400).json({ error: "Faltan email y/o contraseña." });
-
-    const userRecord = await admin.auth().createUser({ email, password });
-    const token = await getGooglePhotosToken();
-    const albumId = await createAlbum(token, `Fotos de ${userRecord.uid}`);
-
-    if (!albumId) {
-      await admin.auth().deleteUser(userRecord.uid);
-      return res.status(500).json({ error: "Error al crear álbum." });
-    }
-
-    await admin.database().ref(`users/${userRecord.uid}`).set({ email, albumId });
-    res.status(201).json({ userId: userRecord.uid, albumId });
-  } catch (err) {
-    logger.error("❌ Error en register-with-album:", err.message);
-    res.status(500).json({ error: "Error interno del servidor." });
-  }
-});
-
-// 👀 GALERÍA
-app.get("/gallery/:userId", async (req, res) => {
-  const { userId } = req.params;
-  try {
-    const snapshot = await admin.database().ref(`users/${userId}`).once("value");
-    const userData = snapshot.val();
-    if (!userData?.albumId)
-      return res.status(404).json({ error: "No se encontró el álbum." });
-
-    const token = await getGooglePhotosToken();
-    const photosResponse = await axios.post(
-      "https://photoslibrary.googleapis.com/v1/mediaItems:search",
-      { albumId: userData.albumId, pageSize: 100 },
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
-
-    res.json(
-      (photosResponse.data.mediaItems || []).map((p) => ({
-        id: p.id,
-        baseUrl: p.baseUrl,
-        filename: p.filename,
-      }))
-    );
-  } catch (err) {
-    logger.error("❌ Error al cargar galería:", err.message);
-    res.status(500).json({ error: "Error al cargar galería." });
-  }
-});
-
-// 👤 ADMIN ESTADÍSTICAS
-app.get("/admin/photo-stats", async (req, res) => {
-  try {
-    const token = await getGooglePhotosToken();
-    const usersSnapshot = await admin.database().ref("users").once("value");
-    const usersData = usersSnapshot.val();
-    let totalPhotos = 0;
-
-    if (usersData) {
-      for (const userId in usersData) {
-        const { albumId } = usersData[userId];
-        if (!albumId) continue;
-
-        let nextPageToken = null;
-        do {
-          const response = await axios.post(
-            "https://photoslibrary.googleapis.com/v1/mediaItems:search",
-            { albumId, pageToken: nextPageToken },
-            { headers: { Authorization: `Bearer ${token}` } }
-          );
-          totalPhotos += (response.data.mediaItems || []).length;
-          nextPageToken = response.data.nextPageToken || null;
-        } while (nextPageToken);
-      }
-    }
-    res.json({ totalPhotos });
-  } catch (err) {
-    logger.error("❌ Error en estadísticas:", err.message);
-    res.status(500).json({ error: "Error en estadísticas." });
-  }
-});
-
-app.get("/admin/user-count", async (req, res) => {
-  try {
-    const listUsersResult = await admin.auth().listUsers();
-    res.json({ totalUsers: listUsersResult.users.length });
-  } catch (err) {
-    res.status(500).json({ error: "Error en conteo de usuarios." });
-  }
-});
 
 // ---------------- HELPERS ----------------
 async function getGooglePhotosToken() {
@@ -184,7 +44,7 @@ async function getGooglePhotosToken() {
   );
   auth.setCredentials({ refresh_token: GOOGLE_REFRESH_TOKEN.value() });
   const { token } = await auth.getAccessToken();
-  if (!token) throw new Error("No se pudo obtener el token de Google Photos.");
+  if (!token) throw new Error("No se pudo obtener token de Google Photos");
   return token;
 }
 
@@ -197,12 +57,268 @@ async function createAlbum(token, albumTitle) {
     );
     return response.data.id;
   } catch (err) {
-    logger.error("❌ Error al crear álbum:", err.message);
+    logger.error("❌ Error al crear álbum:", err.response?.data || err.message);
     return null;
   }
 }
 
-// ---------------- EXPORTAR ----------------
+
+// 📊 Estadísticas de fotos (reales desde Google Photos)
+app.get("/admin/photo-stats", async (req, res) => {
+  try {
+    const snapshot = await admin.database().ref("users").once("value");
+    const users = snapshot.val() || {};
+
+    const token = await getGooglePhotosToken();
+
+    let totalPhotos = 0;
+    let usersWithAlbums = 0;
+
+    for (const userId of Object.keys(users)) {
+      const albumId = users[userId]?.albumId;
+      if (!albumId) continue;
+
+      usersWithAlbums++;
+
+      try {
+        // Llamada a Google Photos para contar fotos en el álbum
+        const photosResponse = await axios.post(
+          "https://photoslibrary.googleapis.com/v1/mediaItems:search",
+          { albumId, pageSize: 100 },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+
+        const items = photosResponse.data.mediaItems || [];
+        totalPhotos += items.length;
+
+        // ⚠️ Paginación: si hay más de 100 fotos, seguir llamando
+        let nextPageToken = photosResponse.data.nextPageToken;
+        while (nextPageToken) {
+          const nextResponse = await axios.post(
+            "https://photoslibrary.googleapis.com/v1/mediaItems:search",
+            { albumId, pageSize: 100, pageToken: nextPageToken },
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+
+          const nextItems = nextResponse.data.mediaItems || [];
+          totalPhotos += nextItems.length;
+
+          nextPageToken = nextResponse.data.nextPageToken;
+        }
+      } catch (err) {
+        if (err.response?.status === 403) {
+          // 🚨 Google restringe fotos si el álbum no fue creado por tu app
+          logger.warn(`⚠️ No se puede listar fotos del álbum ${albumId}`);
+        } else {
+          logger.error("❌ Error obteniendo fotos:", err.message);
+        }
+      }
+    }
+
+    res.json({ totalPhotos, usersWithAlbums });
+  } catch (error) {
+    logger.error("❌ Error en /admin/photo-stats:", error.message);
+    res.status(500).json({ error: "Error al obtener estadísticas de fotos" });
+  }
+});
+
+// ✅ Versión compatible con tu front actual (devuelve { totalUsers })
+app.get("/admin/user-count", async (req, res) => {
+  try {
+    let nextPageToken = undefined;
+    let totalUsers = 0;
+
+    do {
+      const { users, pageToken } = await admin.auth().listUsers(1000, nextPageToken);
+      totalUsers += users.length;
+      nextPageToken = pageToken;
+    } while (nextPageToken);
+
+    res.status(200).json({ totalUsers });
+  } catch (error) {
+    logger.error("❌ Error en /admin/user-count:", error.message);
+    res.status(500).json({ error: "Error al obtener cantidad de usuarios" });
+  }
+});
+
+
+
+
+
+// ---------------- RUTAS API ----------------
+
+// 📧 ENVIAR CORREO
+app.post("/api/send-email", async (req, res) => {
+  try {
+    const { from, to, subject, text } = req.body;
+    if (!from || !to || !subject || !text) {
+      return res.status(400).json({ error: "Faltan campos requeridos." });
+    }
+
+    const transporter = nodemailer.createTransport({
+      host: EMAIL_HOST.value(),
+      port: EMAIL_PORT.value(),
+      secure: EMAIL_PORT.value() == 465,
+      auth: { user: EMAIL_USER.value(), pass: EMAIL_PASS.value() },
+    });
+
+    await transporter.sendMail({
+      from,
+      to,
+      subject,
+      text,
+      html: `<p>${text}</p>`,
+    });
+
+    res.json({ message: "Correo enviado con éxito." });
+  } catch (err) {
+    logger.error("❌ Error al enviar correo:", err.message);
+    res.status(500).json({ error: "Error al enviar el correo." });
+  }
+});
+
+// 🆕 REGISTRO CON ÁLBUM
+app.post("/api/register-with-album", async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    if (!email || !password)
+      return res.status(400).json({ error: "Faltan email o contraseña." });
+
+    const userRecord = await admin.auth().createUser({ email, password });
+    const token = await getGooglePhotosToken();
+    const albumId = await createAlbum(token, `Fotos de ${userRecord.uid}`);
+
+    if (!albumId) {
+      await admin.auth().deleteUser(userRecord.uid);
+      return res
+        .status(500)
+        .json({ error: "Error al crear álbum de Google Photos." });
+    }
+
+    await admin.database().ref(`users/${userRecord.uid}`).set({ email, albumId });
+    res.status(201).json({
+      message: "Usuario registrado y álbum creado con éxito.",
+      userId: userRecord.uid,
+      albumId,
+    });
+  } catch (err) {
+    logger.error("❌ Error en registro:", err.message);
+    res.status(500).json({ error: "Error en el registro." });
+  }
+});
+
+// 📸 SUBIR FOTOS
+// ⚠️ Aquí NO usamos express.json()
+app.post("/api/upload-photos", upload.array("photos"), async (req, res) => {
+  try {
+    const { targetUserEmail } = req.body;
+    const files = req.files;
+    if (!targetUserEmail || !files?.length)
+      return res.status(400).json({ error: "Faltan email o archivos." });
+
+    const userRecord = await admin.auth().getUserByEmail(targetUserEmail);
+    const userData = (
+      await admin.database().ref(`users/${userRecord.uid}`).once("value")
+    ).val();
+    if (!userData?.albumId)
+      return res.status(404).json({ error: "Álbum no encontrado." });
+
+    const token = await getGooglePhotosToken();
+
+    // Paso 1: subir bytes -> uploadTokens
+    const uploadResponses = await Promise.all(
+      files.map((file) =>
+        axios.post("https://photoslibrary.googleapis.com/v1/uploads", file.buffer, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-type": "application/octet-stream",
+            "X-Goog-Upload-File-Name": file.originalname,
+            "X-Goog-Upload-Protocol": "raw",
+          },
+        })
+      )
+    );
+
+    const newMediaItems = uploadResponses.map((r, i) => ({
+      description: "Foto subida desde la app",
+      simpleMediaItem: { uploadToken: r.data, fileName: files[i].originalname },
+    }));
+
+    // Paso 2: crear mediaItems en el álbum
+    await axios.post(
+      "https://photoslibrary.googleapis.com/v1/mediaItems:batchCreate",
+      { albumId: userData.albumId, newMediaItems },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+
+    res.json({ message: "Fotos subidas correctamente.", count: files.length });
+  } catch (err) {
+    logger.error("❌ Error en subida de fotos:", err.message);
+    res.status(500).json({ error: "Error al subir fotos." });
+  }
+});
+// 🖼️ GALERÍA
+app.get("/api/gallery/:userId", async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const userData = (
+      await admin.database().ref(`users/${userId}`).once("value")
+    ).val();
+    if (!userData?.albumId)
+      return res.status(404).json({ error: "Álbum no encontrado." });
+
+    const token = await getGooglePhotosToken();
+    const photosResponse = await axios.post(
+      "https://photoslibrary.googleapis.com/v1/mediaItems:search",
+      { albumId: userData.albumId, pageSize: 100 },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+
+    const photos = photosResponse.data.mediaItems || [];
+    res.json(
+      photos.map((p) => ({
+        id: p.id,
+        baseUrl: p.baseUrl,
+        filename: p.filename,
+      }))
+    );
+  } catch (err) {
+    logger.error("❌ Error al cargar galería:", err.message);
+    res.status(500).json({ error: "Error al cargar galería." });
+  }
+});
+
+// 🗑️ ELIMINAR FOTO
+app.post("/api/delete-photo/:photoId", async (req, res) => {
+  try {
+    const { photoId } = req.params;
+    const { userId } = req.body;
+    if (!photoId || !userId)
+      return res.status(400).json({ error: "Faltan datos." });
+
+    const userData = (
+      await admin.database().ref(`users/${userId}`).once("value")
+    ).val();
+    if (!userData?.albumId)
+      return res.status(404).json({ error: "Álbum no encontrado." });
+
+    const token = await getGooglePhotosToken();
+    await axios.post(
+      `https://photoslibrary.googleapis.com/v1/albums/${userData.albumId}:batchRemoveMediaItems`,
+      { mediaItemIds: [photoId] },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+
+    res.json({ message: "Foto eliminada correctamente." });
+  } catch (err) {
+    logger.error("❌ Error al eliminar foto:", err.message);
+    res.status(500).json({ error: "Error al eliminar foto." });
+  }
+});
+
+
+
+// ---------------- EXPORTAR API ----------------
 export const api = onRequest(
   {
     secrets: [
@@ -217,76 +333,3 @@ export const api = onRequest(
   },
   app
 );
-
-async function sendNotificationEmail(to, subject, text) {
-  try {
-    const transporter = nodemailer.createTransport({
-      host: EMAIL_HOST.value(),
-      port: Number(EMAIL_PORT.value()),
-      secure: Number(EMAIL_PORT.value()) === 465,
-      auth: {
-        user: EMAIL_USER.value(),
-        pass: EMAIL_PASS.value(),
-      },
-    });
-
-    const mailOptions = {
-      from: EMAIL_USER.value(),
-      to,
-      subject,
-      text,
-    };
-
-    const info = await transporter.sendMail(mailOptions);
-    logger.log("✅ [Notificación] Correo de notificación enviado:", info.response);
-  } catch (error) {
-    if (error instanceof Error) {
-      logger.error("❌ [Notificación] Error al enviar correo:", error.message);
-    }
-    throw new Error("Error al enviar correo de notificación.");
-  }
-}
-
-
-// ✅ Cron job que expira reservas pendientes
-export const expirePendingReservations = onSchedule("*/10 * * * *", async () => {
-  try {
-    const db = getDatabase();
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    const snapshot = await db.ref("reservations").once("value");
-    const reservations = snapshot.val();
-    if (!reservations) return;
-
-    let expiredCount = 0;
-    for (const date of Object.keys(reservations)) {
-      const reservationDate = new Date(date);
-      reservationDate.setHours(0, 0, 0, 0);
-
-      const expirationLimitDate = new Date(reservationDate);
-      expirationLimitDate.setDate(expirationLimitDate.getDate() - 2);
-
-      if (today >= expirationLimitDate) {
-        for (const id of Object.keys(reservations[date])) {
-          if (reservations[date][id].details.status === "pending") {
-            await db.ref(`reservations/${date}/${id}/details/status`).set("expired");
-            expiredCount++;
-
-            const userEmail = reservations[date][id].details.userEmail;
-            if (userEmail) {
-              const subject = "Tu reserva ha expirado";
-              const text = `Hola,\n\nTe informamos que tu reserva para el día ${date}
-              ha expirado ya que no se confirmó el pago.\n\nPor favor, realiza una nueva reserva.\n\n¡Gracias!`;
-              await sendNotificationEmail(userEmail, subject, text);
-            }
-          }
-        }
-      }
-    }
-    logger.log(`⏰ Expiradas ${expiredCount} reservas.`);
-  } catch (error) {
-    logger.error("❌ Error expirando reservas:", error.message);
-  }
-});
-

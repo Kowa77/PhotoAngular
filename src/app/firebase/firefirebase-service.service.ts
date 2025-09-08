@@ -9,6 +9,7 @@ import { AuthService } from '../auth/auth.service';
 import { fromRef, ListenEvent, objectVal } from '@angular/fire/database';
 import { serverTimestamp } from 'firebase/database';
 
+
 @Injectable({
   providedIn: 'root'
 })
@@ -181,9 +182,8 @@ export class FirebaseService {
 
   allReservations$(): Observable<DailyAvailabilityMap> {
     const allAvailabilityRef = ref(this.database, `availability`);
-    return new Observable(observer => {
-      const unsubscribe = onValue(allAvailabilityRef, (snapshot) => {
-        const data = snapshot.val();
+    return objectVal<Record<string, any>>(allAvailabilityRef).pipe(
+      map((data) => {
         const mapped: DailyAvailabilityMap = {};
         if (data) {
           for (const dateKey in data) {
@@ -194,61 +194,59 @@ export class FirebaseService {
             };
           }
         }
-        observer.next(mapped);
-      }, (error) => observer.error(error));
-      return { unsubscribe };
-    });
+        return mapped;
+      })
+    );
   }
+
 
   getReservationsForDate(date: string): Observable<ReservationsByDateMap[string]> {
-    const reservationsDateRef = ref(this.database, `reservations/${date}`);
-    return new Observable(observer => {
-      const unsubscribe = onValue(reservationsDateRef, (snapshot) => {
-        const data = snapshot.val();
-        if (!data) return observer.next({});
-        const cleaned: ReservationsByDateMap[string] = {};
-        for (const id in data) {
-          const reservation = { ...data[id] };
-          if (reservation.items) {
-            for (const itemId in reservation.items) {
-              if (reservation.items[itemId].duracion === undefined) {
-                reservation.items[itemId].duracion = null;
-              }
+  const reservationsDateRef = ref(this.database, `reservations/${date}`);
+  return objectVal<Record<string, any>>(reservationsDateRef).pipe(
+    map((data) => {
+      if (!data) return {};
+      const cleaned: ReservationsByDateMap[string] = {};
+      for (const id in data) {
+        const reservation = { ...data[id] };
+        if (reservation.items) {
+          for (const itemId in reservation.items) {
+            if (reservation.items[itemId].duracion === undefined) {
+              reservation.items[itemId].duracion = null;
             }
           }
-          cleaned[id] = reservation;
         }
-        observer.next(cleaned);
-      }, (error) => observer.error(error));
-      return { unsubscribe };
-    });
-  }
+        cleaned[id] = reservation;
+      }
+      return cleaned;
+    })
+  );
+}
+
 
   getUserReservations(userId: string): Observable<Reservation[]> {
-    const allReservationsRef = ref(this.database, `reservations`);
-    return new Observable(observer => {
-      const unsubscribe = onValue(allReservationsRef, (snapshot) => {
-        const allData = snapshot.val();
-        const userReservations: Reservation[] = [];
-        if (allData) {
-          for (const dateKey in allData) {
-            const reservationsForDate = allData[dateKey];
-            for (const reservationId in reservationsForDate) {
-              const reservation = reservationsForDate[reservationId];
-              if (reservation.details?.userId === userId) {
-                for (const itemId in reservation.items) {
-                  if (reservation.items[itemId].duracion === undefined) {
-                    reservation.items[itemId].duracion = null;
-                  }
+  const allReservationsRef = ref(this.database, `reservations`);
+  return objectVal<Record<string, any>>(allReservationsRef).pipe(
+    map((allData) => {
+      const userReservations: Reservation[] = [];
+      if (allData) {
+        for (const dateKey in allData) {
+          const reservationsForDate = allData[dateKey];
+          for (const reservationId in reservationsForDate) {
+            const reservation = reservationsForDate[reservationId];
+            if (reservation.details?.userId === userId) {
+              for (const itemId in reservation.items) {
+                if (reservation.items[itemId].duracion === undefined) {
+                  reservation.items[itemId].duracion = null;
                 }
-                userReservations.push(reservation as Reservation);
               }
+              userReservations.push(reservation as Reservation);
             }
           }
         }
-        observer.next(userReservations);
-      }, (error) => observer.error(error));
-      return { unsubscribe };
-    });
-  }
+      }
+      return userReservations;
+    })
+  );
+}
+
 }
