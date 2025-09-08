@@ -1,67 +1,39 @@
-<nav class="navbar navbar-expand-lg navbar-light bg-light">
-  <a class="navbar-brand" routerLink="/">
-    <img src="assets/img/logo_blanco_pequeño.png" width="200" class="logo" alt="logo de mi app">
-  </a>
-  <button class="navbar-toggler" type="button"
-          (click)="toggleMenu()" aria-controls="navbarNav"
-          aria-expanded="false" aria-label="Toggle navigation">
-    <span class="navbar-toggler-icon"></span>
-  </button>
-  <div class="collapse navbar-collapse" id="navbarNav" [class.show]="isMenuOpen">
-    <ul>
-      <li><a routerLink="/" (click)="closeMenu()">Inicio</a></li>
-      <li><a routerLink="/nosotros" (click)="closeMenu()">Nosotros</a></li>
-      <li><a routerLink="/contacto" (click)="closeMenu()">Contacto</a></li>
-      @if (isLoggedIn) {
-        <li><a routerLink="/agenda" (click)="closeMenu()">Agendas</a></li>
-        <li><a routerLink="/perfil" (click)="closeMenu()">Perfil</a></li>
-        <li><a [routerLink]="['/galeria', userId]">Galería</a></li>
-      }
-      @if (isAdmin) {
-        <li><a [routerLink]="'/admin/upload'" (click)="closeMenu()">ADMIN</a></li>
-      }
+<nav class="navbar">
+  <div class="navbar-left">
+  <a routerLink="/" class="brand">
+    <!-- <img src="https://i.ibb.co/dwHf1XM2/logo-blanco-peque-o.png" alt="Logo" class="navbar-logo" /> -->
+     <img src="https://i.ibb.co/FLnV05vQ/colores-sf.png" alt="Logo" class="navbar-logo" />
+  </a>
+</div>
 
-      @if (hasExpiredReservation) {
-        <li class="d-flex align-items-center">
-          <app-expired-reservations-notification [userId]="userId" [hasExpiredReservation]="hasExpiredReservation"></app-expired-reservations-notification>
-        </li>
+  <div class="navbar-center">
+    <a routerLink="/servicios">Servicios</a>
+    <a routerLink="/agenda">Agenda</a>
+    <a routerLink="/contacto">Contacto</a>
+    @if (userId) {
+      <a [routerLink]="['/galeria', userId]">Galería</a>
+    }
+
+  </div>
+
+  <div class="navbar-right">
+    @if (!isLoggedIn) {
+      <button class="btn btn-primary me-2 " (click)="loginModal.openModal()">Login</button>
+      <button class="btn btn-success" (click)="registerModal.openModal()">Registro</button>
+    } @else {
+      @if (userPhotoURL) {
+        <img [src]="userPhotoURL" alt="Foto perfil" class="profile-pic"/>
+      } @else {
+        <img src="https://i.ibb.co/xKFFqvhd/foto-Perfil.png" class="profile-pic">
       }
+      <span class="user-email">{{ loggedIn }}</span>
+      <button class="btn btn-danger btn-sm ms-2" (click)="logout()">Salir</button>
 
-      <ul class="grupo_btn">
-        @if (loggedIn) {
-          <li class="botones">
-            <span class="welcome">Bienvenido: {{ loggedIn }}</span>
-          </li>
-          <li class="botones">
-            <button class=" auth-button logout-button" (click)="logout()">Cerrar Sesión</button>
-          </li>
-          <li>
-            <a routerLink="/carrito" (click)="closeMenu()">
-              <i class="fas fa-shopping-cart fa-2x"></i></a>
-          </li>
-        }
+      <app-expired-reservations-notification [userId]="userId" style="margin-left: 10%;"></app-expired-reservations-notification>
+    }
+  </div>
 
-        @if (!loggedIn) {
-          <li class="botones">
-            <button class="auth-button" (click)="openLoginModal()">Iniciar Sesión</button>
-          </li>
-          <li class="botones">
-            <button class="auth-button" (click)="openRegisterModal()">Registrarse</button>
-          </li>
-        }
-      </ul>
-
-    </ul>
-  </div>
-  <app-login-modal
-    #loginModal
-    (closeModalEvent)="closeLoginModal()"
-    (openRegisterModalEvent)="openRegisterModal()">
-  </app-login-modal>
-
-  <app-register-modal
-    #registerModal
-    (closeModalEvent)="closeRegisterModal()">
-  </app-register-modal>
-
+  <!-- 🔹 Modales -->
+  <app-login-modal #loginModal></app-login-modal>
+  <app-register-modal #registerModal></app-register-modal>
 </nav>

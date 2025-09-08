@@ -12,7 +12,13 @@ import { Reservation } from '../models/reservation.model';
 @Component({
   selector: 'app-navbar',
   standalone: true,
-  imports: [RouterLink, CommonModule, LoginModalComponent, RegisterModalComponent,ExpiredReservationsNotificationComponent ],
+  imports: [
+    RouterLink,
+    CommonModule,
+    LoginModalComponent,
+    RegisterModalComponent,
+    ExpiredReservationsNotificationComponent
+  ],
   templateUrl: './navbar.component.html',
   styleUrl: './navbar.component.css'
 })
@@ -24,42 +30,42 @@ export class NavbarComponent implements OnInit, OnDestroy {
   loggedIn: string | null = null;
   userId: string | null = null;
   isAdmin: boolean = false;
+  menuOpen: boolean = false;
+  userPhotoURL: string | null = null;
+
 
   hasExpiredReservation: boolean = false; // <-- AÑADE ESTA NUEVA PROPIEDAD
   private authSubscription: Subscription | undefined;
   private reservationsSubscription: Subscription | undefined; // <-- AÑADE ESTA NUEVA SUSCRIPCIÓN
   constructor(private router: Router, private authService: AuthService, private changeDetectorRef: ChangeDetectorRef, private firebaseService: FirebaseService) { }
 
-  ngOnInit(): void {
-    this.authSubscription = this.authService.getAuthState().subscribe(user => {
-      this.isLoggedIn = !!user;
-      this.loggedIn = user?.email || null;
-      this.userId = user?.uid || null;
+ ngOnInit(): void {
+  this.authSubscription = this.authService.getAuthState().subscribe(user => {
+    this.isLoggedIn = !!user;
+    this.loggedIn = user?.email || null;
+    this.userId = user?.uid || null;
+    this.userPhotoURL = user?.photoURL || null;
 
-      // Verificación de usuario administrador
-      this.isAdmin = this.loggedIn === 'admin@gmail.com';
+    this.isAdmin = this.loggedIn === 'admin@gmail.com';
 
-      // Llama a la lógica de reservas solo si el usuario está logueado
-      if (this.isLoggedIn && this.userId) {
-        this.checkUserReservations(this.userId);
-      } else {
-        // Limpiamos la suscripción y el estado si no hay usuario
-        if (this.reservationsSubscription) {
-          this.reservationsSubscription.unsubscribe();
-        }
-        this.hasExpiredReservation = false;
+    if (this.isLoggedIn && this.userId) {
+      this.checkUserReservations(this.userId);
+    } else {
+      if (this.reservationsSubscription) {
+        this.reservationsSubscription.unsubscribe();
       }
+      this.hasExpiredReservation = false;
+    }
 
-      // Abre el modal de login solo en la inicialización si no hay usuario
-      if (!this.isLoggedIn && this.loginModal && !this.hasOpenedLoginModal) {
-        setTimeout(() => {
-          this.loginModal.openModal();
-          this.changeDetectorRef.detectChanges();
-          this.hasOpenedLoginModal = true;
-        }, 0);
-      }
-    });
-  }
+    if (!this.isLoggedIn && this.loginModal && !this.hasOpenedLoginModal) {
+      setTimeout(() => {
+        this.loginModal.openModal();
+        this.changeDetectorRef.detectChanges();
+        this.hasOpenedLoginModal = true;
+      }, 0);
+    }
+  });
+}
 
 
   private checkUserReservations(userId: string): void {
@@ -76,6 +82,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
     });
 }
 
+
   ngOnDestroy(): void {
     if (this.authSubscription) {
       this.authSubscription.unsubscribe();
@@ -85,9 +92,9 @@ export class NavbarComponent implements OnInit, OnDestroy {
         }
   }
 
-  toggleMenu(): void {
-    this.isMenuOpen = !this.isMenuOpen;
-  }
+//   toggleMenu(): void {
+//     this.isMenuOpen = !this.isMenuOpen;
+//   }
 
   closeMenu(): void {
     this.isMenuOpen = false;
@@ -127,6 +134,11 @@ export class NavbarComponent implements OnInit, OnDestroy {
       // Opcional: Puedes mostrar un mensaje de error al usuario aquí
     });
   }
+
+// ✅ Toggle para mobile
+  toggleMenu(): void {
+    this.menuOpen = !this.menuOpen;
+  }
 
   private hasOpenedLoginModal: boolean = false; // Bandera para controlar la apertura inicial del modal
 }

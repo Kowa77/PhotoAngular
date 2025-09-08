@@ -1,8 +1,11 @@
 {
   "/api": {
-    "target": "http://127.0.0.1:5001/bsfotografia-9fc03/us-central1/api",
+    "target": "http://127.0.0.1:5001/bsfotografia-9fc03/us-central1",
     "secure": false,
     "changeOrigin": true,
-    "logLevel": "debug"
+    "logLevel": "debug",
+    "pathRewrite": {
+      "^/api": "/api"
+    }
   }
 }

@@ -216,6 +216,7 @@ app.post("/register-with-album", async (req, res) => {
 });
 
 app.get("/gallery/:userId", async (req, res) => {
+  console.log("Cargando galería para userId:", req.params.userId);
   const { userId } = req.params;
   try {
     const snapshot = await admin.database().ref(`users/${userId}`).once("value");
@@ -232,7 +233,9 @@ app.get("/gallery/:userId", async (req, res) => {
       { headers: { Authorization: `Bearer ${token}` } }
     );
 
+    console.log(photosResponse.data);
     const photos = photosResponse.data.mediaItems || [];
+    console.log(photos);
     res.json(
       photos.map((p) => ({
         id: p.id,

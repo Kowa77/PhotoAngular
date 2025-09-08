@@ -1,5 +1,5 @@
 // src/app/firebase/firefirebase-service.service.ts
-import { inject, Injectable, runInInjectionContext, Injector } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { Database, ref, set, get, remove, push, runTransaction, onValue } from '@angular/fire/database';
 import { Observable, combineLatest, map } from 'rxjs';
 import { Auth } from '@angular/fire/auth';
@@ -13,62 +13,47 @@ import { serverTimestamp } from 'firebase/database';
   providedIn: 'root'
 })
 export class FirebaseService {
-  private database: Database = inject(Database);
-  private injector = inject(Injector);
-  private auth: Auth = inject(Auth);
-  private authService: AuthService = inject(AuthService);
+
+  constructor(
+    private database: Database,
+    private auth: Auth,
+    private authService: AuthService
+  ) {}
 
   // -------------------------------------------------------------------------
   // 📂 SERVICIOS (catálogo)
   // -------------------------------------------------------------------------
 
-getCategory<T extends Servicio>(path: string): Observable<T[]> {
-  const categoryRef = ref(this.database, path);
-  //console.log('getCategory: creando observable para path =>', path);
-
-  return objectVal<Record<string, any>>(categoryRef).pipe(
-    map((data) => {
-      //console.log('getCategory: datos crudos recibidos de Firebase =>', { path, data });
-      return this.mapServicios<T>(path, data);
-    })
-  );
-}
-
-private mapServicios<T extends Servicio>(path: string, data: Record<string, any> | null): T[] {
-  //console.log('mapServicios: llamado con path =>', path);
-  //console.log('mapServicios: data recibido =>', data);
-
-  if (!data) {
-    console.warn('mapServicios: data está vacío/null, retorno []');
-    return [];
+  getCategory<T extends Servicio>(path: string): Observable<T[]> {
+    const categoryRef = ref(this.database, path);
+    return objectVal<Record<string, any>>(categoryRef).pipe(
+      map((data) => this.mapServicios<T>(path, data))
+    );
   }
 
-  return Object.entries(data).map(([key, value]) => {
-    //console.log('mapServicios: procesando item =>', { key, value });
+  private mapServicios<T extends Servicio>(path: string, data: Record<string, any> | null): T[] {
+    if (!data) return [];
 
-    let categoria: 'foto' | 'video' | 'extra' | 'sugerido' = 'foto';
-    let sufijo = '';
+    return Object.entries(data).map(([key, value]) => {
+      let categoria: 'foto' | 'video' | 'extra' | 'sugerido' = 'foto';
+      let sufijo = '';
 
-    if (path.includes('fotos')) { categoria = 'foto'; sufijo = '_f'; }
-    else if (path.includes('videos')) { categoria = 'video'; sufijo = '_v'; }
-    else if (path.includes('extras')) { categoria = 'extra'; sufijo = '_e'; }
-    else if (path.includes('sugeridos')) { categoria = 'sugerido'; sufijo = '_s'; }
+      if (path.includes('fotos')) { categoria = 'foto'; sufijo = '_f'; }
+      else if (path.includes('videos')) { categoria = 'video'; sufijo = '_v'; }
+      else if (path.includes('extras')) { categoria = 'extra'; sufijo = '_e'; }
+      else if (path.includes('sugeridos')) { categoria = 'sugerido'; sufijo = '_s'; }
 
-    const servicio: T = {
-      id: key,
-      nombre: value[`nombre${sufijo}`] || '',
-      descripcion: value[`descripcion${sufijo}`] || '',
-      precio: value[`precio${sufijo}`] || 0,
-      imagen: value[`imagen${sufijo}`] || '',
-      categoria,
-      duracion: value[`duracion${sufijo}`] ?? null,
-    } as T;
-
-    //console.log('mapServicios: servicio mapeado =>', servicio);
-    return servicio;
-  });
-}
-
+      return {
+        id: key,
+        nombre: value[`nombre${sufijo}`] || '',
+        descripcion: value[`descripcion${sufijo}`] || '',
+        precio: value[`precio${sufijo}`] || 0,
+        imagen: value[`imagen${sufijo}`] || '',
+        categoria,
+        duracion: value[`duracion${sufijo}`] ?? null,
+      } as T;
+    });
+  }
 
   getServiciosCasamientos(): Observable<Servicio[]> {
     return combineLatest([
@@ -109,11 +94,8 @@ private mapServicios<T extends Servicio>(path: string, data: Record<string, any>
 
   obtenerCarritoUsuario(userId: string): Observable<{ [serviceId: string]: { cantidad: number; duracion?: number } }> {
     const carritoRef = ref(this.database, `carritos/${userId}`);
-
-    return runInInjectionContext(this.injector, () =>
-      fromRef(carritoRef, 'value' as ListenEvent).pipe(
-        map(snap => snap.snapshot.val() || {})
-      )
+    return fromRef(carritoRef, 'value' as ListenEvent).pipe(
+      map(snap => snap.snapshot.val() || {})
     );
   }
 
@@ -199,80 +181,74 @@ private mapServicios<T extends Servicio>(path: string, data: Record<string, any>
 
   allReservations$(): Observable<DailyAvailabilityMap> {
     const allAvailabilityRef = ref(this.database, `availability`);
-    return runInInjectionContext(this.injector, () =>
-      new Observable(observer => {
-        const unsubscribe = onValue(allAvailabilityRef, (snapshot) => {
-          const data = snapshot.val();
-          const mapped: DailyAvailabilityMap = {};
-          if (data) {
-            for (const dateKey in data) {
-              mapped[dateKey] = {
-                available: !!data[dateKey].available,
-                maxBookings: data[dateKey].maxBookings || null,
-                bookedBy: data[dateKey].bookedBy || null
-              };
-            }
+    return new Observable(observer => {
+      const unsubscribe = onValue(allAvailabilityRef, (snapshot) => {
+        const data = snapshot.val();
+        const mapped: DailyAvailabilityMap = {};
+        if (data) {
+          for (const dateKey in data) {
+            mapped[dateKey] = {
+              available: !!data[dateKey].available,
+              maxBookings: data[dateKey].maxBookings || null,
+              bookedBy: data[dateKey].bookedBy || null
+            };
           }
-          observer.next(mapped);
-        }, (error) => observer.error(error));
-        return { unsubscribe };
-      })
-    );
+        }
+        observer.next(mapped);
+      }, (error) => observer.error(error));
+      return { unsubscribe };
+    });
   }
 
   getReservationsForDate(date: string): Observable<ReservationsByDateMap[string]> {
     const reservationsDateRef = ref(this.database, `reservations/${date}`);
-    return runInInjectionContext(this.injector, () =>
-      new Observable(observer => {
-        const unsubscribe = onValue(reservationsDateRef, (snapshot) => {
-          const data = snapshot.val();
-          if (!data) return observer.next({});
-          const cleaned: ReservationsByDateMap[string] = {};
-          for (const id in data) {
-            const reservation = { ...data[id] };
-            if (reservation.items) {
-              for (const itemId in reservation.items) {
-                if (reservation.items[itemId].duracion === undefined) {
-                  reservation.items[itemId].duracion = null;
-                }
+    return new Observable(observer => {
+      const unsubscribe = onValue(reservationsDateRef, (snapshot) => {
+        const data = snapshot.val();
+        if (!data) return observer.next({});
+        const cleaned: ReservationsByDateMap[string] = {};
+        for (const id in data) {
+          const reservation = { ...data[id] };
+          if (reservation.items) {
+            for (const itemId in reservation.items) {
+              if (reservation.items[itemId].duracion === undefined) {
+                reservation.items[itemId].duracion = null;
               }
             }
-            cleaned[id] = reservation;
           }
-          observer.next(cleaned);
-        }, (error) => observer.error(error));
-        return { unsubscribe };
-      })
-    );
+          cleaned[id] = reservation;
+        }
+        observer.next(cleaned);
+      }, (error) => observer.error(error));
+      return { unsubscribe };
+    });
   }
 
   getUserReservations(userId: string): Observable<Reservation[]> {
     const allReservationsRef = ref(this.database, `reservations`);
-    return runInInjectionContext(this.injector, () =>
-      new Observable(observer => {
-        const unsubscribe = onValue(allReservationsRef, (snapshot) => {
-          const allData = snapshot.val();
-          const userReservations: Reservation[] = [];
-          if (allData) {
-            for (const dateKey in allData) {
-              const reservationsForDate = allData[dateKey];
-              for (const reservationId in reservationsForDate) {
-                const reservation = reservationsForDate[reservationId];
-                if (reservation.details?.userId === userId) {
-                  for (const itemId in reservation.items) {
-                    if (reservation.items[itemId].duracion === undefined) {
-                      reservation.items[itemId].duracion = null;
-                    }
+    return new Observable(observer => {
+      const unsubscribe = onValue(allReservationsRef, (snapshot) => {
+        const allData = snapshot.val();
+        const userReservations: Reservation[] = [];
+        if (allData) {
+          for (const dateKey in allData) {
+            const reservationsForDate = allData[dateKey];
+            for (const reservationId in reservationsForDate) {
+              const reservation = reservationsForDate[reservationId];
+              if (reservation.details?.userId === userId) {
+                for (const itemId in reservation.items) {
+                  if (reservation.items[itemId].duracion === undefined) {
+                    reservation.items[itemId].duracion = null;
                   }
-                  userReservations.push(reservation as Reservation);
                 }
+                userReservations.push(reservation as Reservation);
               }
             }
           }
-          observer.next(userReservations);
-        }, (error) => observer.error(error));
-        return { unsubscribe };
-      })
-    );
+        }
+        observer.next(userReservations);
+      }, (error) => observer.error(error));
+      return { unsubscribe };
+    });
   }
 }

@@ -1,7 +1,8 @@
 import { Component, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { AuthService } from '../auth/auth.service'; // Importa el AuthService
+import { AuthService } from '../auth/auth.service';
+import { updateProfile, User } from 'firebase/auth';
 
 @Component({
   selector: 'app-register-modal',
@@ -12,12 +13,12 @@ import { AuthService } from '../auth/auth.service'; // Importa el AuthService
 })
 export class RegisterModalComponent {
   isVisible: boolean = false;
-  registrationData = { email: '', password: '' }; // Solo necesitamos email y password para el registro básico
+  registrationData = { email: '', password: '' };
   errorMessage: string = '';
   @Output() registerSuccess = new EventEmitter<any>();
   @Output() closeModalEvent = new EventEmitter<void>();
 
-  constructor(private authService: AuthService) { } // Inyecta el AuthService
+  constructor(private authService: AuthService) {}
 
   openModal() {
     this.isVisible = true;
@@ -31,13 +32,23 @@ export class RegisterModalComponent {
 
   async register() {
     try {
-      const user = await this.authService.registerUser(this.registrationData.email, this.registrationData.password);
-      //console.log('Registro exitoso:', user);
+      const user = await this.authService.registerUser(
+        this.registrationData.email,
+        this.registrationData.password
+      );
+
+      // ✅ Si el usuario se creó, actualizamos su perfil con foto genérica
+      if (user && user.user) {
+        await updateProfile(user.user as User, {
+          displayName: this.registrationData.email,
+          photoURL: "https://i.ibb.co/xKFFqvhd/foto-Perfil.png" // <-- avatar genérico
+        });
+      }
+
       this.registerSuccess.emit(user);
       this.closeModal();
     } catch (error: any) {
-      //console.error('Error al registrar:', error);
-      this.errorMessage = this.authService.getErrorMessage(error.code); // Usa el método del servicio
+      this.errorMessage = this.authService.getErrorMessage(error.code);
     }
   }
 }
