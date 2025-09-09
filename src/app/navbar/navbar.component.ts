@@ -94,13 +94,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
         }
   }
 
-//   toggleMenu(): void {
-//     this.isMenuOpen = !this.isMenuOpen;
-//   }
 
-  closeMenu(): void {
-    this.isMenuOpen = false;
-  }
 
   openLoginModal(): void {
     if (this.loginModal) {
@@ -138,9 +132,13 @@ export class NavbarComponent implements OnInit, OnDestroy {
   }
 
 // ✅ Toggle para mobile
-  toggleMenu(): void {
-    this.menuOpen = !this.menuOpen;
-  }
+ toggleMenu() {
+  this.isMenuOpen = !this.isMenuOpen;
+}
+
+closeMenu() {
+  this.isMenuOpen = false;
+}
 
   private hasOpenedLoginModal: boolean = false; // Bandera para controlar la apertura inicial del modal
 }

@@ -1,6 +1,7 @@
 <div class="upload-container">
   <h2>Sube tus fotos</h2>
 
+  <!-- Estado -->
   @if (uploadStatus()) {
     <p
       [ngClass]="{
@@ -42,8 +43,14 @@
       !targetUserEmail()
     "
   >
-    @if (isUploading()) { Subiendo... } @else { Subir Fotos }
+    @if (isUploading()) { ⏳ Subiendo... } @else { 📤 Subir Fotos }
   </button>
+
+  <!-- Loader -->
+  <div *ngIf="isUploading()" class="loader">
+    <div class="spinner"></div>
+    Procesando fotos, por favor espera...
+  </div>
 
   <p class="login-prompt">
     Por favor, asegúrate de que el email sea de un usuario registrado.

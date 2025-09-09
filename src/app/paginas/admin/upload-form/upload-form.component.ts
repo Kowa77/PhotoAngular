@@ -30,19 +30,16 @@ import { environment } from '../../../../environments/environment';
   styleUrl: './upload-form.component.css'
 })
 export class UploadFormComponent implements OnInit, OnDestroy {
-  // --- Estado con Signals ---
   selectedFiles = signal<File[]>([]);
   targetUserEmail = signal<string>('');
   uploadStatus = signal<string>('');
   isUploading = signal<boolean>(false);
   isUserAuthenticated = signal<boolean>(false);
 
-  // --- Referencia al componente hijo ---
   @ViewChild(AdminStatsComponent) statsComponent:
     | AdminStatsComponent
     | undefined;
 
-  // --- Servicios ---
   private authService: AuthService = inject(AuthService);
   private http: HttpClient = inject(HttpClient);
   private destroy$ = new Subject<void>();
@@ -60,7 +57,6 @@ export class UploadFormComponent implements OnInit, OnDestroy {
       });
   }
 
-  // Cuando seleccionamos archivos
   onFileSelected(event: Event) {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files.length > 0) {
@@ -70,7 +66,6 @@ export class UploadFormComponent implements OnInit, OnDestroy {
     }
   }
 
-  // Subir fotos
   onUpload() {
     if (
       !this.selectedFiles() ||
@@ -92,41 +87,43 @@ export class UploadFormComponent implements OnInit, OnDestroy {
     });
     formData.append('targetUserEmail', this.targetUserEmail());
 
-    // 🟢 Debug: mostrar qué se está mandando
+    // Debug
     for (const [key, value] of formData.entries()) {
       console.log('➡️ FormData:', key, value);
     }
 
-    // 👇 OJO: apiUrl ya tiene /api
-    this.http.post(`${environment.apiUrl}/upload-photos`, formData).subscribe({
-      next: () => {
-        this.uploadStatus.set('¡Fotos subidas con éxito!');
-        this.isUploading.set(false);
+    this.http
+      .post(`${environment.apiUrl}/upload-photos`, formData, {
+        withCredentials: true,
+      })
+      .subscribe({
+        next: (res: any) => {
+          console.log('✅ Respuesta del backend:', res);
+          this.uploadStatus.set('¡Fotos subidas con éxito!');
+          this.isUploading.set(false);
 
-        // Reset
-        this.selectedFiles.set([]);
-        this.targetUserEmail.set('');
-        const fileInput = document.getElementById(
-          'fileInput'
-        ) as HTMLInputElement;
-        if (fileInput) fileInput.value = '';
+          this.selectedFiles.set([]);
+          this.targetUserEmail.set('');
+          const fileInput = document.getElementById(
+            'fileInput'
+          ) as HTMLInputElement;
+          if (fileInput) fileInput.value = '';
 
-        if (this.statsComponent) {
-          this.statsComponent.refreshStats();
+          if (this.statsComponent) {
+            this.statsComponent.refreshStats();
+          }
+        },
+        error: (err: any) => {
+          console.error('❌ Error al subir fotos:', err);
+          this.uploadStatus.set(
+            'Error: ' +
+              (err.error?.error || 'No se pudieron subir las fotos.')
+          );
+          this.isUploading.set(false);
         }
-      },
-      error: (err: any) => {
-        console.error('❌ Error al subir fotos:', err);
-        this.uploadStatus.set(
-          'Error: ' +
-            (err.error?.error || 'No se pudieron subir las fotos.')
-        );
-        this.isUploading.set(false);
-      }
-    });
+      });
   }
 
-  // Validar email
   private isValidEmail(email: string): boolean {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);

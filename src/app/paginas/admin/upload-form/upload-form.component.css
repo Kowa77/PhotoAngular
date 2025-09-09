@@ -1,74 +1,100 @@
-    .upload-container {
-      margin-top: 10% !important;
-      max-width: 600px;
-      margin: 20px auto;
-      padding: 20px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      text-align: center;
-      font-family: Arial, sans-serif;
-    }
-    h2 {
-      color: #333;
-    }
-    .form-group {
-      margin-bottom: 20px;
-    }
-    label {
-      display: block;
-      margin-bottom: 5px;
-      font-weight: bold;
-    }
-    input[type="file"] {
-      width: 100%;
-      padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      box-sizing: border-box;
-    }
-    button {
-      background-color: #007bff;
-      color: white;
-      padding: 10px 20px;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 16px;
-      transition: background-color 0.3s;
-    }
-    button:disabled {
-      background-color: #a0c9f1;
-      cursor: not-allowed;
-    }
-    .status-success {
-      color: green;
-      font-weight: bold;
-    }
-    .status-error {
-      color: red;
-      font-weight: bold;
-    }
-    .login-prompt {
-      margin-top: 15px;
-      color: #777;
-    }
-
-    /* Nuevo CSS para el contenedor de estadísticas */
-.stats-container {
-    display: flex; /* <-- Habilita Flexbox */
-    justify-content: space-around; /* <-- Distribuye el espacio entre los elementos */
-    gap: 20px; /* <-- Añade un espacio de 20px entre las cajas */
-    flex-wrap: wrap; /* <-- Permite que los elementos pasen a la siguiente línea en pantallas pequeñas */
-    max-width: 900px; /* <-- Opcional: limita el ancho para una mejor presentación */
-    margin: 20px auto;
-    padding: 20px;
-    border: 1px solid #e0e0e0;
-    border-radius: 10px;
-    background-color: #f9f9f9;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+.upload-container {
+  margin-top: 10% !important;
+  max-width: 600px;
+  margin: 20px auto;
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  text-align: center;
+  font-family: Arial, sans-serif;
+}
+h2 {
+  color: #333;
+}
+.form-group {
+  margin-bottom: 20px;
+}
+label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+input[type="file"],
+input[type="email"] {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+button {
+  background-color: #007bff;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s;
+}
+button:disabled {
+  background-color: #a0c9f1;
+  cursor: not-allowed;
+}
+.status-success {
+  color: green;
+  font-weight: bold;
+}
+.status-error {
+  color: red;
+  font-weight: bold;
+}
+.login-prompt {
+  margin-top: 15px;
+  color: #777;
 }
 
+/* Loader */
+.loader {
+  margin-top: 15px;
+  color: #555;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 3px solid #ccc;
+  border-top: 3px solid #007bff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Contenedor de estadísticas */
+.stats-container {
+  display: flex;
+  justify-content: space-around;
+  gap: 20px;
+  flex-wrap: wrap;
+  max-width: 900px;
+  margin: 20px auto;
+  padding: 20px;
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  background-color: #f9f9f9;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
 .stats-section {
-    flex: 1; /* <-- Opcional: permite que los elementos se expandan para ocupar el espacio disponible */
-    min-width: 250px; /* <-- Opcional: asegura que no se hagan demasiado pequeños */
+  flex: 1;
+  min-width: 250px;
 }

@@ -1,11 +1,11 @@
 // functions/index.js
 import admin from "firebase-admin";
 import express from "express";
-import cors from "cors";
 import nodemailer from "nodemailer";
 import { google } from "googleapis";
 import axios from "axios";
-import multer from "multer";
+import busboy from "busboy";
+import { Buffer } from "buffer";
 
 // Firebase Functions V2
 import { onRequest } from "firebase-functions/v2/https";
@@ -29,12 +29,19 @@ try {
 }
 
 const app = express();
-app.use(cors({ origin: true }));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 
-// Multer: para uploads en memoria
-const upload = multer({ storage: multer.memoryStorage() });
+// ---------------- CORS ----------------
+app.use((req, res, next) => {
+  res.setHeader("Access-Control-Allow-Origin", "http://localhost:4200");
+  res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  res.setHeader("Access-Control-Allow-Credentials", "true");
+
+  if (req.method === "OPTIONS") {
+    return res.status(204).end();
+  }
+  next();
+});
 
 // ---------------- HELPERS ----------------
 async function getGooglePhotosToken() {
@@ -42,7 +49,9 @@ async function getGooglePhotosToken() {
     GOOGLE_CLIENT_ID.value(),
     GOOGLE_CLIENT_SECRET.value()
   );
+
   auth.setCredentials({ refresh_token: GOOGLE_REFRESH_TOKEN.value() });
+
   const { token } = await auth.getAccessToken();
   if (!token) throw new Error("No se pudo obtener token de Google Photos");
   return token;
@@ -62,8 +71,7 @@ async function createAlbum(token, albumTitle) {
   }
 }
 
-
-// 📊 Estadísticas de fotos (reales desde Google Photos)
+// 📊 Estadísticas de fotos
 app.get("/admin/photo-stats", async (req, res) => {
   try {
     const snapshot = await admin.database().ref("users").once("value");
@@ -81,37 +89,20 @@ app.get("/admin/photo-stats", async (req, res) => {
       usersWithAlbums++;
 
       try {
-        // Llamada a Google Photos para contar fotos en el álbum
-        const photosResponse = await axios.post(
-          "https://photoslibrary.googleapis.com/v1/mediaItems:search",
-          { albumId, pageSize: 100 },
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-
-        const items = photosResponse.data.mediaItems || [];
-        totalPhotos += items.length;
-
-        // ⚠️ Paginación: si hay más de 100 fotos, seguir llamando
-        let nextPageToken = photosResponse.data.nextPageToken;
-        while (nextPageToken) {
-          const nextResponse = await axios.post(
+        let nextPageToken;
+        do {
+          const photosResponse = await axios.post(
             "https://photoslibrary.googleapis.com/v1/mediaItems:search",
             { albumId, pageSize: 100, pageToken: nextPageToken },
             { headers: { Authorization: `Bearer ${token}` } }
           );
 
-          const nextItems = nextResponse.data.mediaItems || [];
-          totalPhotos += nextItems.length;
-
-          nextPageToken = nextResponse.data.nextPageToken;
-        }
+          const items = photosResponse.data.mediaItems || [];
+          totalPhotos += items.length;
+          nextPageToken = photosResponse.data.nextPageToken;
+        } while (nextPageToken);
       } catch (err) {
-        if (err.response?.status === 403) {
-          // 🚨 Google restringe fotos si el álbum no fue creado por tu app
-          logger.warn(`⚠️ No se puede listar fotos del álbum ${albumId}`);
-        } else {
-          logger.error("❌ Error obteniendo fotos:", err.message);
-        }
+        logger.warn(`⚠️ No se puede listar fotos del álbum ${albumId}`);
       }
     }
 
@@ -122,14 +113,16 @@ app.get("/admin/photo-stats", async (req, res) => {
   }
 });
 
-// ✅ Versión compatible con tu front actual (devuelve { totalUsers })
+// ✅ Versión compatible con tu front actual
 app.get("/admin/user-count", async (req, res) => {
   try {
     let nextPageToken = undefined;
     let totalUsers = 0;
 
     do {
-      const { users, pageToken } = await admin.auth().listUsers(1000, nextPageToken);
+      const { users, pageToken } = await admin
+        .auth()
+        .listUsers(1000, nextPageToken);
       totalUsers += users.length;
       nextPageToken = pageToken;
     } while (nextPageToken);
@@ -141,14 +134,126 @@ app.get("/admin/user-count", async (req, res) => {
   }
 });
 
+// 🚀 SUBIDA DE FOTOS (con Busboy)
+app.post("/upload-photos", (req, res) => {
+  console.log("➡️ [Subida] Solicitud de subida de fotos recibida.");
+
+  const bb = busboy({ headers: req.headers });
+  const files = [];
+  let targetUserEmail = "";
+  let responded = false;
+
+  bb.on("file", (fieldname, file, info) => {
+    const { filename } = info;
+    const buffer = [];
+    file.on("data", (data) => buffer.push(data));
+    file.on("end", () => {
+      files.push({ originalname: filename, buffer: Buffer.concat(buffer) });
+    });
+  });
+
+  bb.on("field", (fieldname, value) => {
+    if (fieldname === "targetUserEmail") targetUserEmail = value;
+  });
+
+  bb.on("finish", async () => {
+    if (responded) return;
+
+    if (!targetUserEmail || files.length === 0) {
+      responded = true;
+      return res
+        .status(400)
+        .json({ error: "El correo del usuario y los archivos son requeridos." });
+    }
+
+    try {
+      const userRecord = await admin.auth().getUserByEmail(targetUserEmail);
+      const snapshot = await admin
+        .database()
+        .ref(`users/${userRecord.uid}`)
+        .once("value");
+      const userData = snapshot.val();
+
+      if (!userData || !userData.albumId) {
+        responded = true;
+        return res
+          .status(404)
+          .json({ error: "ID de álbum no encontrado para el usuario." });
+      }
+
+      const albumId = userData.albumId;
+      const token = await getGooglePhotosToken();
+
+      // Subir archivos → obtener uploadToken
+      const uploadResponses = await Promise.all(
+        files.map((file) =>
+          axios.post("https://photoslibrary.googleapis.com/v1/uploads", file.buffer, {
+            headers: {
+              "Content-Type": "application/octet-stream",
+              Authorization: `Bearer ${token}`,
+              "X-Goog-Upload-File-Name": file.originalname,
+              "X-Goog-Upload-Protocol": "raw",
+            },
+          })
+        )
+      );
+
+      const newMediaItems = uploadResponses.map((r) => ({
+        simpleMediaItem: { uploadToken: r.data },
+      }));
+
+      // Crear mediaItems dentro del álbum
+      await axios.post(
+        "https://photoslibrary.googleapis.com/v1/mediaItems:batchCreate",
+        { albumId, newMediaItems },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      responded = true;
+      res
+        .status(200)
+        .json({ message: "Fotos subidas y añadidas al álbum correctamente." });
+    } catch (error) {
+      console.error("❌ [Subida] Error al subir fotos:", error.message);
+      if (!responded) {
+        responded = true;
+        if (error.code === "auth/user-not-found") {
+          res
+            .status(404)
+            .json({ error: "El usuario con ese correo electrónico no existe." });
+        } else {
+          res
+            .status(500)
+            .json({ error: "Error interno del servidor al subir las fotos." });
+        }
+      }
+    }
+  });
+
+  bb.on("error", (err) => {
+    console.error("❌ Busboy error:", err);
+    if (!responded) {
+      responded = true;
+      res.status(500).json({ error: "Error procesando archivos" });
+    }
+  });
+
+  // 👇 Muy importante: al final
+  bb.end(req.rawBody);
+});
 
 
 
 
-// ---------------- RUTAS API ----------------
+// ---------------- RUTAS API EXTRA ----------------
 
 // 📧 ENVIAR CORREO
-app.post("/api/send-email", async (req, res) => {
+app.post("/send-email", express.json(), async (req, res) => {
   try {
     const { from, to, subject, text } = req.body;
     if (!from || !to || !subject || !text) {
@@ -178,7 +283,7 @@ app.post("/api/send-email", async (req, res) => {
 });
 
 // 🆕 REGISTRO CON ÁLBUM
-app.post("/api/register-with-album", async (req, res) => {
+app.post("/register-with-album", express.json(), async (req, res) => {
   try {
     const { email, password } = req.body;
     if (!email || !password)
@@ -195,7 +300,11 @@ app.post("/api/register-with-album", async (req, res) => {
         .json({ error: "Error al crear álbum de Google Photos." });
     }
 
-    await admin.database().ref(`users/${userRecord.uid}`).set({ email, albumId });
+    await admin
+      .database()
+      .ref(`users/${userRecord.uid}`)
+      .set({ email, albumId });
+
     res.status(201).json({
       message: "Usuario registrado y álbum creado con éxito.",
       userId: userRecord.uid,
@@ -207,63 +316,14 @@ app.post("/api/register-with-album", async (req, res) => {
   }
 });
 
-// 📸 SUBIR FOTOS
-// ⚠️ Aquí NO usamos express.json()
-app.post("/api/upload-photos", upload.array("photos"), async (req, res) => {
-  try {
-    const { targetUserEmail } = req.body;
-    const files = req.files;
-    if (!targetUserEmail || !files?.length)
-      return res.status(400).json({ error: "Faltan email o archivos." });
-
-    const userRecord = await admin.auth().getUserByEmail(targetUserEmail);
-    const userData = (
-      await admin.database().ref(`users/${userRecord.uid}`).once("value")
-    ).val();
-    if (!userData?.albumId)
-      return res.status(404).json({ error: "Álbum no encontrado." });
-
-    const token = await getGooglePhotosToken();
-
-    // Paso 1: subir bytes -> uploadTokens
-    const uploadResponses = await Promise.all(
-      files.map((file) =>
-        axios.post("https://photoslibrary.googleapis.com/v1/uploads", file.buffer, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-type": "application/octet-stream",
-            "X-Goog-Upload-File-Name": file.originalname,
-            "X-Goog-Upload-Protocol": "raw",
-          },
-        })
-      )
-    );
-
-    const newMediaItems = uploadResponses.map((r, i) => ({
-      description: "Foto subida desde la app",
-      simpleMediaItem: { uploadToken: r.data, fileName: files[i].originalname },
-    }));
-
-    // Paso 2: crear mediaItems en el álbum
-    await axios.post(
-      "https://photoslibrary.googleapis.com/v1/mediaItems:batchCreate",
-      { albumId: userData.albumId, newMediaItems },
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
-
-    res.json({ message: "Fotos subidas correctamente.", count: files.length });
-  } catch (err) {
-    logger.error("❌ Error en subida de fotos:", err.message);
-    res.status(500).json({ error: "Error al subir fotos." });
-  }
-});
 // 🖼️ GALERÍA
-app.get("/api/gallery/:userId", async (req, res) => {
+app.get("/gallery/:userId", async (req, res) => {
   try {
     const { userId } = req.params;
     const userData = (
       await admin.database().ref(`users/${userId}`).once("value")
     ).val();
+
     if (!userData?.albumId)
       return res.status(404).json({ error: "Álbum no encontrado." });
 
@@ -287,36 +347,6 @@ app.get("/api/gallery/:userId", async (req, res) => {
     res.status(500).json({ error: "Error al cargar galería." });
   }
 });
-
-// 🗑️ ELIMINAR FOTO
-app.post("/api/delete-photo/:photoId", async (req, res) => {
-  try {
-    const { photoId } = req.params;
-    const { userId } = req.body;
-    if (!photoId || !userId)
-      return res.status(400).json({ error: "Faltan datos." });
-
-    const userData = (
-      await admin.database().ref(`users/${userId}`).once("value")
-    ).val();
-    if (!userData?.albumId)
-      return res.status(404).json({ error: "Álbum no encontrado." });
-
-    const token = await getGooglePhotosToken();
-    await axios.post(
-      `https://photoslibrary.googleapis.com/v1/albums/${userData.albumId}:batchRemoveMediaItems`,
-      { mediaItemIds: [photoId] },
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
-
-    res.json({ message: "Foto eliminada correctamente." });
-  } catch (err) {
-    logger.error("❌ Error al eliminar foto:", err.message);
-    res.status(500).json({ error: "Error al eliminar foto." });
-  }
-});
-
-
 
 // ---------------- EXPORTAR API ----------------
 export const api = onRequest(

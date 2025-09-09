@@ -1,29 +1,33 @@
 <nav class="navbar">
   <div class="navbar-left">
-  <a routerLink="/" class="brand">
-    <!-- <img src="https://i.ibb.co/dwHf1XM2/logo-blanco-peque-o.png" alt="Logo" class="navbar-logo" /> -->
-     <img src="https://i.ibb.co/FLnV05vQ/colores-sf.png" alt="Logo" class="navbar-logo" />
-  </a>
-</div>
-
-  <div class="navbar-center">
-    <a routerLink="/servicios">Servicios</a>
-    <a routerLink="/agenda">Agenda</a>
-    <a routerLink="/contacto">Contacto</a>
-    @if (userId) {
-      <a [routerLink]="['/galeria', userId]">Galería</a>
-    }
-   @if (isAdmin()) {
-    <a routerLink="/admin/upload">Admin</a>
-   }
-
-
+    <a routerLink="/" class="brand">
+      <img src="https://i.ibb.co/FLnV05vQ/colores-sf.png" alt="Logo" class="navbar-logo" />
+    </a>
   </div>
 
-  <div class="navbar-right">
+  <!-- Botón hamburguesa -->
+  <button class="navbar-toggle" (click)="toggleMenu()">
+    &#9776;
+  </button>
+
+  <div class="navbar-center navbar-links" [class.active]="isMenuOpen">
+    <a routerLink="/servicios" (click)="closeMenu()">Servicios</a>
+    <a routerLink="/agenda" (click)="closeMenu()">Agenda</a>
+    <a routerLink="/contacto" (click)="closeMenu()">Contacto</a>
+
+    @if (userId) {
+      <a [routerLink]="['/galeria', userId]" (click)="closeMenu()">Galería</a>
+    }
+
+    @if (isAdmin()) {
+      <a routerLink="/admin/upload" (click)="closeMenu()">Admin</a>
+    }
+  </div>
+
+  <div class="navbar-right navbar-user" [class.active]="isMenuOpen">
     @if (!isLoggedIn) {
-      <button class="btn btn-primary me-2 " (click)="loginModal.openModal()">Login</button>
-      <button class="btn btn-success" (click)="registerModal.openModal()">Registro</button>
+      <button class="btn btn-primary me-2" (click)="loginModal.openModal(); closeMenu()">Login</button>
+      <button class="btn btn-success" (click)="registerModal.openModal(); closeMenu()">Registro</button>
     } @else {
       @if (userPhotoURL) {
         <img [src]="userPhotoURL" alt="Foto perfil" class="profile-pic"/>
@@ -31,9 +35,13 @@
         <img src="https://i.ibb.co/xKFFqvhd/foto-Perfil.png" class="profile-pic">
       }
       <span class="user-email">{{ loggedIn }}</span>
-      <button class="btn btn-danger btn-sm ms-2" (click)="logout()">Salir</button>
+      <button class="btn btn-danger btn-sm ms-2" (click)="logout(); closeMenu()">Salir</button>
 
-      <app-expired-reservations-notification [userId]="userId" style="margin-left: 10%;"></app-expired-reservations-notification>
+      <app-expired-reservations-notification [userId]="userId"></app-expired-reservations-notification>
+      <div>
+        <a routerLink="/carrito" (click)="closeMenu()">
+          <i class="fas fa-shopping-cart fa-2x"></i></a>
+      </div>
     }
   </div>
 
