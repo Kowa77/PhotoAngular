@@ -248,6 +248,40 @@ app.post("/upload-photos", (req, res) => {
 });
 
 
+// 🚀 ELIMINAR FOTO DE MOMENTO ESTARA DESHABILITADA (NO ES UNA FUNCION NECESARIA)
+// app.post("/delete-photo/:photoId", async (req, res) => {
+//   const { photoId } = req.params;
+//   const { userId } = req.body;
+
+//   if (!photoId || !userId) {
+//     return res.status(400).json({ error: "Faltan parámetros (photoId o userId)." });
+//   }
+
+//   try {
+//     const token = await getGooglePhotosToken();
+
+//     // Google Photos API para eliminar mediaItem
+//     await axios.post(
+//       `https://photoslibrary.googleapis.com/v1/mediaItems:batchRemove`,
+//       {
+//         mediaItemIds: [photoId],
+//         albumId: null // opcional, si quieres desvincular de un álbum en particular
+//       },
+//       {
+//         headers: {
+//           "Content-Type": "application/json",
+//           Authorization: `Bearer ${token}`,
+//         },
+//       }
+//     );
+
+//     res.status(200).json({ message: `Foto ${photoId} eliminada con éxito.` });
+//   } catch (error) {
+//     console.error("❌ [Eliminar Foto] Error:", error.response?.data || error.message);
+//     res.status(500).json({ error: "Error eliminando la foto." });
+//   }
+// });
+
 
 
 // ---------------- RUTAS API EXTRA ----------------

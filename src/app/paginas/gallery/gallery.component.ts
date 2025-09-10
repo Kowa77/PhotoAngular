@@ -51,36 +51,36 @@ export class GalleryComponent implements OnInit {
     });
   }
 
-  // Eliminar la foto actualmente seleccionada
-  deletePhoto(): void {
-    if (this.photos.length === 0 || this.currentImageIndex < 0 || !this.userId) {
-      console.warn('⚠️ No hay foto seleccionada para eliminar o el ID de usuario no está disponible.');
-      return;
-    }
+  // Eliminar la foto actualmente seleccionada (deshabilitado temporalmente)
+  // deletePhoto(): void {
+  //   if (this.photos.length === 0 || this.currentImageIndex < 0 || !this.userId) {
+  //     console.warn('⚠️ No hay foto seleccionada para eliminar o el ID de usuario no está disponible.');
+  //     return;
+  //   }
 
-    const photoToDelete = this.photos[this.currentImageIndex];
-    const photoId = photoToDelete.id;
+  //   const photoToDelete = this.photos[this.currentImageIndex];
+  //   const photoId = photoToDelete.id;
 
-    if (!confirm(`¿Estás seguro de que deseas eliminar la foto: ${photoToDelete.filename}?`)) {
-      return; // El usuario canceló
-    }
+  //   if (!confirm(`¿Estás seguro de que deseas eliminar la foto: ${photoToDelete.filename}?`)) {
+  //     return; // El usuario canceló
+  //   }
 
-    const backendUrl = `/api/delete-photo/${photoId}`;
+  //   const backendUrl = `/api/delete-photo/${photoId}`;
 
-    this.http.post(backendUrl, { userId: this.userId }).subscribe({
-      next: () => {
-        console.log(`✅ Foto con ID ${photoId} eliminada correctamente.`);
-        // Recargar galería
-        if (this.userId) {
-          this.loadGallery(this.userId);
-        }
-      },
-      error: (err) => {
-        console.error('❌ Error al eliminar la foto:', err);
-        alert('Hubo un error al eliminar la foto. Por favor, inténtalo de nuevo.');
-      }
-    });
-  }
+  //   this.http.post(backendUrl, { userId: this.userId }).subscribe({
+  //     next: () => {
+  //       console.log(`✅ Foto con ID ${photoId} eliminada correctamente.`);
+  //       // Recargar galería
+  //       if (this.userId) {
+  //         this.loadGallery(this.userId);
+  //       }
+  //     },
+  //     error: (err) => {
+  //       console.error('❌ Error al eliminar la foto:', err);
+  //       alert('Hubo un error al eliminar la foto. Por favor, inténtalo de nuevo.');
+  //     }
+  //   });
+  // }
 
   // Cambiar imagen principal
   selectImage(index: number): void {

@@ -1,4 +1,15 @@
-import { Component, Input, OnInit, OnDestroy, HostListener, signal, Output, EventEmitter, SimpleChanges, OnChanges } from '@angular/core';
+// components/image-carousel.component.ts
+import {
+  Component,
+  Input,
+  OnChanges,
+  OnDestroy,
+  HostListener,
+  signal,
+  Output,
+  EventEmitter,
+  SimpleChanges
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -41,7 +52,10 @@ export class ImageCarouselComponent implements OnChanges, OnDestroy {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['initialIndex'] && changes['initialIndex'].currentValue !== this.currentIndex()) {
+    if (
+      changes['initialIndex'] &&
+      changes['initialIndex'].currentValue !== this.currentIndex()
+    ) {
       this.currentIndex.set(changes['initialIndex'].currentValue);
       this.imageChanged.emit(this.currentIndex());
     }
@@ -51,14 +65,20 @@ export class ImageCarouselComponent implements OnChanges, OnDestroy {
 
   prevImage(): void {
     if (this.images.length === 0) return;
-    const newIndex = this.currentIndex() === 0 ? this.images.length - 1 : this.currentIndex() - 1;
+    const newIndex =
+      this.currentIndex() === 0
+        ? this.images.length - 1
+        : this.currentIndex() - 1;
     this.currentIndex.set(newIndex);
     this.imageChanged.emit(newIndex);
   }
 
   nextImage(): void {
     if (this.images.length === 0) return;
-    const newIndex = this.currentIndex() === this.images.length - 1 ? 0 : this.currentIndex() + 1;
+    const newIndex =
+      this.currentIndex() === this.images.length - 1
+        ? 0
+        : this.currentIndex() + 1;
     this.currentIndex.set(newIndex);
     this.imageChanged.emit(newIndex);
   }
@@ -70,7 +90,6 @@ export class ImageCarouselComponent implements OnChanges, OnDestroy {
     }
   }
 
-  // ✅ Descargar en máxima calidad
   downloadImage(): void {
     const imageUrl = this.images[this.currentIndex()];
     if (!imageUrl) {
@@ -78,15 +97,13 @@ export class ImageCarouselComponent implements OnChanges, OnDestroy {
       return;
     }
 
-    // Forzar descarga en máxima resolución
-    const url = imageUrl + '=d';
-
     const link = document.createElement('a');
-    link.href = url;
+    // descargar en máxima calidad original
+    link.href = `${imageUrl}=d`;
 
-    // Nombre de archivo
     const parts = imageUrl.split('/');
-    const filename = parts[parts.length - 1].split('?')[0] || 'imagen_descarga.jpg';
+    const filename =
+      parts[parts.length - 1].split('?')[0] || 'imagen_descarga.jpg';
     link.download = filename;
 
     document.body.appendChild(link);
@@ -97,7 +114,6 @@ export class ImageCarouselComponent implements OnChanges, OnDestroy {
   openZoom(): void {
     this.showZoomOverlay.set(true);
     document.body.style.overflow = 'hidden';
-    // Resetear el estado del zoom al abrir
     this.scale.set(1);
     this.translateX.set(0);
     this.translateY.set(0);
@@ -111,10 +127,8 @@ export class ImageCarouselComponent implements OnChanges, OnDestroy {
   // --- Métodos para el zoom interactivo ---
   onWheelZoom(event: WheelEvent): void {
     event.preventDefault();
-
     const delta = event.deltaY * -0.01;
     const newScale = this.scale() + delta;
-
     if (newScale >= 0.5 && newScale <= 5) {
       this.scale.set(newScale);
     }
@@ -145,7 +159,15 @@ export class ImageCarouselComponent implements OnChanges, OnDestroy {
     this.isDragging.set(false);
   }
 
-  onDeletePhoto(): void {
-    this.deletePhotoRequest.emit();
+  //de momento estara deshabilitado
+  // onDeletePhoto(): void {
+  //   this.deletePhotoRequest.emit();
+  // }
+
+  // --- Nuevo: obtener URL en alta calidad para el zoom ---
+  getHighResUrl(): string {
+    const url = this.images[this.currentIndex()];
+    if (!url) return '';
+    return `${url}=w2000-h2000`; // o `${url}=d` si quieres el original completo
   }
 }
