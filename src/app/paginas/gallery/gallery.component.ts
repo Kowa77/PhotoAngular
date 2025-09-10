@@ -91,4 +91,22 @@ export class GalleryComponent implements OnInit {
   onImageChanged(index: number): void {
     this.currentImageIndex = index;
   }
+
+  // Descargar la foto actualmente seleccionada en máxima calidad
+  downloadPhoto(): void {
+    if (this.photos.length === 0 || this.currentImageIndex < 0) {
+      console.warn('⚠️ No hay foto seleccionada para descargar.');
+      return;
+    }
+
+    const photo = this.photos[this.currentImageIndex];
+    const downloadUrl = `${photo.baseUrl}=d`; // ✅ Alta calidad Google Photos
+
+    const link = document.createElement('a');
+    link.href = downloadUrl;
+    link.download = photo.filename || 'foto.jpg'; // nombre sugerido
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
 }

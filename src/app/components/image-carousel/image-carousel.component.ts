@@ -12,7 +12,7 @@ export class ImageCarouselComponent implements OnChanges, OnDestroy {
   @Input() images: string[] = [];
   @Input() initialIndex: number = 0;
   @Output() imageChanged = new EventEmitter<number>();
-  @Output() deletePhotoRequest = new EventEmitter<void>(); // Nuevo: Evento para la eliminación
+  @Output() deletePhotoRequest = new EventEmitter<void>();
 
   currentIndex = signal<number>(0);
   showZoomOverlay = signal<boolean>(false);
@@ -70,6 +70,7 @@ export class ImageCarouselComponent implements OnChanges, OnDestroy {
     }
   }
 
+  // ✅ Descargar en máxima calidad
   downloadImage(): void {
     const imageUrl = this.images[this.currentIndex()];
     if (!imageUrl) {
@@ -77,9 +78,13 @@ export class ImageCarouselComponent implements OnChanges, OnDestroy {
       return;
     }
 
-    const link = document.createElement('a');
-    link.href = imageUrl;
+    // Forzar descarga en máxima resolución
+    const url = imageUrl + '=d';
 
+    const link = document.createElement('a');
+    link.href = url;
+
+    // Nombre de archivo
     const parts = imageUrl.split('/');
     const filename = parts[parts.length - 1].split('?')[0] || 'imagen_descarga.jpg';
     link.download = filename;
@@ -104,21 +109,19 @@ export class ImageCarouselComponent implements OnChanges, OnDestroy {
   }
 
   // --- Métodos para el zoom interactivo ---
-
   onWheelZoom(event: WheelEvent): void {
-    event.preventDefault(); // Evitar el scroll de la página
+    event.preventDefault();
 
-    const delta = event.deltaY * -0.01; // Cambiar dirección del scroll
+    const delta = event.deltaY * -0.01;
     const newScale = this.scale() + delta;
 
-    // Limitar el zoom para que no sea demasiado pequeño o demasiado grande
-    if (newScale >= 0.5 && newScale <= 5) { // Escala entre 0.5x y 5x
+    if (newScale >= 0.5 && newScale <= 5) {
       this.scale.set(newScale);
     }
   }
 
   onMouseDown(event: MouseEvent): void {
-    if (this.scale() > 1) { // Solo permite arrastrar si hay zoom
+    if (this.scale() > 1) {
       this.isDragging.set(true);
       this.startX.set(event.clientX - this.translateX());
       this.startY.set(event.clientY - this.translateY());
@@ -127,7 +130,7 @@ export class ImageCarouselComponent implements OnChanges, OnDestroy {
 
   onMouseMove(event: MouseEvent): void {
     if (!this.isDragging()) return;
-    event.preventDefault(); // Evitar selección de texto
+    event.preventDefault();
     const newX = event.clientX - this.startX();
     const newY = event.clientY - this.startY();
     this.translateX.set(newX);
@@ -143,6 +146,6 @@ export class ImageCarouselComponent implements OnChanges, OnDestroy {
   }
 
   onDeletePhoto(): void {
-      this.deletePhotoRequest.emit();
+    this.deletePhotoRequest.emit();
   }
 }
