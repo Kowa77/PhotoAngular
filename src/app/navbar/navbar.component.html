@@ -14,6 +14,7 @@
     <a routerLink="/servicios" (click)="closeMenu()">Servicios</a>
     <a routerLink="/agenda" (click)="closeMenu()">Agenda</a>
     <a routerLink="/contacto" (click)="closeMenu()">Contacto</a>
+    <a routerLink="/nosotros" (click)="closeMenu()">Nosotros</a>
 
     @if (userId) {
       <a [routerLink]="['/galeria', userId]" (click)="closeMenu()">Galería</a>

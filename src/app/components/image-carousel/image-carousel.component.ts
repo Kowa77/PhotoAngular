@@ -90,26 +90,30 @@ export class ImageCarouselComponent implements OnChanges, OnDestroy {
     }
   }
 
-  downloadImage(): void {
-    const imageUrl = this.images[this.currentIndex()];
-    if (!imageUrl) {
-      console.warn('No hay imagen para descargar.');
-      return;
-    }
-
-    const link = document.createElement('a');
-    // descargar en máxima calidad original
-    link.href = `${imageUrl}=d`;
-
-    const parts = imageUrl.split('/');
-    const filename =
-      parts[parts.length - 1].split('?')[0] || 'imagen_descarga.jpg';
-    link.download = filename;
-
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+downloadImage(): void {
+  let imageUrl = this.images[this.currentIndex()];
+  if (!imageUrl) {
+    console.warn('No hay imagen para descargar.');
+    return;
   }
+
+  // Quitar parámetros previos (=w..., =h..., etc.)
+  imageUrl = imageUrl.split('=')[0];
+
+  // Descargar el original
+  const link = document.createElement('a');
+  link.href = `${imageUrl}=d`;
+
+  const parts = imageUrl.split('/');
+  const filename =
+    parts[parts.length - 1].split('?')[0] || 'imagen_descarga.jpg';
+  link.download = filename;
+
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
 
   openZoom(): void {
     this.showZoomOverlay.set(true);

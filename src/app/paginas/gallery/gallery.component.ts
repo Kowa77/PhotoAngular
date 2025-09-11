@@ -34,11 +34,12 @@ export class GalleryComponent implements OnInit {
 
   loadGallery(userId: string): void {
     this.isLoading = true;
-    const backendUrl = `/api/gallery/${userId}`;
+    const backendUrl = `/api/gallery/${userId}`; // resolución optimizada para web 1920x1080
     this.http.get<any[]>(backendUrl).subscribe({
       next: (data) => {
         this.photos = data;
-        this.photoUrls = this.photos.map(p => p.baseUrl);
+        //this.photoUrls = this.photos.map(p => p.baseUrl);
+        this.photoUrls = this.photos.map(p => `${p.baseUrl}=w2048-h1152`); // resolución optimizada para web 2048x1152
         this.isLoading = false;
         console.log('✅ Fotos cargadas con éxito:', this.photos);
       },

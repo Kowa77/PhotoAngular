@@ -55,17 +55,16 @@
 
 /* Estilos para cada tarjeta de servicio */
 .servicio-card {
-  width: 300px;
+  width: 200px;
+  height: auto;
   display: flex;
   flex-direction: column;
-  justify-content: center;
   text-align: center;
   align-items: center;
   background-color: #ffffff;
   border-radius: 8px;
   box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
-  padding: 15px;
-  margin-bottom: 5px;
+  padding: 25px;
   transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
   height: auto; /* Permite que la altura se ajuste al contenido */
 }
@@ -76,17 +75,15 @@
 }
 
 .servicio-card img {
-  width: 100px;
+  width: 100%;
   height: auto; /* Ajusta esta altura para que las imágenes sean más pequeñas */
   object-fit: contain; /* Recorta la imagen para llenar el espacio */
   border-radius: 4px;
-  margin-bottom: 10px;
-  zoom: 2;
 }
 
 .servicio-card h3 {
-  font-size: 1.5rem; /* Título un poco más pequeño */
-  margin-bottom: 8px;
+  font-size: 1rem; /* Título un poco más pequeño */
+  font-weight: bold;
   color: #333;
 }
 
