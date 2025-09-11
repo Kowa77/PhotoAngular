@@ -61,17 +61,18 @@
       <div class="date-selection">
         <label for="reservationDate">Fecha de la Reserva:</label>
         <mat-form-field appearance="fill">
-          <mat-label>Fecha</mat-label>
-          <input matInput [matDatepicker]="picker"
-                 [(ngModel)]="selectedReservationDate"
-                 (dateChange)="onDateSelect($event)"
-                 [matDatepickerFilter]="dateFilter"
-                 [min]="minDate"
-                 [max]="maxDate">
-          <mat-hint>MM/DD/YYYY</mat-hint>
-          <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
-          <mat-datepicker #picker [dateClass]="dateClass" [startAt]="startAt"></mat-datepicker>
-        </mat-form-field>
+        <mat-label>Fecha</mat-label>
+        <input matInput [matDatepicker]="picker"
+              [(ngModel)]="selectedReservationDate"
+              (dateChange)="onDateSelect($event)"
+              [matDatepickerFilter]="dateFilter"
+              [min]="minDate"
+              [max]="maxDate"
+              readonly> <!-- 🔒 bloquea edición manual -->
+        <mat-hint>Formato: dd/MM/yyyy</mat-hint>
+        <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+        <mat-datepicker #picker [dateClass]="dateClass" [startAt]="startAt"></mat-datepicker>
+      </mat-form-field>
       </div>
 
       <button class="checkout-button" (click)="proceedToCheckout()"

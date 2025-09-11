@@ -17,9 +17,23 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { FormsModule } from '@angular/forms';
 import { trigger, transition, style, animate } from '@angular/animations';
+import { MAT_DATE_FORMATS, MAT_DATE_LOCALE } from '@angular/material/core';
 
 
 declare const Swal: any;
+
+export const MY_DATE_FORMATS = {
+  parse: {
+    dateInput: 'DD/MM/YYYY', // cómo interpreta el input
+  },
+  display: {
+    dateInput: 'dd/MM/yyyy', // cómo lo muestra
+    monthYearLabel: 'MMMM YYYY',
+    dateA11yLabel: 'LL',
+    monthYearA11yLabel: 'MMMM YYYY',
+  },
+};
+
 
 
 @Component({
@@ -45,6 +59,10 @@ declare const Swal: any;
         animate('200ms ease-in', style({ opacity: 0, transform: 'scale(0.95)' }))
       ])
     ])
+  ],
+    providers: [
+    { provide: MAT_DATE_LOCALE, useValue: 'es-ES' }, // idioma español
+    { provide: MAT_DATE_FORMATS, useValue: MY_DATE_FORMATS } // formato personalizado
   ]
 
 })
@@ -61,6 +79,8 @@ export class CarritoComponent implements OnInit, OnDestroy {
 
   private mainSubscription: Subscription | null = null;
   private availabilitySubscription: Subscription | null = null;
+
+
 
   selectedDate: Date | null = null;
   selectedReservationDate: Date | null = null;
@@ -210,8 +230,7 @@ export class CarritoComponent implements OnInit, OnDestroy {
       console.error('CarritoComponent: Error in availability subscription:', error);
     }
   );
-}
-
+  }
 
   ngOnDestroy(): void {
     console.log('CarritoComponent: ngOnDestroy - Desuscribiendo.');
@@ -230,6 +249,8 @@ export class CarritoComponent implements OnInit, OnDestroy {
     this.calculatePaymentTotals();
     console.log('CarritoComponent: setEmptyCart called. cartItemsArray:', this.cartItemsArray.length, 'Total:', this.currentCartTotal);
   }
+
+
 
   private updateCartDisplayData(): void {
     this.cartItemsArray = this.cart ? Object.values(this.cart.items) : [];

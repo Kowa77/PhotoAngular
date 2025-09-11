@@ -1,28 +1,9 @@
-import {
-  Component,
-  OnInit,
-  OnDestroy,
-  inject,
-  ViewEncapsulation,
-  ChangeDetectorRef,
-} from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, ViewEncapsulation, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FirebaseService } from '../firebase/firefirebase-service.service';
 import { AuthService } from '../auth/auth.service';
-import {
-  BehaviorSubject,
-  Subject,
-  of,
-  combineLatest,
-} from 'rxjs';
-import {
-  map,
-  switchMap,
-  filter,
-  takeUntil,
-  distinctUntilChanged,
-  catchError,
-} from 'rxjs/operators';
+import { BehaviorSubject, Subject, of, combineLatest,} from 'rxjs';
+import { map, switchMap, filter, takeUntil, distinctUntilChanged, catchError, } from 'rxjs/operators';
 
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
@@ -119,156 +100,155 @@ constructor() {
     return '';
   };
 
-goToReservation(reservation: Reservation): void {
-  const dateParts = reservation.details.date.split('-'); // ["2025","09","12"]
-  const date = new Date(
-    Number(dateParts[0]),
-    Number(dateParts[1]) - 1, // meses base 0
-    Number(dateParts[2])
-  );
-
-  this.onDateSelect({ value: date }, true);
-
-  setTimeout(() => {
-    const el = document.querySelector('.reservations-list-section');
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth' });
-    }
-  }, 200);
-}
-
-
-
-ngOnInit(): void {
-  this.firebaseService
-    .allReservations$()
-    .pipe(takeUntil(this.destroy$))
-    .subscribe((dailyAvailabilityMap: DailyAvailabilityMap) => {
-      this.allAvailabilityMap = dailyAvailabilityMap;
-      this.cdr.detectChanges();
-    });
-
-  this.authService.user$
-    .pipe(
-      map((user) =>
-        user ? { uid: user.uid, email: user.email } : { uid: null, email: null }
-      ),
-      distinctUntilChanged((prev, curr) => prev.uid === curr.uid),
-      takeUntil(this.destroy$)
-    )
-    .subscribe((user: { uid: string | null; email: string | null }) => {
-      this.currentUserUid = user.uid;
-      this.currentUserEmail = user.email;
-      if (!user.uid) {
-        this.myReservaciones = [];
-        this.reservationsForSelectedDate = [];
-      }
-      this._selectedDateSource.next(this.selectedDate);
-      this.cdr.detectChanges();
-    });
-
-  combineLatest([
-    this._selectedDateSource.pipe(filter((date): date is Date => !!date)),
-    this.authService.user$.pipe(
-      map((user) => (user ? user.uid : null)),
-      distinctUntilChanged()
-    ),
-  ])
-    .pipe(
-      map(([date, uid]) => ({
-        formattedDate: this.formatDate(date),
-        uid,
-      })),
-      distinctUntilChanged(
-        (prev, curr) =>
-          prev.formattedDate === curr.formattedDate && prev.uid === curr.uid
-      ),
-      switchMap(({ formattedDate, uid }) => {
-        if (!uid) return of<Reservation[]>([]);
-        return this.firebaseService.getReservationsForDate(formattedDate).pipe(
-          map((reservationsMap) => Object.values(reservationsMap || {})),
-          map((reservations: Reservation[]) =>
-            reservations.filter((res: Reservation) => res.details.userId === uid)
-          ),
-          catchError(() => of<Reservation[]>([])),
-          takeUntil(this.destroy$)
-        );
-      }),
-      takeUntil(this.destroy$)
-    )
-    .subscribe(
-      (reservations: Reservation[]) => {
-        this.reservationsForSelectedDate = reservations;
-      },
-      () => {
-        this.reservationsForSelectedDate = [];
-      }
+  goToReservation(reservation: Reservation): void {
+    const dateParts = reservation.details.date.split('-'); // ["2025","09","12"]
+    const date = new Date(
+      Number(dateParts[0]),
+      Number(dateParts[1]) - 1, // meses base 0
+      Number(dateParts[2])
     );
 
-  this.authService.user$
-    .pipe(
-      map((user) => user?.uid),
-      distinctUntilChanged(),
-      switchMap((uid) => {
-        if (!uid) return of<Reservation[]>([]);
-        return this.firebaseService.getUserReservations(uid);
-      }),
-      takeUntil(this.destroy$)
-    )
-    .subscribe((userReservations: Reservation[]) => {
-      const foundUnreadExpired = userReservations.some(
-        (res: Reservation) =>
-          res.details.status === 'expired' && res.details.isRead === false
+    this.onDateSelect({ value: date }, true);
+
+    setTimeout(() => {
+      const el = document.querySelector('.reservations-list-section');
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth' });
+      }
+    }, 200);
+  }
+
+
+
+  ngOnInit(): void {
+    this.firebaseService
+      .allReservations$()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((dailyAvailabilityMap: DailyAvailabilityMap) => {
+        this.allAvailabilityMap = dailyAvailabilityMap;
+        this.cdr.detectChanges();
+      });
+
+    this.authService.user$
+      .pipe(
+        map((user) =>
+          user ? { uid: user.uid, email: user.email } : { uid: null, email: null }
+        ),
+        distinctUntilChanged((prev, curr) => prev.uid === curr.uid),
+        takeUntil(this.destroy$)
+      )
+      .subscribe((user: { uid: string | null; email: string | null }) => {
+        this.currentUserUid = user.uid;
+        this.currentUserEmail = user.email;
+        if (!user.uid) {
+          this.myReservaciones = [];
+          this.reservationsForSelectedDate = [];
+        }
+        this._selectedDateSource.next(this.selectedDate);
+        this.cdr.detectChanges();
+      });
+
+    combineLatest([
+      this._selectedDateSource.pipe(filter((date): date is Date => !!date)),
+      this.authService.user$.pipe(
+        map((user) => (user ? user.uid : null)),
+        distinctUntilChanged()
+      ),
+    ])
+      .pipe(
+        map(([date, uid]) => ({
+          formattedDate: this.formatDate(date),
+          uid,
+        })),
+        distinctUntilChanged(
+          (prev, curr) =>
+            prev.formattedDate === curr.formattedDate && prev.uid === curr.uid
+        ),
+        switchMap(({ formattedDate, uid }) => {
+          if (!uid) return of<Reservation[]>([]);
+          return this.firebaseService.getReservationsForDate(formattedDate).pipe(
+            map((reservationsMap) => Object.values(reservationsMap || {})),
+            map((reservations: Reservation[]) =>
+              reservations.filter((res: Reservation) => res.details.userId === uid)
+            ),
+            catchError(() => of<Reservation[]>([])),
+            takeUntil(this.destroy$)
+          );
+        }),
+        takeUntil(this.destroy$)
+      )
+      .subscribe(
+        (reservations: Reservation[]) => {
+          this.reservationsForSelectedDate = reservations;
+        },
+        () => {
+          this.reservationsForSelectedDate = [];
+        }
       );
-      this.hasUnreadExpiredReservations$.next(foundUnreadExpired);
 
-      // 👇 Aquí llenamos el array que usa el resumen
-      this.myReservaciones = userReservations;
-    });
+    this.authService.user$
+      .pipe(
+        map((user) => user?.uid),
+        distinctUntilChanged(),
+        switchMap((uid) => {
+          if (!uid) return of<Reservation[]>([]);
+          return this.firebaseService.getUserReservations(uid);
+        }),
+        takeUntil(this.destroy$)
+      )
+      .subscribe((userReservations: Reservation[]) => {
+        const foundUnreadExpired = userReservations.some(
+          (res: Reservation) =>
+            res.details.status === 'expired' && res.details.isRead === false
+        );
+        this.hasUnreadExpiredReservations$.next(foundUnreadExpired);
 
-  this._selectedDateSource
-    .pipe(takeUntil(this.destroy$))
-    .subscribe((date: Date | null) => {
-      this.selectedDate = date;
-    });
-}
+        // 👇 Aquí llenamos el array que usa el resumen
+        this.myReservaciones = userReservations;
+      });
+
+    this._selectedDateSource
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((date: Date | null) => {
+        this.selectedDate = date;
+      });
+  }
 
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
   }
 
-onDateSelect(event: any, viewOnly: boolean = false): void {
-  const selectedDate = event.value;
-  if (!selectedDate) return;
+  onDateSelect(event: any, viewOnly: boolean = false): void {
+    const selectedDate = event.value;
+    if (!selectedDate) return;
 
-  if (!viewOnly) {
-    // 👇 Validaciones solo si es para reservar
-    if (selectedDate < this.minDate) {
-      alert('Solo puedes reservar a partir de 3 días desde hoy.');
-      this.selectedDate = null;
-      return;
+    if (!viewOnly) {
+      // 👇 Validaciones solo si es para reservar
+      if (selectedDate < this.minDate) {
+        alert('Solo puedes reservar a partir de 3 días desde hoy.');
+        this.selectedDate = null;
+        return;
+      }
+
+      const formattedDate = this.formatDate(selectedDate);
+      const availabilityEntry = this.allAvailabilityMap[formattedDate];
+
+      if (
+        availabilityEntry &&
+        !availabilityEntry.available &&
+        availabilityEntry.bookedBy !== this.currentUserUid
+      ) {
+        alert('¡Atención! Este día ya está reservado por otro usuario.');
+        this.selectedDate = null;
+        return;
+      }
     }
 
-    const formattedDate = this.formatDate(selectedDate);
-    const availabilityEntry = this.allAvailabilityMap[formattedDate];
-
-    if (
-      availabilityEntry &&
-      !availabilityEntry.available &&
-      availabilityEntry.bookedBy !== this.currentUserUid
-    ) {
-      alert('¡Atención! Este día ya está reservado por otro usuario.');
-      this.selectedDate = null;
-      return;
-    }
+    // 🔥 Siempre actualizar fecha seleccionada
+    this.selectedDate = selectedDate;
+    this._selectedDateSource.next(selectedDate);
   }
-
-  // 🔥 Siempre actualizar fecha seleccionada
-  this.selectedDate = selectedDate;
-  this._selectedDateSource.next(selectedDate);
-}
-
 
   public formatDate(date: Date): string {
     const year = date.getFullYear();

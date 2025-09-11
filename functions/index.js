@@ -31,8 +31,18 @@ try {
 const app = express();
 
 // ---------------- CORS ----------------
+const allowedOrigins = [
+  "http://localhost:4200",                       // desarrollo local
+  "https://bsfotografia-9fc03.web.app",          // hosting Firebase
+  "https://bsfotografia-9fc03.firebaseapp.com",  // dominio alterno de Firebase
+  "https://tudominio.com"                        // si tenés custom domain
+];
+
 app.use((req, res, next) => {
-  res.setHeader("Access-Control-Allow-Origin", "http://localhost:4200");
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+  }
   res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
   res.setHeader("Access-Control-Allow-Credentials", "true");
@@ -42,6 +52,18 @@ app.use((req, res, next) => {
   }
   next();
 });
+// ---------------- CORS ----------------
+// app.use((req, res, next) => {
+//   res.setHeader("Access-Control-Allow-Origin", "http://localhost:4200");
+//   res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
+//   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+//   res.setHeader("Access-Control-Allow-Credentials", "true");
+
+//   if (req.method === "OPTIONS") {
+//     return res.status(204).end();
+//   }
+//   next();
+// });
 
 // ---------------- HELPERS ----------------
 async function getGooglePhotosToken() {

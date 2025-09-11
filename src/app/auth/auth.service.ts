@@ -1,6 +1,6 @@
 // src/app/auth/auth.service.ts
 import { Injectable, inject, NgZone } from '@angular/core';
-import { Auth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
+import { Auth, signInWithEmailAndPassword,
          signOut, user, User, setPersistence, browserLocalPersistence, sendPasswordResetEmail } from '@angular/fire/auth';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -41,19 +41,6 @@ export class AuthService {
       return Promise.reject(error);
     }
   }
-
-  // async registerUser(email: string, password: string): Promise<User> {
-  //   try {
-  //     // createUserWithEmailAndPassword y signInWithEmailAndPassword devuelven Promises.
-  //     // Angular maneja bien las Promises con Zone.js, por lo que no es necesario
-  //     // envolver estas llamadas en ngZone.run() explícitamente.
-  //     const userCredential = await createUserWithEmailAndPassword(this.auth, email, password);
-  //     return userCredential.user;
-  //   } catch (error: any) {
-  //     console.error('Error al registrar usuario:', error);
-  //     return Promise.reject(error);
-  //   }
-  // }
 
   async loginUser(email: string, password: string): Promise<User> {
     try {
