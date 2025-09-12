@@ -27,5 +27,8 @@ export const routes: Routes = [
   { path: 'agenda', component: AgendaComponent },
   { path: 'admin/upload', component: UploadFormComponent, canActivate: [adminGuard]  }, // Protegida por adminGuard
   { path: 'galeria/:userId', component: GalleryComponent },
+  { path: 'success', loadComponent: () =>  import('./paginas/mp/success/success.component').then(m => m.SuccessComponent)},
+  { path: 'failure', loadComponent: () =>  import('./paginas/mp/failure/failure.component').then(m => m.FailureComponent)},
+  { path: 'pending', loadComponent: () =>  import('./paginas/mp/pending/pending.component').then(m => m.PendingComponent)},
   { path: '**', redirectTo: '' }
 ];

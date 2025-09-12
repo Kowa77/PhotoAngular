@@ -2,8 +2,8 @@ import { Component, OnInit, OnDestroy, inject, ViewEncapsulation, ChangeDetector
 import { CommonModule } from '@angular/common';
 import { FirebaseService } from '../firebase/firefirebase-service.service';
 import { AuthService } from '../auth/auth.service';
-import { BehaviorSubject, Subject, of, combineLatest,} from 'rxjs';
-import { map, switchMap, filter, takeUntil, distinctUntilChanged, catchError, } from 'rxjs/operators';
+import { BehaviorSubject, Subject, of, combineLatest } from 'rxjs';
+import { map, switchMap, filter, takeUntil, distinctUntilChanged, catchError } from 'rxjs/operators';
 
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
@@ -13,9 +13,15 @@ import { FormsModule } from '@angular/forms';
 
 import { trigger, transition, style, animate } from '@angular/animations';
 
-
 // Importar los tipos necesarios
 import { Reservation, DailyAvailabilityMap } from '../models/reservation.model';
+
+// 🔥 MercadoPago
+import { HttpClient } from '@angular/common/http';
+import { environment } from '../../environments/environment';
+
+declare var MercadoPago: any;
+declare const Swal: any;
 
 @Component({
   selector: 'app-agenda',
@@ -42,12 +48,12 @@ import { Reservation, DailyAvailabilityMap } from '../models/reservation.model';
       ])
     ])
   ]
-
 })
 export class AgendaComponent implements OnInit, OnDestroy {
   private firebaseService: FirebaseService = inject(FirebaseService);
   private authService: AuthService = inject(AuthService);
   private cdr: ChangeDetectorRef = inject(ChangeDetectorRef);
+  private http: HttpClient = inject(HttpClient);
 
   private destroy$: Subject<void> = new Subject<void>();
   currentUserUid: string | null = null;
@@ -67,9 +73,8 @@ export class AgendaComponent implements OnInit, OnDestroy {
 
   myReservaciones: Reservation[] = [];
 
-constructor() {
-  const today = new Date();
-    // Agenda puede mostrar desde inicio del año
+  constructor() {
+    const today = new Date();
     this.minDate = new Date(today.getFullYear(), 0, 1);
     this.startAt = today;
     this.maxDate = new Date();
@@ -78,18 +83,14 @@ constructor() {
 
   dateFilter = (date: Date | null): boolean => {
     if (!date) return false;
-
     const formattedDate = this.formatDate(date);
     const availabilityEntry = this.allAvailabilityMap[formattedDate];
-
-    // En agenda no bloqueamos por +3 días, solo por disponibilidad
     return !availabilityEntry || availabilityEntry.available;
   };
 
   dateClass = (date: Date): string => {
     const formattedDate = this.formatDate(date);
     const availabilityEntry = this.allAvailabilityMap[formattedDate];
-
     if (
       availabilityEntry &&
       availabilityEntry.available === false &&
@@ -101,24 +102,18 @@ constructor() {
   };
 
   goToReservation(reservation: Reservation): void {
-    const dateParts = reservation.details.date.split('-'); // ["2025","09","12"]
+    const dateParts = reservation.details.date.split('-');
     const date = new Date(
       Number(dateParts[0]),
-      Number(dateParts[1]) - 1, // meses base 0
+      Number(dateParts[1]) - 1,
       Number(dateParts[2])
     );
-
     this.onDateSelect({ value: date }, true);
-
     setTimeout(() => {
       const el = document.querySelector('.reservations-list-section');
-      if (el) {
-        el.scrollIntoView({ behavior: 'smooth' });
-      }
+      if (el) el.scrollIntoView({ behavior: 'smooth' });
     }, 200);
   }
-
-
 
   ngOnInit(): void {
     this.firebaseService
@@ -137,7 +132,7 @@ constructor() {
         distinctUntilChanged((prev, curr) => prev.uid === curr.uid),
         takeUntil(this.destroy$)
       )
-      .subscribe((user: { uid: string | null; email: string | null }) => {
+      .subscribe((user) => {
         this.currentUserUid = user.uid;
         this.currentUserEmail = user.email;
         if (!user.uid) {
@@ -202,8 +197,6 @@ constructor() {
             res.details.status === 'expired' && res.details.isRead === false
         );
         this.hasUnreadExpiredReservations$.next(foundUnreadExpired);
-
-        // 👇 Aquí llenamos el array que usa el resumen
         this.myReservaciones = userReservations;
       });
 
@@ -224,16 +217,13 @@ constructor() {
     if (!selectedDate) return;
 
     if (!viewOnly) {
-      // 👇 Validaciones solo si es para reservar
       if (selectedDate < this.minDate) {
         alert('Solo puedes reservar a partir de 3 días desde hoy.');
         this.selectedDate = null;
         return;
       }
-
       const formattedDate = this.formatDate(selectedDate);
       const availabilityEntry = this.allAvailabilityMap[formattedDate];
-
       if (
         availabilityEntry &&
         !availabilityEntry.available &&
@@ -244,8 +234,6 @@ constructor() {
         return;
       }
     }
-
-    // 🔥 Siempre actualizar fecha seleccionada
     this.selectedDate = selectedDate;
     this._selectedDateSource.next(selectedDate);
   }
@@ -265,7 +253,6 @@ constructor() {
     ) {
       return;
     }
-
     if (this.currentUserUid && reservation.details.userId === this.currentUserUid) {
       try {
         await this.firebaseService.cancelReservation(
@@ -278,25 +265,18 @@ constructor() {
         }
       } catch (error) {
         console.error('Error al cancelar reserva:', error);
-        alert(
-          'Hubo un error al cancelar la reserva. Por favor, intenta de nuevo.'
-        );
+        alert('Hubo un error al cancelar la reserva.');
       }
     } else {
       alert('No tienes permiso para cancelar esta reserva.');
     }
   }
 
-  isReservationUpcoming(
-    reservation: Reservation,
-    compareDate: Date | null = null
-  ): boolean {
+  isReservationUpcoming(reservation: Reservation, compareDate: Date | null = null): boolean {
     const reservationDate = new Date(reservation.details.date);
     reservationDate.setHours(0, 0, 0, 0);
-
     const actualCompareDate = compareDate ? new Date(compareDate) : new Date();
     actualCompareDate.setHours(0, 0, 0, 0);
-
     return reservationDate >= actualCompareDate;
   }
 
@@ -308,18 +288,46 @@ constructor() {
 
   calculateDaysLeft(reservation: Reservation): number | null {
     if (reservation.details.status !== 'pending') return null;
-
     const reservationDate = new Date(reservation.details.date);
     const dueDate = new Date(reservationDate);
     dueDate.setDate(reservationDate.getDate() - 2);
     dueDate.setHours(0, 0, 0, 0);
-
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-
     const timeDifference = dueDate.getTime() - today.getTime();
     const daysLeft = Math.ceil(timeDifference / (1000 * 60 * 60 * 24));
-
     return daysLeft < 0 ? null : daysLeft;
+  }
+
+  // --- NUEVO: pago del 80% restante ---
+  async payRemaining(reservation: Reservation): Promise<void> {
+    if (!this.currentUserUid) {
+      Swal.fire('Debes iniciar sesión');
+      return;
+    }
+    try {
+      const total = reservation.details.totalAmount || 0;
+      const paid = reservation.details.paidAmount || (total * 0.2);
+      const remaining = total - paid;
+      if (remaining <= 0) {
+        Swal.fire('No tienes pagos pendientes.');
+        return;
+      }
+      const pref: any = await this.http.post(`${environment.apiUrl}/create_preference`, {
+        title: `Pago restante de reserva ${reservation.id}`,
+        quantity: 1,
+        price: remaining,
+        reservationId: reservation.id,
+        userId: this.currentUserUid,
+        mode: 'remaining'
+      }).toPromise();
+      if (!pref?.id) throw new Error('No se recibió id de preferencia');
+      const mp = new MercadoPago(environment.mercadoPagoPublicKey, { locale: 'es-UY' });
+      mp.checkout({ preference: { id: pref.id }, autoOpen: true });
+      Swal.fire('Procesando pago...', 'Se abrirá MercadoPago para completar tu pago.', 'info');
+    } catch (err: any) {
+      console.error('Error en payRemaining:', err);
+      Swal.fire('Error', err.message || 'No se pudo iniciar el pago del restante.', 'error');
+    }
   }
 }

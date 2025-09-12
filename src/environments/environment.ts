@@ -11,5 +11,6 @@ export const environment = {
     appId: "1:523548400063:web:7517a9aa5874b002d1290a",
     measurementId: "G-36GLWZND8D"
   },
+  mercadoPagoPublicKey: 'APP_USR-9f65b76b-c25b-4e70-a855-1f41c9ada6a1'
 
 }

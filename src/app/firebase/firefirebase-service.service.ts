@@ -117,45 +117,51 @@ export class FirebaseService {
   // 📅 RESERVAS
   // -------------------------------------------------------------------------
 
-  async saveReservation(
-    userId: string,
-    reservationDate: string,
-    cartItems: ReservationItem[],
-    total: number,
-    status: 'pending' | 'confirmed'
-  ): Promise<string> {
-    const availabilityRef = ref(this.database, `availability/${reservationDate}`);
-    let reservationId: string | null = null;
+ async saveReservation(
+  userId: string,
+  reservationDate: string,
+  cartItems: ReservationItem[],
+  total: number,
+  status: 'pending' | 'confirmed',
+  paymentOption: 'full' | 'partial',   // 🔥 nuevo
+  partialTotal: number                 // 🔥 nuevo
+): Promise<string> {
+  const availabilityRef = ref(this.database, `availability/${reservationDate}`);
+  let reservationId: string | null = null;
 
-    const transactionResult = await runTransaction(availabilityRef, (currentData) => {
-      if (currentData === null || currentData.available === true) {
-        return { available: false, maxBookings: 1, bookedBy: userId };
-      }
-      return undefined;
-    });
+  const transactionResult = await runTransaction(availabilityRef, (currentData) => {
+    if (currentData === null || currentData.available === true) {
+      return { available: false, maxBookings: 1, bookedBy: userId };
+    }
+    return undefined;
+  });
 
-    if (!transactionResult.committed) throw new Error(`El día ${reservationDate} ya ha sido reservado.`);
-
-    const reservationsForDateRef = ref(this.database, `reservations/${reservationDate}`);
-    const newReservationRef = push(reservationsForDateRef);
-    reservationId = newReservationRef.key!;
-
-    const reservationDetails: ReservationDetails = {
-      date: reservationDate,
-      userId,
-      totalAmount: total,
-      timestamp: Date.now(),
-      status
-    };
-
-    const cleanedItems: { [serviceId: string]: ReservationItem } = {};
-    cartItems.forEach(item => {
-      cleanedItems[item.id] = { ...item, duracion: item.duracion ?? null };
-    });
-
-    await set(newReservationRef, { id: reservationId, details: reservationDetails, items: cleanedItems });
-    return reservationId;
+  if (!transactionResult.committed) {
+    throw new Error(`El día ${reservationDate} ya ha sido reservado.`);
   }
+
+  const reservationsForDateRef = ref(this.database, `reservations/${reservationDate}`);
+  const newReservationRef = push(reservationsForDateRef);
+  reservationId = newReservationRef.key!;
+
+  // 🔥 ahora incluimos paidAmount correctamente
+  const reservationDetails: ReservationDetails = {
+    date: reservationDate,
+    userId,
+    totalAmount: total,
+    paidAmount: paymentOption === 'full' ? total : partialTotal, // 👈 clave
+    timestamp: Date.now(),
+    status: status
+  };
+
+  const cleanedItems: { [serviceId: string]: ReservationItem } = {};
+  cartItems.forEach(item => {
+    cleanedItems[item.id] = { ...item, duracion: item.duracion ?? null };
+  });
+
+  await set(newReservationRef, { id: reservationId, details: reservationDetails, items: cleanedItems });
+  return reservationId;
+}
 
   async cancelReservation(reservationDate: string, reservationId: string): Promise<void> {
     const reservationRef = ref(this.database, `reservations/${reservationDate}/${reservationId}`);
@@ -248,5 +254,39 @@ export class FirebaseService {
     })
   );
 }
+
+
+async updateReservationPayment(
+  reservationId: string,
+  userId: string,
+  amount: number,
+  mode: 'full' | 'partial'
+): Promise<void> {
+  const db = this.database;
+  const reservationsRef = ref(db, `reservations`);
+
+  // Buscar la fecha que contiene la reserva
+  const snapshot = await get(reservationsRef);
+  const allData = snapshot.val();
+
+  for (const dateKey in allData) {
+    if (allData[dateKey][reservationId]) {
+      const reservationRef = ref(db, `reservations/${dateKey}/${reservationId}/details`);
+
+      await set(reservationRef, {
+        ...allData[dateKey][reservationId].details,
+        status: 'confirmed',
+        paidAmount: amount,
+        paymentMode: mode
+      });
+
+      console.log(`Reserva ${reservationId} actualizada como confirmada.`);
+      return;
+    }
+  }
+
+  throw new Error('No se encontró la reserva en Firebase');
+}
+
 
 }

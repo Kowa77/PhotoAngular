@@ -10,6 +10,10 @@ import { ReservationItem, DailyAvailabilityMap } from '../models/reservation.mod
 import { Servicio } from '../models/servicio.model';
 import { AuthService } from '../auth/auth.service';
 
+declare var MercadoPago: any; // SDK ya está cargado en index.html
+import { HttpClient } from '@angular/common/http';
+import { environment } from '../../environments/environment';
+
 // Importa los módulos de Material aquí
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatInputModule } from '@angular/material/input';
@@ -19,22 +23,19 @@ import { FormsModule } from '@angular/forms';
 import { trigger, transition, style, animate } from '@angular/animations';
 import { MAT_DATE_FORMATS, MAT_DATE_LOCALE } from '@angular/material/core';
 
-
 declare const Swal: any;
 
 export const MY_DATE_FORMATS = {
   parse: {
-    dateInput: 'DD/MM/YYYY', // cómo interpreta el input
+    dateInput: 'DD/MM/YYYY',
   },
   display: {
-    dateInput: 'dd/MM/yyyy', // cómo lo muestra
+    dateInput: 'dd/MM/yyyy',
     monthYearLabel: 'MMMM YYYY',
     dateA11yLabel: 'LL',
     monthYearA11yLabel: 'MMMM YYYY',
   },
 };
-
-
 
 @Component({
   selector: 'app-carrito',
@@ -45,7 +46,7 @@ export const MY_DATE_FORMATS = {
     MatDatepickerModule,
     MatNativeDateModule,
     MatInputModule,
-    MatFormFieldModule // Asegúrate de que este módulo esté aquí
+    MatFormFieldModule
   ],
   templateUrl: './carrito.component.html',
   styleUrls: ['./carrito.component.css'],
@@ -60,16 +61,16 @@ export const MY_DATE_FORMATS = {
       ])
     ])
   ],
-    providers: [
-    { provide: MAT_DATE_LOCALE, useValue: 'es-ES' }, // idioma español
-    { provide: MAT_DATE_FORMATS, useValue: MY_DATE_FORMATS } // formato personalizado
+  providers: [
+    { provide: MAT_DATE_LOCALE, useValue: 'es-ES' },
+    { provide: MAT_DATE_FORMATS, useValue: MY_DATE_FORMATS }
   ]
-
 })
 export class CarritoComponent implements OnInit, OnDestroy {
   private firebaseService: FirebaseService = inject(FirebaseService);
   private authService: AuthService = inject(AuthService);
   private router: Router = inject(Router);
+  private http: HttpClient = inject(HttpClient);
 
   cart: Cart | null = null;
   public currentUserUid: string | null = null;
@@ -79,8 +80,6 @@ export class CarritoComponent implements OnInit, OnDestroy {
 
   private mainSubscription: Subscription | null = null;
   private availabilitySubscription: Subscription | null = null;
-
-
 
   selectedDate: Date | null = null;
   selectedReservationDate: Date | null = null;
@@ -92,7 +91,7 @@ export class CarritoComponent implements OnInit, OnDestroy {
   cartItemsArray: CartItem[] = [];
   currentCartTotal: number = 0;
 
-  // --- NUEVAS PROPIEDADES PARA LA LÓGICA DE PAGO ---
+  // --- NUEVAS PROPIEDADES ---
   paymentOption: 'full' | 'partial' | null = null;
   totalWithDiscount: number = 0;
   partialTotal: number = 0;
@@ -107,139 +106,123 @@ export class CarritoComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-  console.log('CarritoComponent: ngOnInit - Iniciando carga de carrito.');
-  this.isLoading = true;
+    console.log('CarritoComponent: ngOnInit - Iniciando carga de carrito.');
+    this.isLoading = true;
 
-  this.authService.user$
-    .pipe(distinctUntilChanged((a, b) => a?.uid === b?.uid))
-    .subscribe(user => {
-      this.currentUserUid = user ? user.uid : null;
-      this.userUidSubject.next(this.currentUserUid);
-    });
+    this.authService.user$
+      .pipe(distinctUntilChanged((a, b) => a?.uid === b?.uid))
+      .subscribe(user => {
+        this.currentUserUid = user ? user.uid : null;
+        this.userUidSubject.next(this.currentUserUid);
+      });
 
-  this.mainSubscription = this.userUidSubject.pipe(
-    filter(uid => uid !== undefined),
-    tap(uid => console.log('CarritoComponent: userUidSubject emitió:', uid)),
-    switchMap(uid => {
-      if (!uid) {
-        console.log('CarritoComponent: No hay usuario autenticado, carrito vacío.');
-        return of({
-          cartData: {} as { [serviceId: string]: { cantidad: number; duracion?: number } },
-          allServicios: [] as Servicio[]
-        });
-      }
-
-      console.log(`CarritoComponent: Usuario UID ${uid} conocido. Procediendo a cargar datos.`);
-      return combineLatest([
-        this.firebaseService.obtenerCarritoUsuario(uid).pipe(
-          tap(data => console.log('CarritoComponent: Raw cartData received from FirebaseService:', data)),
-          catchError(error => {
-            console.error('CarritoComponent: Error fetching user cart:', error);
-            return of({} as { [serviceId: string]: { cantidad: number; duracion?: number } });
-          })
-        ),
-        this.firebaseService.getTodosLosServicios().pipe(
-          tap(data => console.log('CarritoComponent: allServicios loaded:', data)),
-          catchError(error => {
-            console.error('CarritoComponent: Error fetching all services:', error);
-            return of([] as Servicio[]);
-          })
-        )
-      ]).pipe(
-        map(([cartData, allServicios]) => ({ cartData, allServicios })),
-        tap(() => console.log('CarritoComponent: combineLatest emitió datos para procesamiento.')),
-        catchError(error => {
-          console.error('CarritoComponent: Error en combineLatest:', error);
-          this.isLoading = false;
+    this.mainSubscription = this.userUidSubject.pipe(
+      filter(uid => uid !== undefined),
+      tap(uid => console.log('CarritoComponent: userUidSubject emitió:', uid)),
+      switchMap(uid => {
+        if (!uid) {
+          console.log('CarritoComponent: No hay usuario autenticado, carrito vacío.');
           return of({
             cartData: {} as { [serviceId: string]: { cantidad: number; duracion?: number } },
             allServicios: [] as Servicio[]
           });
-        })
-      );
-    })
-  ).subscribe(
-    ({ cartData, allServicios }) => {
-      if (!this.currentUserUid) {
-        console.log('CarritoComponent: Procesamiento abortado, currentUserUid null.');
-        this.setEmptyCart();
-        this.isLoading = false;
-        return;
-      }
+        }
 
-      console.log('CarritoComponent: Processing with cartData and allServicios.', cartData, allServicios);
+        console.log(`CarritoComponent: Usuario UID ${uid} conocido. Procediendo a cargar datos.`);
+        return combineLatest([
+          this.firebaseService.obtenerCarritoUsuario(uid).pipe(
+            tap(data => console.log('CarritoComponent: Raw cartData received from FirebaseService:', data)),
+            catchError(error => {
+              console.error('CarritoComponent: Error fetching user cart:', error);
+              return of({} as { [serviceId: string]: { cantidad: number; duracion?: number } });
+            })
+          ),
+          this.firebaseService.getTodosLosServicios().pipe(
+            tap(data => console.log('CarritoComponent: allServicios loaded:', data)),
+            catchError(error => {
+              console.error('CarritoComponent: Error fetching all services:', error);
+              return of([] as Servicio[]);
+            })
+          )
+        ]).pipe(
+          map(([cartData, allServicios]) => ({ cartData, allServicios })),
+          tap(() => console.log('CarritoComponent: combineLatest emitió datos para procesamiento.')),
+          catchError(error => {
+            console.error('CarritoComponent: Error en combineLatest:', error);
+            this.isLoading = false;
+            return of({
+              cartData: {} as { [serviceId: string]: { cantidad: number; duracion?: number } },
+              allServicios: [] as Servicio[]
+            });
+          })
+        );
+      })
+    ).subscribe(
+      ({ cartData, allServicios }) => {
+        if (!this.currentUserUid) {
+          console.log('CarritoComponent: Procesamiento abortado, currentUserUid null.');
+          this.setEmptyCart();
+          this.isLoading = false;
+          return;
+        }
 
-      if (cartData && Object.keys(cartData).length > 0 && allServicios.length > 0) {
-        const items: { [serviceId: string]: CartItem } = {};
-        let total = 0;
-        let itemsProcessedCount = 0;
+        if (cartData && Object.keys(cartData).length > 0 && allServicios.length > 0) {
+          const items: { [serviceId: string]: CartItem } = {};
+          let total = 0;
 
-        for (const serviceId in cartData) {
-          if (cartData.hasOwnProperty(serviceId)) {
-            const entry = cartData[serviceId];
-            const servicio = allServicios.find((s: Servicio) => s.id === serviceId);
+          for (const serviceId in cartData) {
+            if (cartData.hasOwnProperty(serviceId)) {
+              const entry = cartData[serviceId];
+              const servicio = allServicios.find((s: Servicio) => s.id === serviceId);
 
-            console.log(`CarritoComponent: Processing serviceId: ${serviceId}, entry:`, entry, 'Found service:', servicio);
-
-            if (servicio) {
-              items[serviceId] = {
-                id: servicio.id,
-                nombre: servicio.nombre,
-                descripcion: servicio.descripcion,
-                precio: servicio.precio,
-                cantidad: entry.cantidad,
-                imagen: servicio.imagen,
-                categoria: servicio.categoria,
-                duracion: entry.duracion ?? null,
-              };
-              total += servicio.precio * entry.cantidad * (entry.duracion ?? 1);
-              itemsProcessedCount++;
-            } else {
-              console.warn(`CarritoComponent: Service with ID ${serviceId} no encontrado en catálogo.`);
+              if (servicio) {
+                items[serviceId] = {
+                  id: servicio.id,
+                  nombre: servicio.nombre,
+                  descripcion: servicio.descripcion,
+                  precio: servicio.precio,
+                  cantidad: entry.cantidad,
+                  imagen: servicio.imagen,
+                  categoria: servicio.categoria,
+                  duracion: entry.duracion ?? null,
+                };
+                total += servicio.precio * entry.cantidad * (entry.duracion ?? 1);
+              }
             }
           }
+          this.cart = { items, total };
+          this.updateCartDisplayData();
+          this.calculatePaymentTotals();
+        } else {
+          this.setEmptyCart();
         }
-        this.cart = { items, total };
-        this.updateCartDisplayData();
-        this.calculatePaymentTotals();
-        console.log(`CarritoComponent: Procesados ${itemsProcessedCount} items. Carrito final:`, this.cart);
-      } else {
-        console.log('CarritoComponent: cartData o allServicios vacíos, setEmptyCart.');
+        this.isLoading = false;
+      },
+      (error) => {
+        console.error('CarritoComponent: Major error in main subscription:', error);
         this.setEmptyCart();
+        this.isLoading = false;
       }
-      this.isLoading = false;
-    },
-    (error) => {
-      console.error('CarritoComponent: Major error in main subscription:', error);
-      this.setEmptyCart();
-      this.isLoading = false;
-    }
-  );
+    );
 
-  this.availabilitySubscription = this.firebaseService.allReservations$().pipe(
-    tap(data => console.log('CarritoComponent: Daily availability data received:', data)),
-    catchError(error => {
-      console.error('CarritoComponent: Error fetching daily availability:', error);
-      return of({});
-    }),
-  ).subscribe(
-    (availabilityMap: DailyAvailabilityMap) => {
-      this.allAvailabilityMap = availabilityMap;
-    },
-    (error) => {
-      console.error('CarritoComponent: Error in availability subscription:', error);
-    }
-  );
+    this.availabilitySubscription = this.firebaseService.allReservations$().pipe(
+      catchError(error => {
+        console.error('CarritoComponent: Error fetching daily availability:', error);
+        return of({});
+      }),
+    ).subscribe(
+      (availabilityMap: DailyAvailabilityMap) => {
+        this.allAvailabilityMap = availabilityMap;
+      },
+      (error) => {
+        console.error('CarritoComponent: Error in availability subscription:', error);
+      }
+    );
   }
 
   ngOnDestroy(): void {
-    console.log('CarritoComponent: ngOnDestroy - Desuscribiendo.');
-    if (this.mainSubscription) {
-      this.mainSubscription.unsubscribe();
-    }
-    if (this.availabilitySubscription) {
-      this.availabilitySubscription.unsubscribe();
-    }
+    if (this.mainSubscription) this.mainSubscription.unsubscribe();
+    if (this.availabilitySubscription) this.availabilitySubscription.unsubscribe();
     this.userUidSubject.complete();
   }
 
@@ -247,33 +230,24 @@ export class CarritoComponent implements OnInit, OnDestroy {
     this.cart = { items: {}, total: 0 };
     this.updateCartDisplayData();
     this.calculatePaymentTotals();
-    console.log('CarritoComponent: setEmptyCart called. cartItemsArray:', this.cartItemsArray.length, 'Total:', this.currentCartTotal);
   }
-
-
 
   private updateCartDisplayData(): void {
     this.cartItemsArray = this.cart ? Object.values(this.cart.items) : [];
     this.currentCartTotal = this.cart ? this.cart.total : 0;
-    console.log('CarritoComponent: Cart display data updated. Items:', this.cartItemsArray.length, 'Total:', this.currentCartTotal);
   }
 
-  // --- NUEVA LÓGICA DE CÁLCULO DE PAGOS ---
   private calculatePaymentTotals(): void {
     if (this.cart && this.cart.total > 0) {
-      this.totalWithDiscount = this.cart.total * 0.8; // 20% de descuento
-      this.partialTotal = this.cart.total * 0.2; // 20% de pago de reserva
+      this.totalWithDiscount = this.cart.total * 0.8;
+      this.partialTotal = this.cart.total * 0.2;
     } else {
       this.totalWithDiscount = 0;
       this.partialTotal = 0;
     }
-    console.log(`CarritoComponent: Totales de pago calculados. Completo: ${this.totalWithDiscount}, Parcial: ${this.partialTotal}`);
   }
 
-  updateSummary(): void {
-    // Esta función no hace nada por ahora, pero sirve como "hook" para futuras lógicas si el usuario lo pide.
-    // Solo actualiza los valores en el HTML cuando se selecciona una opción.
-  }
+  updateSummary(): void {}
 
   trackByItemId(index: number, item: CartItem): string {
     return item.id;
@@ -293,9 +267,7 @@ export class CarritoComponent implements OnInit, OnDestroy {
           }
         }
         updatedFirebaseCart[serviceId] = newQuantity;
-
         await this.firebaseService.guardarCarritoUsuario(this.currentUserUid, updatedFirebaseCart);
-        console.log(`CarritoComponent: Cantidad de ${serviceId} actualizada a ${newQuantity} en Firebase.`);
       }
     }
   }
@@ -303,7 +275,6 @@ export class CarritoComponent implements OnInit, OnDestroy {
   async removeFromCart(serviceId: string): Promise<void> {
     if (this.currentUserUid && this.cart && this.cart.items) {
       await this.firebaseService.quitarDelCarrito(this.currentUserUid, serviceId);
-      console.log(`CarritoComponent: Servicio ${serviceId} eliminado de Firebase.`);
     }
   }
 
@@ -316,7 +287,6 @@ export class CarritoComponent implements OnInit, OnDestroy {
 
   onDateSelect(event: any): void {
     this.selectedReservationDate = event.value;
-    console.log('Fecha seleccionada del Datepicker (Angular Material):', this.selectedReservationDate);
   }
 
   dateClass = (date: Date): string => {
@@ -334,66 +304,59 @@ export class CarritoComponent implements OnInit, OnDestroy {
     return classes.trim();
   };
 
-dateFilter = (date: Date | null): boolean => {
-  if (!date) return false;
+  dateFilter = (date: Date | null): boolean => {
+    if (!date) return false;
+    if (!this.paymentOption) return false;
 
-  // Bloquear si no eligió tipo de pago todavía
-  if (!this.paymentOption) {
-    return false; // <- aquí sí está perfecto
-  }
+    const currentDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
-  const currentDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+    if (currentDate < today) return false;
 
-  // 🔒 siempre deshabilita días pasados
-  if (currentDate < today) {
-    return false;
-  }
-
-  // 🔒 restricción de +3 días solo para pago parcial
-  if (this.paymentOption === 'partial') {
-    const minDatePartial = new Date(today);
-    minDatePartial.setDate(today.getDate() + 3);
-    if (currentDate < minDatePartial) {
-      return false;
+    if (this.paymentOption === 'partial') {
+      const minDatePartial = new Date(today);
+      minDatePartial.setDate(today.getDate() + 3);
+      if (currentDate < minDatePartial) return false;
     }
-  }
 
-  const formattedDate = this.formatDateToYYYYMMDD(date);
-  const availability = this.allAvailabilityMap[formattedDate];
+    const formattedDate = this.formatDateToYYYYMMDD(date);
+    const availability = this.allAvailabilityMap[formattedDate];
+    return !availability || availability.available === true;
+  };
 
-  // Si no hay disponibilidad registrada, está libre
-  return !availability || availability.available === true;
-};
-
+  // --- MERCADOPAGO ---
 async proceedToCheckout(): Promise<void> {
-  console.log('CarritoComponent: Starting proceedToCheckout...');
-
   if (!this.currentUserUid) {
-    console.warn('You must log in to proceed with the reservation.');
+    Swal.fire('Debes iniciar sesión para continuar');
     this.router.navigate(['/auth']);
     return;
   }
 
   if (!this.cartItemsArray || this.cartItemsArray.length === 0) {
-    console.warn('Your cart is empty. Add services before proceeding.');
-    Swal.fire("Your cart is empty. Add services before proceeding.");
+    Swal.fire('Tu carrito está vacío.');
     return;
   }
 
   if (!this.selectedReservationDate) {
-    console.warn('Please select a date for your reservation.');
-    Swal.fire("Please select a date for your reservation.");
+    Swal.fire('Selecciona una fecha para la reserva.');
+    return;
+  }
+
+  if (!this.paymentOption) {
+    Swal.fire('Selecciona una opción de pago.');
     return;
   }
 
   const formattedDate = this.formatDateToYYYYMMDD(this.selectedReservationDate);
   const selectedDayAvailability = this.allAvailabilityMap[formattedDate];
 
-  if (selectedDayAvailability && selectedDayAvailability.available === false && selectedDayAvailability.bookedBy !== this.currentUserUid) {
-    console.warn('The selected date has already been reserved by another user. Please choose another date.');
-    Swal.fire("The selected date has already been reserved by another user. Please choose another date.");
+  if (
+    selectedDayAvailability &&
+    selectedDayAvailability.available === false &&
+    selectedDayAvailability.bookedBy !== this.currentUserUid
+  ) {
+    Swal.fire('La fecha ya está reservada por otro usuario.');
     return;
   }
 
@@ -409,48 +372,46 @@ async proceedToCheckout(): Promise<void> {
       duracion: cartItem.duracion ?? null
     }));
 
-    // Total y estado según la opción de pago
-    const totalToSave = this.paymentOption === 'full' ? this.totalWithDiscount : this.partialTotal;
-    const reservationStatus = this.paymentOption === 'full' ? 'confirmed' : 'pending';
+    const amount = this.paymentOption === 'full' ? this.totalWithDiscount : this.partialTotal;
 
-    console.log('CarritoComponent: Preparing to save reservation with the following details:', {
-      paymentOption: this.paymentOption,
-      total: totalToSave,
-      status: reservationStatus
-    });
-
+    // Guardar reserva preliminar en Firebase
     const reservationId = await this.firebaseService.saveReservation(
-      this.currentUserUid,
+      this.currentUserUid!,
       formattedDate,
       reservationItems,
-      totalToSave,
-      reservationStatus
+      amount,
+      'pending',
+      this.paymentOption!,
+      this.partialTotal
     );
 
-    // 🔥 Mensajes diferenciados
-    if (reservationStatus === 'confirmed') {
-      Swal.fire({
-        icon: 'success',
-        title: '¡Pago exitoso!',
-        text: 'Tu pago fue procesado y la reserva quedó confirmada.',
-      });
-    } else {
-      Swal.fire({
-        icon: 'info',
-        title: 'Reserva registrada',
-        text: 'Tu reserva fue guardada. Recuerda que tienes 2 días para realizar el pago antes de que expire.',
-      });
-    }
+    // Crear preferencia en backend
+    const pref: any = await this.http
+      .post(`${environment.apiUrl}/create_preference`, {
+        title: `Reserva ${formattedDate}`,
+        quantity: 1,
+        price: amount,
+        reservationId,
+        userId: this.currentUserUid,
+        mode: this.paymentOption
+      })
+      .toPromise();
 
-    await this.firebaseService.guardarCarritoUsuario(this.currentUserUid, {});
-    this.setEmptyCart();
-    this.selectedReservationDate = null;
+    if (!pref?.id) throw new Error('Error al crear preferencia de MercadoPago');
 
-    console.log(`Reservation successfully made! Reservation ID: ${reservationId}. You can view your reservations in the Agenda.`);
-    this.router.navigate(['/agenda']);
+    // 🔥 Ahora pref trae también reservationId y userId (re-confirmados desde backend)
+    console.log('Preferencia creada:', pref);
+
+    const mp = new MercadoPago(environment.mercadoPagoPublicKey, { locale: 'es-UY' });
+    mp.checkout({
+      preference: { id: pref.id },
+      autoOpen: true
+    });
+
+    Swal.fire('Redirigiendo a MercadoPago...', '', 'info');
   } catch (error: any) {
-    console.error('CarritoComponent: Error processing reservation:', error);
-    Swal.fire("Error", error.message || "Hubo un error inesperado. Por favor, intenta de nuevo.", "error");
+    console.error('Error en proceedToCheckout:', error);
+    Swal.fire('Error', error.message || 'No se pudo iniciar el pago', 'error');
   }
 }
 

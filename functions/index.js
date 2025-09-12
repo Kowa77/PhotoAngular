@@ -12,6 +12,8 @@ import { onRequest } from "firebase-functions/v2/https";
 import { logger } from "firebase-functions";
 import { defineSecret } from "firebase-functions/params";
 
+import { MercadoPagoConfig, Preference } from "mercadopago";
+
 // ---------------- SECRETS ----------------
 const EMAIL_HOST = defineSecret("EMAIL_HOST");
 const EMAIL_PORT = defineSecret("EMAIL_PORT");
@@ -20,6 +22,7 @@ const EMAIL_PASS = defineSecret("EMAIL_PASS");
 const GOOGLE_CLIENT_ID = defineSecret("GOOGLE_CLIENT_ID");
 const GOOGLE_CLIENT_SECRET = defineSecret("GOOGLE_CLIENT_SECRET");
 const GOOGLE_REFRESH_TOKEN = defineSecret("GOOGLE_REFRESH_TOKEN");
+const MP_ACCESS_TOKEN = defineSecret("MP_ACCESS_TOKEN");
 
 // ---------------- FIREBASE INIT ----------------
 try {
@@ -52,6 +55,46 @@ app.use((req, res, next) => {
   }
   next();
 });
+// ⚠️ Usa secret en Firebase para ACCESS_TOKEN
+let mpClient;
+(async () => {
+  mpClient = new MercadoPagoConfig({
+    accessToken: await MP_ACCESS_TOKEN.value()
+  });
+})();
+
+app.post("/create_preference", async (req, res) => {
+  try {
+    const { title, quantity, price, mode, reservationId, userId } = req.body;
+
+    const body = {
+      items: [
+        {
+          title,
+          quantity: Number(quantity),
+          unit_price: Number(price),
+          currency_id: "UYU",
+        },
+      ],
+      back_urls: {
+        success: "https://bsfotografia-9fc03.web.app/success",
+        failure: "https://bsfotografia-9fc03.web.app/failure",
+        pending: "https://bsfotografia-9fc03.web.app/pending",
+      },
+      auto_return: "approved",
+    };
+
+    const preference = new Preference(mpClient);
+    const result = await preference.create({ body });
+
+    // 🔥 ahora devolvés todo junto
+    res.json({ id: result.id, mode, reservationId, userId });
+  } catch (error) {
+    console.error("Error creating preference:", error);
+    res.status(500).json({ error: "Error al crear la preferencia" });
+  }
+});
+
 // ---------------- CORS ----------------
 // app.use((req, res, next) => {
 //   res.setHeader("Access-Control-Allow-Origin", "http://localhost:4200");
@@ -404,7 +447,7 @@ app.get("/gallery/:userId", async (req, res) => {
   }
 });
 
-// ---------------- EXPORTAR API ----------------
+// Exporta la API de Express como función de Firebase
 export const api = onRequest(
   {
     secrets: [
@@ -415,6 +458,7 @@ export const api = onRequest(
       GOOGLE_CLIENT_ID,
       GOOGLE_CLIENT_SECRET,
       GOOGLE_REFRESH_TOKEN,
+      MP_ACCESS_TOKEN,
     ],
   },
   app

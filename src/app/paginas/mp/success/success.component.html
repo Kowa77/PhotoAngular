@@ -1,0 +1,24 @@
+
+<div class="container" *ngIf="!loading">
+  <h2>✅ ¡Pago exitoso!</h2>
+  <p>{{ message }}</p>
+
+  <div class="summary" *ngIf="paymentStatus === 'approved'">
+    <h3>📋 Resumen de tu pago</h3>
+    <ul>
+      <li><strong>Reserva:</strong> {{ reservationId }}</li>
+      <li><strong>Fecha reservada:</strong> {{ formattedDate || 'N/D' }}</li>
+      <li><strong>Monto pagado:</strong> ${{ amount | number:'1.0-0' }} UYU</li>
+      <li><strong>Modalidad:</strong>
+        {{ mode === 'partial' ? 'Reserva 20%' : 'Pago completo' }}
+      </li>
+      <li><strong>Estado:</strong> Confirmado ✅</li>
+    </ul>
+  </div>
+
+    <button (click)="goToAgenda()" class="btn btn-primary">Ver mis reservas</button>
+</div>
+
+<div *ngIf="loading" class="loading">
+  <p>⌛ Procesando tu pago, por favor espera...</p>
+</div>
