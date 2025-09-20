@@ -52,6 +52,7 @@ app.use((req, res, next) => {
   }
   next();
 });
+
 // ---------------- CORS ----------------
 // app.use((req, res, next) => {
 //   res.setHeader("Access-Control-Allow-Origin", "http://localhost:4200");
@@ -65,7 +66,10 @@ app.use((req, res, next) => {
 //   next();
 // });
 
+
+
 // ---------------- HELPERS ----------------
+
 async function getGooglePhotosToken() {
   const auth = new google.auth.OAuth2(
     GOOGLE_CLIENT_ID.value(),
@@ -270,7 +274,6 @@ app.post("/upload-photos", (req, res) => {
 });
 
 
-// 🚀 ELIMINAR FOTO DE MOMENTO ESTARA DESHABILITADA (NO ES UNA FUNCION NECESARIA)
 // app.post("/delete-photo/:photoId", async (req, res) => {
 //   const { photoId } = req.params;
 //   const { userId } = req.body;
@@ -309,6 +312,7 @@ app.post("/upload-photos", (req, res) => {
 // ---------------- RUTAS API EXTRA ----------------
 
 // 📧 ENVIAR CORREO
+
 app.post("/send-email", express.json(), async (req, res) => {
   try {
     const { from, to, subject, text } = req.body;
@@ -399,10 +403,22 @@ app.get("/gallery/:userId", async (req, res) => {
       }))
     );
   } catch (err) {
-    logger.error("❌ Error al cargar galería:", err.message);
-    res.status(500).json({ error: "Error al cargar galería." });
+    const detail = err?.response?.data || err?.message || String(err);
+    logger.error("❌ Error al cargar galería:", detail);
+    res.status(500).json({ error: "Error al cargar galería.", detail });
   }
 });
+
+app.get("/debug/token", async (_req, res) => {
+  try {
+    const t = await getGooglePhotosToken();
+    res.json({ ok: !!t });
+  } catch (e) {
+    res.status(500).json({ error: e?.response?.data || e?.message || String(e) });
+  }
+});
+
+// 🚀 ELIMINAR FOTO DE MOMENTO ESTARA DESHABILITADA (NO ES UNA FUNCION NECESARIA)
 
 // ---------------- EXPORTAR API ----------------
 export const api = onRequest(
